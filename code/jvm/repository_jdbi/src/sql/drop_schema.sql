@@ -1,0 +1,17 @@
+drop table if exists competition_equipment;
+drop table if exists report;
+drop table if exists session_referees;
+drop table if exists position;
+drop table if exists session;
+drop table if exists participant;
+drop table if exists match_day;
+drop table if exists role;
+drop table if exists call_list;
+drop table if exists competition;
+drop table if exists category_dir;
+drop table if exists category;
+drop table if exists arbitration_council;
+drop table if exists referee;
+drop table if exists admin;
+drop table if exists equipment;
+drop table if exists user;
