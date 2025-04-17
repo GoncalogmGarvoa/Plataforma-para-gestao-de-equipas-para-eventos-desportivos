@@ -1,0 +1,19 @@
+DROP TABLE IF EXISTS
+    competition_equipment,
+    equipment,
+    report,
+    session_referees,
+    position,
+    session,
+    participant,
+    match_day,
+    role,
+    call_list,
+    competition,
+    category_dir,
+    arbitration_council,
+    referee,
+    category,
+    admin,
+    users
+CASCADE;
