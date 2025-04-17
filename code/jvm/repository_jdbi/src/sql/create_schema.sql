@@ -105,16 +105,23 @@ create table dbp.position (
                           name varchar(100)
 );
 
+
+
 create table dbp.session_referees (
-                                  session_id int,
-                                  position_id int,
-                                  referee_id int,
-                                  match_day_id_session int,
-                                  primary key (position_id, session_id, referee_id, match_day_id_session),
-                                  foreign key (session_id, match_day_id_session) references dbp.session(id, match_day_id),
-                                  foreign key (referee_id) references dbp.referee(user_id),
-                                  foreign key (position_id) references dbp.position(id)
+                                      session_id int,
+                                      position_id int,
+                                      referee_id int,
+                                      match_day_id_session int,
+                                      competition_id_match_day int,
+                                      primary key (position_id, session_id, referee_id, match_day_id_session, competition_id_match_day),
+                                      foreign key (session_id, match_day_id_session, competition_id_match_day)
+                                          references dbp.session(id, match_day_id, competition_id_match_day),
+                                      foreign key (referee_id) references dbp.referee(user_id),
+                                      foreign key (position_id) references dbp.position(id)
 );
+
+
+
 
 create table dbp.report (
                         id serial,
