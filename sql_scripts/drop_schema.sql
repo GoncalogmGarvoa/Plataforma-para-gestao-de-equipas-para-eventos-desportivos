@@ -17,7 +17,7 @@ drop table if exists dbp.arbitration_council;
 drop table if exists dbp.referee;
 drop table if exists dbp.admin;
 drop table if exists dbp.equipment;
-drop table if exists dbp.user;
+drop table if exists dbp.users;
 
 select *
 from dbp.competition_equipment;
@@ -52,4 +52,4 @@ from  dbp.admin;
 select *
 from dbp.equipment;
 select *
-from dbp.user;
+from dbp.users;
