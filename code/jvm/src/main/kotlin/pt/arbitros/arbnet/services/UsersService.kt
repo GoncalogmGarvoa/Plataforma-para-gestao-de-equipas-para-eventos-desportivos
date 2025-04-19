@@ -30,7 +30,7 @@ class UsersService(
         name: String,
         email: String,
         password: String,
-        birthDate: LocalDate,
+        birthDate: String,
         iban: String,
     ): Int =
         transactionManager.run {
@@ -40,7 +40,7 @@ class UsersService(
                     name,
                     email,
                     password,
-                    birthDate,
+                    LocalDate.parse(birthDate),
                     iban,
                 )
             id
@@ -50,7 +50,7 @@ class UsersService(
         name: String,
         email: String,
         password: String,
-        birthDate: LocalDate,
+        birthDate: String,
         iban: String,
     ): Boolean =
         transactionManager.run {
@@ -60,7 +60,7 @@ class UsersService(
                     name,
                     email,
                     password,
-                    birthDate,
+                    LocalDate.parse(birthDate),
                     iban,
                 )
             updated

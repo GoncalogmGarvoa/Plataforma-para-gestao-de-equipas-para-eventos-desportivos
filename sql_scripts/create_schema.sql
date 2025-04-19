@@ -3,11 +3,13 @@ CREATE SCHEMA IF NOT EXISTS dbp;
 
 create table dbp.users (
                            id serial primary key,
+                           phone_number Int not null,
+                           address varchar(255) not null,
                            name varchar(255) not null,
                            email varchar(255) unique not null,
                            password varchar(255) not null,
-                           birth_date date,
-                           iban varchar(25),
+                           birth_date date not null,
+                           iban varchar(25) not null,
                            roles varchar(255)
 );
 
@@ -17,8 +19,8 @@ create table dbp.admin (
 );
 
 create table dbp.category (
-                              id int primary key,
-                              name varchar(255)
+                              id serial primary key,
+                              name varchar(255) not null
 );
 
 create table dbp.referee (
@@ -33,8 +35,8 @@ create table dbp.arbitration_council (
 
 create table dbp.category_dir (
                                   referee_id int,
-                                  id int,
-                                  start_date date,
+                                  id serial,
+                                  start_date date not null,
                                   end_date date,
                                   category_id int,
                                   primary key (id, referee_id, category_id),
@@ -43,55 +45,56 @@ create table dbp.category_dir (
 );
 
 create table dbp.competition (
-                                 id int primary key,
-                                 competition_number int,
-                                 name varchar(100),
-                                 address varchar(255),
-                                 email varchar(100),
-                                 phone_number varchar(20),
-                                 location varchar(100),
-                                 association varchar(100)
+                                 competition_number serial primary key,
+                                 name varchar(100) not null,
+                                 address varchar(255) not null,
+                                 email varchar(100) not null,
+                                 phone_number varchar(20) not null,
+                                 location varchar(100) not null,
+                                 association varchar(100) not null
 );
 
 create table dbp.call_list (
-                               id serial primary key,
-                               deadline date,
+                               id serial,
+                               deadline date not null,
                                call_type varchar(100),
                                council_id int,
-                               competition_id int,
+                               competition_id int not null,
+                               primary key (id, council_id),
                                foreign key (council_id) references dbp.arbitration_council(user_id),
-                               foreign key (competition_id) references dbp.competition(id)
+                               foreign key (competition_id) references dbp.competition(competition_number)
 );
 
 create table dbp.role (
-                          id int primary key,
-                          name varchar(100)
+                          id serial primary key,
+                          name varchar(100) not null
 );
 
 create table dbp.match_day (
-                               id int,
-                               match_date date,
+                               id serial,
+                               match_date date not null,
                                competition_id int,
                                primary key (id, competition_id),
-                               foreign key (competition_id) references dbp.competition(id)
+                               foreign key (competition_id) references dbp.competition(competition_number)
 );
 
 create table dbp.participant (
                                  call_list_id int,
                                  match_day_id int,
+                                 council_id int,
                                  competition_id_match_day int,
                                  referee_id int,
                                  role_id int,
                                  confirmation_status varchar(20) check (confirmation_status in ('waiting', 'accepted', 'declined')),
                                  primary key (call_list_id, match_day_id, referee_id, role_id),
                                  foreign key (role_id) references dbp.role(id),
-                                 foreign key (call_list_id) references dbp.call_list(id),
+                                 foreign key (call_list_id, council_id) references dbp.call_list(id, council_id),
                                  foreign key (match_day_id, competition_id_match_day) references dbp.match_day(id, competition_id),
                                  foreign key (referee_id) references dbp.referee(user_id)
 );
 
 create table dbp.session (
-                             id int,
+                             id serial ,
                              start_time time not null,
                              end_time time,
                              match_day_id int,
@@ -102,7 +105,7 @@ create table dbp.session (
 
 create table dbp.position (
                               id serial primary key,
-                              name varchar(100)
+                              name varchar(100) not null
 );
 
 
@@ -128,18 +131,18 @@ create table dbp.report (
                             report_type varchar(50),
                             competition_id int,
                             primary key (id, competition_id),
-                            foreign key (competition_id) references dbp.competition(id)
+                            foreign key (competition_id) references dbp.competition(competition_number)
 );
 
 create table dbp.equipment (
                                id serial primary key,
-                               name varchar(100)
+                               name varchar(100) not null
 );
 
 create table dbp.competition_equipment (
                                            competition_id int,
                                            equipment_id int,
                                            primary key (equipment_id, competition_id),
-                                           foreign key (competition_id) references dbp.competition(id),
+                                           foreign key (competition_id) references dbp.competition(competition_number),
                                            foreign key (equipment_id) references dbp.equipment(id)
 );

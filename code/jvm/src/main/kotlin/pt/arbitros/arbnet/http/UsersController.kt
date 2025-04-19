@@ -2,12 +2,14 @@ package pt.arbitros.arbnet.http
 
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import pt.arbitros.arbnet.domain.Users
 import pt.arbitros.arbnet.http.model.UserInputModel
 import pt.arbitros.arbnet.http.model.UserOutputModel
 import pt.arbitros.arbnet.http.model.UserUpdateInputModel
+import pt.arbitros.arbnet.http.model.UsersEmailInput
 import pt.arbitros.arbnet.services.Either
 import pt.arbitros.arbnet.services.UsersService
 
@@ -34,9 +36,9 @@ class UsersController(
 
     @GetMapping(Uris.Users.GET_BY_EMAIL)
     fun getUserByEmail(
-        @PathVariable email: String,
+        @RequestBody email: UsersEmailInput,
     ): UserOutputModel? {
-        val aux = usersService.getUserByEmail(email)
+        val aux = usersService.getUserByEmail(email.email)
         return UserOutputModel(
             id = aux.id,
             roles = aux.roles.split(Regex("\\s*,\\s*")).filter { it.isNotBlank() },
@@ -48,7 +50,7 @@ class UsersController(
     }
 
     // TODO:check if i have to use a model class
-    @GetMapping(Uris.Users.CREATE_USER)
+    @PostMapping(Uris.Users.CREATE_USER)
     fun createUser(
         @RequestBody user: UserInputModel,
     ): Int =
@@ -56,11 +58,12 @@ class UsersController(
             user.name,
             user.email,
             user.password,
-            java.time.LocalDate.now(), // TODO: Switch to real birthday
+            user.birthDate,
             user.iban,
         )
 
-    @GetMapping(Uris.Users.UPDATE_USER) // TODO: needs to check with token if its the same user being changed
+    // TODO: needs to check with token if its the same user being changed
+    @PostMapping(Uris.Users.UPDATE_USER)
     fun updateUser(
         @RequestBody user: UserUpdateInputModel,
     ): Boolean =
@@ -68,7 +71,7 @@ class UsersController(
             user.name,
             user.email,
             user.password,
-            java.time.LocalDate.now(), // TODO: Switch to real birthday
+            user.birthDate,
             user.iban,
         )
 }

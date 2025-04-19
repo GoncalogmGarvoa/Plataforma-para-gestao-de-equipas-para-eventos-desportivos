@@ -22,7 +22,7 @@ class JdbiUsersRepository(
             ).bind("name", name)
             .bind("email", email)
             .bind("password", password)
-            .bind("birth_date", LocalDate.now())
+            .bind("birth_date", birthDate)
             .bind("iban", iban)
             .bind("roles", "")
             .executeAndReturnGeneratedKeys()
@@ -60,7 +60,7 @@ class JdbiUsersRepository(
     ): Boolean =
         handle
             .createUpdate(
-                """update dbp.users set name = :name, email = :email, password = :password, birth_date = :birth_date, iban = :iban, roles = :roles where email = :email""",
+                """update dbp.users set name = :name, email = :email, password = :password, birth_date = :birth_date, iban = :iban where email = :email""",
             ).bind("name", name)
             .bind("email", email)
             .bind("password", password)
