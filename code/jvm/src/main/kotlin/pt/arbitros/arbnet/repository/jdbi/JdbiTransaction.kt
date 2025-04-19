@@ -5,7 +5,7 @@ import pt.arbitros.arbnet.repository.Transaction
 import pt.arbitros.arbnet.repository.UsersRepository
 
 class JdbiTransaction(
-    private val handle: Handle
+    private val handle: Handle,
 ) : Transaction {
     override val usersRepository: UsersRepository = JdbiUsersRepository(handle)
 

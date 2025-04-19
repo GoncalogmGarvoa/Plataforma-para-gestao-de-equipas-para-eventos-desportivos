@@ -1,6 +1,6 @@
 
 -- USER
-insert into dbp.user (name, email, password, birth_date, iban, roles)
+insert into dbp.users (name, email, password, birth_date, iban, roles)
 values
   ('João Silva', 'joao@example.com', '1234', '1985-05-10', 'PT50000201231234567890154', 'referee'),
   ('Maria Souza', 'maria@example.com', 'abcd', '1990-03-22', 'PT50000201231234567890155', 'admin'),

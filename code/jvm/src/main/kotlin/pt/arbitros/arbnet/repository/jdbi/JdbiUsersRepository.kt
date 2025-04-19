@@ -1,52 +1,76 @@
 package pt.arbitros.arbnet.repository.jdbi
 
-import org.apache.catalina.User
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.arbitros.arbnet.domain.Users
 import pt.arbitros.arbnet.repository.UsersRepository
-import java.sql.ResultSet
 import java.time.LocalDate
 
-class JdbiUsersRepository (
-    private val handle: Handle
+class JdbiUsersRepository(
+    private val handle: Handle,
 ) : UsersRepository {
-    override fun createUser(user: Users): Int {
-        TODO("Not yet implemented")
-    }
+    override fun createUser(
+        name: String,
+        email: String,
+        password: String,
+        birthDate: LocalDate,
+        iban: String,
+    ): Int =
+        handle
+            .createUpdate(
+                """insert into dbp.users (name, email, password, birth_date, iban, roles) values (:name, :email, :password, :birth_date, :iban, :roles)""",
+            ).bind("name", name)
+            .bind("email", email)
+            .bind("password", password)
+            .bind("birth_date", LocalDate.now())
+            .bind("iban", iban)
+            .bind("roles", "")
+            .executeAndReturnGeneratedKeys()
+            .mapTo<Int>()
+            .one()
 
-    override fun getUserById(id: Int): Users? = handle.createQuery("""select * from dbp.users where id = :id""")
+    override fun getUserById(id: Int): Users? =
+        handle
+            .createQuery("""select * from dbp.users where id = :id""")
             .bind("id", id)
             .mapTo<Users>()
             .singleOrNull()
 
+    override fun getUserByEmail(email: String): Users? =
+        handle
+            .createQuery("""select * from dbp.users where email = :email""")
+            .bind("email", email)
+            .mapTo<Users>()
+            .singleOrNull()
 
-    override fun findUserByEmail(email: String): Users? {
-        TODO("Not yet implemented")
-    }
+    override fun existsByEmail(email: String): Boolean =
+        handle
+            .createQuery("SELECT * FROM dbp.users WHERE email = :email")
+            .bind("email", email)
+            .mapTo<Int>()
+            .findFirst()
+            .isPresent
 
-    override fun existsByEmail(email: String): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun updateUser(
+        name: String,
+        email: String,
+        password: String,
+        birthDate: LocalDate,
+        iban: String,
+    ): Boolean =
+        handle
+            .createUpdate(
+                """update dbp.users set name = :name, email = :email, password = :password, birth_date = :birth_date, iban = :iban, roles = :roles where email = :email""",
+            ).bind("name", name)
+            .bind("email", email)
+            .bind("password", password)
+            .bind("birth_date", LocalDate.now())
+            .bind("iban", iban)
+            .execute() > 0
 
-    override fun updateUser(user: Users): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun deleteUser(id: Int): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun findRoles(user: Users): List<String> {
-        TODO("Not yet implemented")
-    }
-
-    override fun findIban(user: Users): Int {
-        TODO("Not yet implemented")
-    }
-
-    override fun updateIban(user: Users): Boolean {
-        TODO("Not yet implemented")
-    }
-
+    override fun deleteUser(id: Int): Boolean =
+        handle
+            .createUpdate("""delete from dbp.users where id = :id""")
+            .bind("id", id)
+            .execute() > 0
 }

@@ -7,8 +7,7 @@ data class Users(
     val name: String,
     val email: String,
     val password: String,
-    val birthDate: LocalDate?,
-    val iban: String?,
-    val roles: String//List<String>
+    val birthDate: LocalDate,
+    val iban: String,
+    val roles: String,
 )
-

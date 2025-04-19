@@ -7,7 +7,7 @@ create table dbp.users (
                            email varchar(255) unique not null,
                            password varchar(255) not null,
                            birth_date date,
-                           iban varchar(21),
+                           iban varchar(25),
                            roles varchar(255)
 );
 

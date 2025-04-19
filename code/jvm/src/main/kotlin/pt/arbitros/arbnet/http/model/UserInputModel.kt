@@ -1,11 +1,9 @@
 package pt.arbitros.arbnet.http.model
 
-class UserOutputModel(
-    val id: Int,
+class UserInputModel(
     val name: String,
     val email: String,
     val birthDate: String,
     val iban: String,
-    val roles: List<String>,
+    val password: String,
 )
-// TODO: check if we send back iban ,review class

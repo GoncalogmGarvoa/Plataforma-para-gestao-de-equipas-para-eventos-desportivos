@@ -1,26 +1,30 @@
 package pt.arbitros.arbnet.repository
 
 import pt.arbitros.arbnet.domain.Users
+import java.time.LocalDate
 
 interface UsersRepository {
-
-    fun createUser(user: Users): Int
+    fun createUser(
+        name: String,
+        email: String,
+        password: String,
+        birthDate: LocalDate,
+        iban: String,
+    ): Int
 
     fun getUserById(id: Int): Users?
 
-    fun findUserByEmail(email: String): Users?
+    fun getUserByEmail(email: String): Users?
 
     fun existsByEmail(email: String): Boolean
 
-    fun updateUser(user: Users): Boolean
+    fun updateUser(
+        name: String,
+        email: String,
+        password: String,
+        birthDate: LocalDate,
+        iban: String,
+    ): Boolean
 
     fun deleteUser(id: Int): Boolean
-
-    fun findRoles(user: Users): List<String>
-
-    fun findIban(user: Users): Int
-    fun updateIban(user: Users): Boolean
-
-
-
 }
