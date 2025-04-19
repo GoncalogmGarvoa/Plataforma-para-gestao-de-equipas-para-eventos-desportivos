@@ -26,6 +26,8 @@ class UsersController(
         val aux = usersService.getUserById(id)
         return UserOutputModel(
             id = aux.id,
+            phoneNumber = aux.phoneNumber,
+            address = aux.address,
             roles = aux.roles.split(Regex("\\s*,\\s*")).filter { it.isNotBlank() },
             name = aux.name,
             email = aux.email,
@@ -41,6 +43,8 @@ class UsersController(
         val aux = usersService.getUserByEmail(email.email)
         return UserOutputModel(
             id = aux.id,
+            phoneNumber = aux.phoneNumber,
+            address = aux.address,
             roles = aux.roles.split(Regex("\\s*,\\s*")).filter { it.isNotBlank() },
             name = aux.name,
             email = aux.email,
@@ -56,6 +60,8 @@ class UsersController(
     ): Int =
         usersService.createUser(
             user.name,
+            user.phoneNumber,
+            user.address,
             user.email,
             user.password,
             user.birthDate,
@@ -69,6 +75,8 @@ class UsersController(
     ): Boolean =
         usersService.updateUser(
             user.name,
+            user.phoneNumber,
+            user.address,
             user.email,
             user.password,
             user.birthDate,

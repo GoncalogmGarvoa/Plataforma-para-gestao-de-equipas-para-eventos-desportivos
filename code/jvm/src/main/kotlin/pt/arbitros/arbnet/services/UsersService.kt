@@ -28,6 +28,8 @@ class UsersService(
 
     fun createUser(
         name: String,
+        phoneNumber: Int,
+        address: String,
         email: String,
         password: String,
         birthDate: String,
@@ -38,6 +40,8 @@ class UsersService(
             val id =
                 usersRepository.createUser(
                     name,
+                    phoneNumber,
+                    address,
                     email,
                     password,
                     LocalDate.parse(birthDate),
@@ -48,6 +52,8 @@ class UsersService(
 
     fun updateUser(
         name: String,
+        phoneNumber: Int,
+        address: String,
         email: String,
         password: String,
         birthDate: String,
@@ -58,6 +64,8 @@ class UsersService(
             val updated =
                 usersRepository.updateUser(
                     name,
+                    phoneNumber,
+                    address,
                     email,
                     password,
                     LocalDate.parse(birthDate),

@@ -6,6 +6,8 @@ import java.time.LocalDate
 interface UsersRepository {
     fun createUser(
         name: String,
+        phoneNumber: Int,
+        address: String,
         email: String,
         password: String,
         birthDate: LocalDate,
@@ -20,6 +22,8 @@ interface UsersRepository {
 
     fun updateUser(
         name: String,
+        phoneNumber: Int,
+        address: String,
         email: String,
         password: String,
         birthDate: LocalDate,

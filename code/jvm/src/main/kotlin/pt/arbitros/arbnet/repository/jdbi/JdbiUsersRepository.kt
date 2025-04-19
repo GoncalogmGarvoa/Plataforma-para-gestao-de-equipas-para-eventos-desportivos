@@ -11,6 +11,8 @@ class JdbiUsersRepository(
 ) : UsersRepository {
     override fun createUser(
         name: String,
+        phoneNumber: Int,
+        address: String,
         email: String,
         password: String,
         birthDate: LocalDate,
@@ -18,8 +20,10 @@ class JdbiUsersRepository(
     ): Int =
         handle
             .createUpdate(
-                """insert into dbp.users (name, email, password, birth_date, iban, roles) values (:name, :email, :password, :birth_date, :iban, :roles)""",
+                """insert into dbp.users (name, phone_Number, address, email, password, birth_date, iban, roles) values (:name, :phone_number, :address ,:email, :password, :birth_date, :iban, :roles)""",
             ).bind("name", name)
+            .bind("phone_number", phoneNumber)
+            .bind("address", address)
             .bind("email", email)
             .bind("password", password)
             .bind("birth_date", birthDate)
@@ -53,6 +57,8 @@ class JdbiUsersRepository(
 
     override fun updateUser(
         name: String,
+        phoneNumber: Int,
+        address: String,
         email: String,
         password: String,
         birthDate: LocalDate,
@@ -60,8 +66,10 @@ class JdbiUsersRepository(
     ): Boolean =
         handle
             .createUpdate(
-                """update dbp.users set name = :name, email = :email, password = :password, birth_date = :birth_date, iban = :iban where email = :email""",
+                """update dbp.users set name = :name, phone_Number= :phoneNumber,address = :address, email = :email, password = :password, birth_date = :birth_date, iban = :iban where email = :email""",
             ).bind("name", name)
+            .bind("phone_Number", phoneNumber)
+            .bind("address", address)
             .bind("email", email)
             .bind("password", password)
             .bind("birth_date", LocalDate.now())
