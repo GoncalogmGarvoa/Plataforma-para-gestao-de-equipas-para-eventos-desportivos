@@ -1,9 +1,13 @@
-package pt.arbitros.arbnet.repository
+package pt.arbitros.arbnet.repository.jdbi
 
+import org.jdbi.v3.core.Handle
+import pt.arbitros.arbnet.repository.CallListRepository
 import java.time.LocalDate
 
-interface CallListRepository {
-    fun createCallList(
+class JdbiCallListRepository(
+    private val handle: Handle,
+) : CallListRepository {
+    override fun createCallList(
         competitionName: String,
         competitionNumber: Int,
         address: String,
@@ -14,11 +18,7 @@ interface CallListRepository {
         participant: List<String>,
         timeLine: LocalDate,
         type: String,
-    ): Int
-
-//    fun findCallListById(id: Int): CallList?
-//
-//    fun getCallListsByCouncil(councilId: Int): List<CallList>
-//
-//    fun deleteCallList(id: Int): Boolean
+    ): Int {
+        TODO("Not yet implemented")
+    }
 }

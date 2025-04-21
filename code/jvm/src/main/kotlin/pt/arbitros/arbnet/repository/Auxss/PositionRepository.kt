@@ -1,9 +1,8 @@
-package pt.arbitros.arbnet.repository
+package pt.arbitros.arbnet.repository.Auxss
 
 import pt.arbitros.arbnet.domain.Position
 
 interface PositionRepository {
-
     fun createPosition(position: Position): Int
 
     fun findPositionById(id: Int): Position?

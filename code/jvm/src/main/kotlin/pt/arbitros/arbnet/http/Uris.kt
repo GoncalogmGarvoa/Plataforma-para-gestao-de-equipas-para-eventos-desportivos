@@ -10,4 +10,8 @@ object Uris {
         const val CREATE_USER = "$PREFIX/users/signup"
         const val UPDATE_USER = "$PREFIX/users/update"
     }
+
+    object CallList {
+        const val CREATE_CALLLIST = "$PREFIX/callList/creation"
+    }
 }

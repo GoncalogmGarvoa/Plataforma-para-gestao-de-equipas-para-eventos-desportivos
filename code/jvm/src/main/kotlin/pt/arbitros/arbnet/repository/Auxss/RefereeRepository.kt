@@ -1,9 +1,8 @@
-package pt.arbitros.arbnet.repository
+package pt.arbitros.arbnet.repository.Auxss
 
 import pt.arbitros.arbnet.domain.Referee
 
 interface RefereeRepository {
-
     fun createReferee(referee: Referee): Boolean
 
     fun findRefereeById(userId: Int): Referee?

@@ -1,9 +1,8 @@
-package pt.arbitros.arbnet.repository
+package pt.arbitros.arbnet.repository.Auxss
 
 import pt.arbitros.arbnet.domain.Category
 
 interface CategoryRepository {
-
     fun createCategory(category: Category): Int
 
     fun findCategoryById(id: Int): Category?

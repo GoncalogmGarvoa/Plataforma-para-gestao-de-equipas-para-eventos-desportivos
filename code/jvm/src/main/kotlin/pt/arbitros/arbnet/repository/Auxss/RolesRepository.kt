@@ -1,9 +1,8 @@
-package pt.arbitros.arbnet.repository
+package pt.arbitros.arbnet.repository.Auxss
 
 import pt.arbitros.arbnet.domain.Role
 
 interface RolesRepository {
-
     fun createRole(role: Role): Int
 
     fun getRoleById(id: Int): Role?

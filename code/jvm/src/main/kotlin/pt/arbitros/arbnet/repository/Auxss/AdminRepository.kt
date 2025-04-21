@@ -1,9 +1,8 @@
-package pt.arbitros.arbnet.repository
+package pt.arbitros.arbnet.repository.Auxss
 
 import pt.arbitros.arbnet.domain.Admin
 
 interface AdminRepository {
-
     fun createAdmin(admin: Admin): Boolean
 
     fun findAdminById(userId: Int): Admin?
