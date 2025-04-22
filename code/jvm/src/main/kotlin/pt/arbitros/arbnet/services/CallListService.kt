@@ -15,6 +15,7 @@ class CallListService(
     // todo "juiz arbitro" and "delegado" not defined
     // todo where do i get councilId ?
     // todo where do i get "cargo" from participant
+    // todo in call list i need to show the referee's category
     fun createCallList(
         competitionName: String,
         competitionNumber: Int,
