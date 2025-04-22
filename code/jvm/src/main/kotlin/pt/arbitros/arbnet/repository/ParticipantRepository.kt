@@ -1,9 +1,14 @@
 package pt.arbitros.arbnet.repository
 
-import pt.arbitros.arbnet.domain.Participant
-
 interface ParticipantRepository {
-    fun addParticipant(participant: Participant): Boolean
+    fun addParticipant(
+        callListId: Int,
+        matchDayId: Int,
+        councilId: Int,
+        competitionId: Int,
+        refereeId: Int,
+        role: String,
+    ): Boolean
 
 //    fun findParticipantsByCallList(callListId: Int): List<Participant>
 //
