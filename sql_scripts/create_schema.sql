@@ -10,8 +10,9 @@ create table dbp.users (
                            password varchar(255) not null,
                            birth_date date not null,
                            iban varchar(25) not null,
+                           roles varchar(255),
+                           status VARCHAR(10)CHECK (status IN ('active', 'inactive'))DEFAULT 'active'
 
-                           roles varchar(255)
 );
 
 create table dbp.admin (
@@ -73,7 +74,7 @@ create table dbp.role (
 
 create table dbp.match_day (
                                id serial,
-                               match_date date not null,
+                               match_date int not null,
                                competition_id int,
                                primary key (id, competition_id),
                                foreign key (competition_id) references dbp.competition(competition_number)
