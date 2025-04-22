@@ -1,21 +1,30 @@
 package pt.arbitros.arbnet.repository
 
+import pt.arbitros.arbnet.domain.Competition
+
 interface CompetitionRepository {
     fun createCompetition(
-        competitionName: String,
-        competitionNumber: Int,
+        name: String,
         address: String,
-        phoneNumber: Int,
         email: String,
-        association: String,
+        phoneNumber: String,
         location: String,
+        association: String,
     ): Int
 
-//    fun findCompetitionById(id: Int): Competition?
-//
-//    fun getAllCompetitions(): List<Competition>
-//
-//    fun updateCompetition(competition: Competition): Boolean
-//
-//    fun deleteCompetition(id: Int): Boolean
+    fun findCompetitionById(id: Int): Competition?
+
+    fun getAllCompetitions(): List<Competition>
+
+    fun updateCompetition(
+        id: Int,
+        name: String,
+        address: String,
+        email: String,
+        phoneNumber: String,
+        location: String,
+        association: String,
+    ): Boolean
+
+    fun deleteCompetition(id: Int): Boolean
 }

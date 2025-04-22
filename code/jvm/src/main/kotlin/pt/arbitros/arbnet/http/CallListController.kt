@@ -8,7 +8,7 @@ import pt.arbitros.arbnet.services.CallListService
 class CallListController(
     private val callListService: CallListService,
 ) {
-    @PostMapping(Uris.CallList.CREATE_CALLLIST)
+    @PostMapping(Uris.CallListUris.CREATE_CALLLIST)
     fun createUser(
         @RequestBody callList: CallListInputModel,
     ): Int =

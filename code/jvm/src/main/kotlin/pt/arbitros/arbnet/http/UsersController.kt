@@ -19,7 +19,7 @@ typealias userEither = Either<Int, Users>
 class UsersController(
     private val usersService: UsersService,
 ) {
-    @GetMapping(Uris.Users.GET_BY_ID)
+    @GetMapping(Uris.UsersUris.GET_BY_ID)
     fun getUserById(
         @PathVariable id: Int,
     ): UserOutputModel? {
@@ -36,7 +36,7 @@ class UsersController(
         )
     }
 
-    @GetMapping(Uris.Users.GET_BY_EMAIL)
+    @GetMapping(Uris.UsersUris.GET_BY_EMAIL)
     fun getUserByEmail(
         @RequestBody email: UsersEmailInput,
     ): UserOutputModel? {
@@ -53,8 +53,8 @@ class UsersController(
         )
     }
 
-    // TODO:check if i have to use a model class
-    @PostMapping(Uris.Users.CREATE_USER)
+    // TODO:check if i have to use a model class for response
+    @PostMapping(Uris.UsersUris.CREATE_USER)
     fun createUser(
         @RequestBody user: UserInputModel,
     ): Int =
@@ -69,7 +69,7 @@ class UsersController(
         )
 
     // TODO: needs to check with token if its the same user being changed
-    @PostMapping(Uris.Users.UPDATE_USER)
+    @PostMapping(Uris.UsersUris.UPDATE_USER)
     fun updateUser(
         @RequestBody user: UserUpdateInputModel,
     ): Boolean =
