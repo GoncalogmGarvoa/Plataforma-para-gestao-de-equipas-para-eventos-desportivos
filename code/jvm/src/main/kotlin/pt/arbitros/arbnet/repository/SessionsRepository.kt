@@ -5,7 +5,7 @@ import java.time.LocalTime
 interface SessionsRepository {
     fun createSession(
         competitionId: Int,
-        matchDate: String,
+        matchDate: Int,
         startTime: LocalTime,
     ): Boolean
 }

@@ -51,13 +51,15 @@ class CallListService(
             }
 
             val sessionsRepository = it.sessionsRepository
-            repeat(session.size) { idx ->
+            repeat(matchDaySessions.size) { matchDayIdx ->
+                repeat(matchDaySessions[matchDayIdx].sessions.size) { idx ->
 
-                sessionsRepository.createSession(
-                    matchDayId,
-                    competitionId,
-                    session[idx],
-                )
+                    sessionsRepository.createSession(
+                        competitionId,
+                        matchDayList[matchDayIdx],
+                        session[idx],
+                    )
+                }
             }
 
             val callListRepository = it.callListRepository

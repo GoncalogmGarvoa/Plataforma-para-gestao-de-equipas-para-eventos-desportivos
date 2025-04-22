@@ -9,7 +9,7 @@ class JdbiSessionsRepository(
 ) : SessionsRepository {
     override fun createSession(
         competitionId: Int,
-        matchDate: String,
+        matchDate: Int,
         startTime: LocalTime,
     ): Boolean {
         TODO("Not yet implemented")
