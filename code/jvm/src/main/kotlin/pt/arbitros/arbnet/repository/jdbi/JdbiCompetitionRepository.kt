@@ -1,6 +1,7 @@
 package pt.arbitros.arbnet.repository.jdbi
 
 import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.kotlin.mapTo
 import pt.arbitros.arbnet.repository.CompetitionRepository
 
 class JdbiCompetitionRepository(
@@ -14,9 +15,19 @@ class JdbiCompetitionRepository(
         email: String,
         association: String,
         location: String,
-    ): Int {
-        TODO("Not yet implemented")
-    }
+    ): Int =
+        handle
+            .createUpdate(
+                """insert into dbp.competition (name, address, email, phone_number, location, association) values (:name, :address, :email, :phone_number, :location, :association)""",
+            ).bind("name", competitionName)
+            .bind("address", address)
+            .bind("email", email)
+            .bind("phone_number", phoneNumber)
+            .bind("location", location)
+            .bind("association", association)
+            .executeAndReturnGeneratedKeys()
+            .mapTo<Int>()
+            .one()
 
 //        handle
 //            .createUpdate(

@@ -1,6 +1,7 @@
 package pt.arbitros.arbnet.repository.jdbi
 
 import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.kotlin.mapTo
 import pt.arbitros.arbnet.repository.MatchDayRepository
 
 class JdbiMatchDayRepository(
@@ -9,9 +10,14 @@ class JdbiMatchDayRepository(
     override fun createMatchDay(
         competitionId: Int,
         matchDate: Int,
-    ): Int {
-        TODO("Not yet implemented")
-    }
+    ): Int =
+        handle.createUpdate(
+            """insert into dbp.match_day (match_date, competition_id) values (:date, :competition_id)""",
+        ).bind("competition_id", competitionId)
+            .bind("date", matchDate)
+            .executeAndReturnGeneratedKeys()
+            .mapTo<Int>()
+            .single()
 
     //    override fun findMatchDayById(
 //        id: Int,
