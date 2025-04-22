@@ -10,6 +10,7 @@ create table dbp.users (
                            password varchar(255) not null,
                            birth_date date not null,
                            iban varchar(25) not null,
+
                            roles varchar(255)
 );
 

@@ -2,6 +2,7 @@ package pt.arbitros.arbnet.services
 
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.http.model.MatchDaySessionsInput
+import pt.arbitros.arbnet.http.model.UserInputIdModel
 import pt.arbitros.arbnet.repository.TransactionManager
 import java.time.LocalDate
 
@@ -11,6 +12,8 @@ class CallListService(
     // private val usersDomain: UsersDomain,
     // private val clock: Clock
 ) {
+    // todo "juiz arbitro" and "delegado" not defined
+    // todo where do i get councilId ?
     fun createCallList(
         competitionName: String,
         competitionNumber: Int,
@@ -19,9 +22,9 @@ class CallListService(
         email: String,
         association: String,
         location: String,
-        participant: List<String>, // todo list of String or list of Particpant
-        timeLine: LocalDate,
-        type: String, // i still dont know what do you mean by type but ok.
+        participant: List<UserInputIdModel>, // todo list of what ? does it make sense
+        deadline: LocalDate,
+        callType: String, // i still dont know what do you mean by type but ok.
         matchDaySessions: List<MatchDaySessionsInput>,
         // matchDay: List<String>,
         // session: List<String>,
@@ -52,12 +55,12 @@ class CallListService(
 
             val sessionsRepository = it.sessionsRepository
             repeat(matchDaySessions.size) { matchDayIdx ->
-                repeat(matchDaySessions[matchDayIdx].sessions.size) { idx ->
-
+                val sessionList = matchDaySessions[matchDayIdx].sessions
+                repeat(sessionList.size) { idx ->
                     sessionsRepository.createSession(
                         competitionId,
                         matchDayList[matchDayIdx],
-                        session[idx],
+                        sessionList[idx],
                     )
                 }
             }
@@ -65,21 +68,15 @@ class CallListService(
             val callListRepository = it.callListRepository
             val callListId =
                 callListRepository.createCallList(
-                    competitionName,
-                    competitionNumber,
-                    address,
-                    phoneNumber,
-                    email,
-                    association,
-                    location,
-                    participant,
-                    timeLine,
-                    type,
+                    deadline,
+                    callType,
+                    0,
+                    competitionId,
                 )
 
             val refereeRepository = it.refereeRepository
             val refereesList =
-                refereeRepository.getReferees(
+                refereeRepository.checkIfRefereesAreActive(
                     participant,
                 )
 
