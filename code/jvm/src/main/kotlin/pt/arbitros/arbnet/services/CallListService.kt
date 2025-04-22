@@ -44,7 +44,7 @@ class CallListService(
                 )
 
             val matchDayRepository = it.matchDayRepository
-            val matchDayList = mutableListOf<Int>()
+            val matchDayList = mutableListOf<Int>() // todo maybe mutableListof<MatchDay,ID>
             repeat(matchDaySessions.size) { idx ->
                 val matchDayId =
                     matchDayRepository.createMatchDay(
@@ -71,24 +71,24 @@ class CallListService(
                 callListRepository.createCallList(
                     deadline,
                     callType,
-                    0,
+                    0, // todo
                     competitionId,
-                )
-
-            val refereeRepository = it.refereeRepository
-            val refereesList =
-                refereeRepository.checkIfRefereesAreActive(
-                    participant,
                 )
 
             val participantRepository = it.participantRepository
-            val participant =
-                participantRepository.createParticipant(
-                    matchDayId, // todo List ?
-                    competitionId,
-                    callListId,
-                    referees,
-                )
+            repeat(matchDaySessions.size) { matchDay ->
+                repeat(participant.size) { user ->
+                    // todo need to check if an user works all match_days
+                    participantRepository.addParticipant(
+                        callListId,
+                        matchDayList[matchDay], // todo not the best way
+                        0, // todo
+                        competitionId,
+                        participant[user].id,
+                        "cargo",
+                    )
+                }
+            }
         }
         return 0
     }
