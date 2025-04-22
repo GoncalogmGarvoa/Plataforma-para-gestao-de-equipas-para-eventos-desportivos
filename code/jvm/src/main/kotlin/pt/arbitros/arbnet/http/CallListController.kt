@@ -1,6 +1,8 @@
 package pt.arbitros.arbnet.http
 
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RestController
 import pt.arbitros.arbnet.http.model.CallListInputModel
 import pt.arbitros.arbnet.services.CallListService
 
@@ -23,7 +25,21 @@ class CallListController(
             callList.participant,
             callList.timeLine,
             callList.type,
-            callList.matchDays,
-            callList.sessions,
+            callList.matchDaySessions,
         )
 }
+//
+// [
+// {
+//    "matchDay": 21,
+//    "sessions": ["15:30"]
+// },
+// {
+//    "matchDay": 22,
+//    "sessions": ["09:00", "15:30"]
+// },
+// {
+//    "matchDay": 23,
+//    "sessions": ["09:00", "15:30"]
+// }
+// ]

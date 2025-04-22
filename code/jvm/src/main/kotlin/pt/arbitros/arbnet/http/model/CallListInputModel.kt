@@ -13,6 +13,7 @@ class CallListInputModel(
     val participant: List<String>, // todo list of String or list of Particpant
     val timeLine: LocalDate,
     val type: String,
-    val matchDays: List<String>,
-    val sessions: List<String>,
+    val matchDaySessions: List<MatchDaySessionsInput>,
+//    val matchDays: List<String>,
+//    val sessions: List<String>,
 )
