@@ -81,7 +81,6 @@ class CallListService(
             matchDaySessions.forEach { matchDay ->
                 val matchDayId = matchDayMap[matchDay]!!
                 participant.forEach { user ->
-                    // TODO: Check if user works all match_days
                     participantRepository.addParticipant(
                         callListId,
                         matchDayId,
