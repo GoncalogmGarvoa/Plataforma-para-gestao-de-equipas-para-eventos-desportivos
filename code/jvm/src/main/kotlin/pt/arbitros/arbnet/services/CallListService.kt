@@ -11,9 +11,6 @@ class CallListService(
     // private val usersDomain: UsersDomain,
     // private val clock: Clock
 ) {
-    // todo "juiz arbitro" and "delegado" not defined / R: fazer depois pois nao sabemos quem aceitou
-    // todo where do i get councilId ? /R: tem de vir na criação da convocatoria
-    // todo where do i get "cargo" from participant /R: startam todos a default
     fun createCallList(
         competitionName: String,
         competitionNumber: Int,
@@ -24,12 +21,19 @@ class CallListService(
         location: String,
         deadline: LocalDate,
         councilId: Int,
-        participant: List<Int>, // todo list of what ? does it make sense /R: definitivamente nao e este objeto na lista
+        participant: List<Int>,
         matchDaySessions: List<MatchDaySessionsInput>,
     ): Int {
         transactionManager.run {
             // Create the competition
             val competitionRepository = it.competitionRepository
+            val matchDayRepository = it.matchDayRepository
+            val sessionsRepository = it.sessionsRepository
+            val callListRepository = it.callListRepository
+            val participantRepository = it.participantRepository
+            val roleRepository = it.roleRepository
+
+            // Create the competition
             val competitionId =
                 competitionRepository.createCompetition(
                     competitionName,
@@ -42,53 +46,58 @@ class CallListService(
                 )
 
             // Create the match day sessions
-            val matchDayRepository = it.matchDayRepository
-            val matchDayList = mutableListOf<Int>() // todo maybe mutableListof<MatchDay,ID>
-            repeat(matchDaySessions.size) { idx ->
+
+            val matchDayMap = mutableMapOf<MatchDaySessionsInput, Int>()
+
+            matchDaySessions.forEach { matchDay ->
                 val matchDayId =
                     matchDayRepository.createMatchDay(
                         competitionId,
-                        matchDaySessions[idx].matchDay,
+                        matchDay.matchDay,
                     )
-                matchDayList.add(matchDayId)
+                matchDayMap[matchDay] = matchDayId
             }
 
-            val sessionsRepository = it.sessionsRepository
-            repeat(matchDaySessions.size) { matchDayIdx ->
-                val sessionList = matchDaySessions[matchDayIdx].sessions
-                repeat(sessionList.size) { idx ->
+            matchDaySessions.forEach { matchDay ->
+                val matchDayId = matchDayMap[matchDay]!!
+                matchDay.sessions.forEach { session ->
                     sessionsRepository.createSession(
                         competitionId,
-                        matchDayList[matchDayIdx],
-                        sessionList[idx],
+                        matchDayId,
+                        session,
                     )
                 }
             }
 
-            val callListRepository = it.callListRepository
             val callListId =
                 callListRepository.createCallList(
                     deadline,
-                    "convocatoria",
                     councilId,
                     competitionId,
                 )
 
-            val participantRepository = it.participantRepository
-            repeat(matchDaySessions.size) { matchDay ->
-                repeat(participant.size) { user ->
-                    // todo need to check if an user works all match_days
+            val roleId = roleRepository.getRoleIdByName("default")
+
+            matchDaySessions.forEach { matchDay ->
+                val matchDayId = matchDayMap[matchDay]!!
+                participant.forEach { user ->
+                    // TODO: Check if user works all match_days
                     participantRepository.addParticipant(
                         callListId,
-                        matchDayList[matchDay], // todo not the best way
-                        0, // todo
+                        matchDayId,
+                        councilId,
                         competitionId,
-                        participant[user],
-                        "cargo",
+                        user,
+                        roleId,
                     )
                 }
             }
         }
         return 0
+    }
+
+    fun assignRoles(): Boolean {
+        // TODO
+        return true
     }
 }

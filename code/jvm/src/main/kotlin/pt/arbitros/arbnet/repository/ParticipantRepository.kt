@@ -7,7 +7,7 @@ interface ParticipantRepository {
         councilId: Int,
         competitionId: Int,
         refereeId: Int,
-        role: String,
+        roleId: Int,
     ): Boolean
 
 //    fun findParticipantsByCallList(callListId: Int): List<Participant>

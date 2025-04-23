@@ -12,18 +12,18 @@ class JdbiParticipantRepository(
         councilId: Int,
         competitionId: Int,
         refereeId: Int,
-        role: String,
+        roleId: Int,
     ): Boolean =
-        handle.createUpdate(
-            """insert into dbp.participant (call_list_id, match_day_id, council_id, competition_id, referee_id, role, confirmation_status) 
-               values (:call_list_id, :match_day_id, :council_id, :competition_id, :referee_id, :role, :confirmation_status)"""
-        )
-            .bind("call_list_id", callListId)
+        handle
+            .createUpdate(
+                """insert into dbp.participant (call_list_id, match_day_id, council_id, competition_id, referee_id, role, confirmation_status) 
+               values (:call_list_id, :match_day_id, :council_id, :competition_id, :referee_id, :role, :confirmation_status)""",
+            ).bind("call_list_id", callListId)
             .bind("match_day_id", matchDayId)
             .bind("council_id", councilId)
             .bind("competition_id", competitionId)
             .bind("referee_id", refereeId)
-            .bind("role", role)
+            .bind("role", roleId)
             .bind("confirmation_status", "waiting") // Define o valor padrão como "waiting"
             .execute() > 0
 }
