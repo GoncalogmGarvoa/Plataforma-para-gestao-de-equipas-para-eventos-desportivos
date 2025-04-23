@@ -11,9 +11,10 @@ class JdbiMatchDayRepository(
         competitionId: Int,
         matchDate: Int,
     ): Int =
-        handle.createUpdate(
-            """insert into dbp.match_day (match_date, competition_id) values (:date, :competition_id)""",
-        ).bind("competition_id", competitionId)
+        handle
+            .createUpdate(
+                """insert into dbp.match_day (match_date, competition_id) values (:date, :competition_id)""",
+            ).bind("competition_id", competitionId)
             .bind("date", matchDate)
             .executeAndReturnGeneratedKeys()
             .mapTo<Int>()

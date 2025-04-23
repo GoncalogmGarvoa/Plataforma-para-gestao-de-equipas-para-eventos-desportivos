@@ -10,10 +10,8 @@ class CallListInputModel(
     val email: String,
     val association: String,
     val location: String,
-    val participant: List<UserInputIdModel>, // todo list of String or list of Particpant
-    val timeLine: LocalDate,
-    val type: String,
+    val councilId: Int,
+    val participant: List<Int>,
+    val deadLine: LocalDate,
     val matchDaySessions: List<MatchDaySessionsInput>,
-//    val matchDays: List<String>,
-//    val sessions: List<String>,
 )

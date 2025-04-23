@@ -2,7 +2,6 @@ package pt.arbitros.arbnet.services
 
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.http.model.MatchDaySessionsInput
-import pt.arbitros.arbnet.http.model.UserInputIdModel
 import pt.arbitros.arbnet.repository.TransactionManager
 import java.time.LocalDate
 
@@ -12,9 +11,9 @@ class CallListService(
     // private val usersDomain: UsersDomain,
     // private val clock: Clock
 ) {
-    // todo "juiz arbitro" and "delegado" not defined
-    // todo where do i get councilId ?
-    // todo where do i get "cargo" from participant
+    // todo "juiz arbitro" and "delegado" not defined / R: fazer depois pois nao sabemos quem aceitou
+    // todo where do i get councilId ? /R: tem de vir na criação da convocatoria
+    // todo where do i get "cargo" from participant /R: startam todos a default
     fun createCallList(
         competitionName: String,
         competitionNumber: Int,
@@ -23,14 +22,13 @@ class CallListService(
         email: String,
         association: String,
         location: String,
-        participant: List<UserInputIdModel>, // todo list of what ? does it make sense
         deadline: LocalDate,
-        callType: String, // i still dont know what do you mean by type but ok.
+        councilId: Int,
+        participant: List<Int>, // todo list of what ? does it make sense /R: definitivamente nao e este objeto na lista
         matchDaySessions: List<MatchDaySessionsInput>,
-        // matchDay: List<String>,
-        // session: List<String>,
     ): Int {
         transactionManager.run {
+            // Create the competition
             val competitionRepository = it.competitionRepository
             val competitionId =
                 competitionRepository.createCompetition(
@@ -43,6 +41,7 @@ class CallListService(
                     location,
                 )
 
+            // Create the match day sessions
             val matchDayRepository = it.matchDayRepository
             val matchDayList = mutableListOf<Int>() // todo maybe mutableListof<MatchDay,ID>
             repeat(matchDaySessions.size) { idx ->
@@ -70,8 +69,8 @@ class CallListService(
             val callListId =
                 callListRepository.createCallList(
                     deadline,
-                    callType,
-                    0, // todo
+                    "convocatoria",
+                    councilId,
                     competitionId,
                 )
 
@@ -84,7 +83,7 @@ class CallListService(
                         matchDayList[matchDay], // todo not the best way
                         0, // todo
                         competitionId,
-                        participant[user].id,
+                        participant[user],
                         "cargo",
                     )
                 }

@@ -22,9 +22,9 @@ class CallListController(
             callList.email,
             callList.association,
             callList.location,
+            callList.deadLine,
+            callList.councilId,
             callList.participant,
-            callList.timeLine,
-            callList.type,
             callList.matchDaySessions,
         )
 }
