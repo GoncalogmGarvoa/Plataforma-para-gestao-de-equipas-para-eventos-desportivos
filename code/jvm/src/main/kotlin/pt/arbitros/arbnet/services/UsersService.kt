@@ -87,4 +87,18 @@ class UsersService(
             val exists = usersRepository.existsByEmail(email)
             exists
         }
+
+    fun updateRoles(
+        id: Int,
+        roles: Int,
+        matchDayId: Int,
+    ): Boolean =
+        transactionManager.run {
+            val participantRepository = it.participantRepository
+            return@run participantRepository.updateParticipantRole(
+                id,
+                roles,
+                matchDayId,
+            )
+        }
 }

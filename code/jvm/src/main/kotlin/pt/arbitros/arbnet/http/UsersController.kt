@@ -7,10 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import pt.arbitros.arbnet.domain.Users
-import pt.arbitros.arbnet.http.model.UserInputModel
-import pt.arbitros.arbnet.http.model.UserOutputModel
-import pt.arbitros.arbnet.http.model.UserUpdateInputModel
-import pt.arbitros.arbnet.http.model.UsersEmailInput
+import pt.arbitros.arbnet.http.model.*
 import pt.arbitros.arbnet.services.Either
 import pt.arbitros.arbnet.services.UsersService
 
@@ -89,6 +86,18 @@ class UsersController(
                 user.password,
                 user.birthDate,
                 user.iban,
+            ),
+        )
+
+    @PostMapping(Uris.UsersUris.USER_ROLES)
+    fun updateRoles(
+        @RequestBody user: UserRolesUpdateInputModel,
+    ): ResponseEntity<Boolean> =
+        ResponseEntity.ok(
+            usersService.updateRoles(
+                user.userId,
+                user.roles,
+                user.matchDayId,
             ),
         )
 }

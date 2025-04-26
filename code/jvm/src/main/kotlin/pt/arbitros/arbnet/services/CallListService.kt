@@ -111,11 +111,10 @@ class CallListService(
                             roleId,
                             assignment.matchDayId,
                         )
-                    }
                 }
             }
         }
-
         return true
     }
 }
+
