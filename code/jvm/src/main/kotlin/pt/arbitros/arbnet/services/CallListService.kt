@@ -14,7 +14,6 @@ class CallListService(
 ) {
     fun createCallList(
         competitionName: String,
-        competitionNumber: Int,
         address: String,
         phoneNumber: Int,
         email: String,
@@ -25,84 +24,83 @@ class CallListService(
         participant: List<Int>,
         matchDaySessions: List<MatchDaySessionsInput>,
     ): Int {
-        transactionManager.run {
-            // Create the competition
-            val competitionRepository = it.competitionRepository
-            val matchDayRepository = it.matchDayRepository
-            val sessionsRepository = it.sessionsRepository
-            val callListRepository = it.callListRepository
-            val participantRepository = it.participantRepository
-            val roleRepository = it.roleRepository
+        val callList =
+            transactionManager.run {
+                // Create the competition
+                val competitionRepository = it.competitionRepository
+                val matchDayRepository = it.matchDayRepository
+                val sessionsRepository = it.sessionsRepository
+                val callListRepository = it.callListRepository
+                val participantRepository = it.participantRepository
+                val roleRepository = it.roleRepository
 
-            // Create the competition
-            val competitionId =
-                competitionRepository.createCompetition(
-                    competitionName,
-                    competitionNumber,
-                    address,
-                    phoneNumber,
-                    email,
-                    association,
-                    location,
-                )
-
-            // Create the match day sessions
-
-            val matchDayMap = mutableMapOf<MatchDaySessionsInput, Int>()
-
-            matchDaySessions.forEach { matchDay ->
-                val matchDayId =
-                    matchDayRepository.createMatchDay(
-                        competitionId,
-                        matchDay.matchDay,
+                // Create the competition
+                val competitionId =
+                    competitionRepository.createCompetition(
+                        competitionName,
+                        address,
+                        phoneNumber,
+                        email,
+                        association,
+                        location,
                     )
-                matchDayMap[matchDay] = matchDayId
-            }
 
-            matchDaySessions.forEach { matchDay ->
-                val matchDayId = matchDayMap[matchDay]!!
-                matchDay.sessions.forEach { session ->
-                    sessionsRepository.createSession(
-                        competitionId,
-                        matchDayId,
-                        session,
-                    )
+                // Create the match day sessions
+
+                val matchDayMap = mutableMapOf<MatchDaySessionsInput, Int>()
+
+                matchDaySessions.forEach { matchDay ->
+                    val matchDayId =
+                        matchDayRepository.createMatchDay(
+                            competitionId,
+                            matchDay.matchDay,
+                        )
+                    matchDayMap[matchDay] = matchDayId
                 }
-            }
 
-            val callListId =
-                callListRepository.createCallList(
-                    deadline,
-                    councilId,
-                    competitionId,
-                )
+                matchDaySessions.forEach { matchDay ->
+                    val matchDayId = matchDayMap[matchDay]!!
+                    matchDay.sessions.forEach { session ->
+                        sessionsRepository.createSession(
+                            competitionId,
+                            matchDayId,
+                            session,
+                        )
+                    }
+                }
 
-            val roleId = roleRepository.getRoleIdByName("default")
-
-            matchDaySessions.forEach { matchDay ->
-                val matchDayId = matchDayMap[matchDay]!!
-                participant.forEach { user ->
-                    participantRepository.addParticipant(
-                        callListId,
-                        matchDayId,
+                val callListId =
+                    callListRepository.createCallList(
+                        deadline,
                         councilId,
                         competitionId,
-                        user,
-                        roleId,
                     )
+                val roleId = roleRepository.getRoleIdByName("default")
+
+                matchDaySessions.forEach { matchDay ->
+                    val matchDayId = matchDayMap[matchDay]!!
+                    participant.forEach { user ->
+                        participantRepository.addParticipant(
+                            callListId,
+                            matchDayId,
+                            councilId,
+                            competitionId,
+                            user,
+                            roleId,
+                        )
+                    }
                 }
+                callListId
             }
-        }
-        return 0
+        return callList
     }
 
-    fun assignRoles(roleAssignmentsInfo : List<RoleAssignmentsInput>): Boolean {
-
+    fun assignRoles(roleAssignmentsInfo: List<RoleAssignmentsInput>): Boolean {
         transactionManager.run {
             val roleRepository = it.roleRepository
             val participantRepository = it.participantRepository
 
-            roleAssignmentsInfo.forEach() { roleAssignment ->
+            roleAssignmentsInfo.forEach { roleAssignment ->
                 val roleId = roleRepository.getRoleIdByName(roleAssignment.role)
                 roleAssignment.assignments.forEach { assignment ->
                     val sucess =
@@ -117,4 +115,3 @@ class CallListService(
         return true
     }
 }
-

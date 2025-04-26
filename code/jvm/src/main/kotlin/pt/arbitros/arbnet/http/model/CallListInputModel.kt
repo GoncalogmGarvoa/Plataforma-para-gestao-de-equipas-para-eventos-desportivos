@@ -4,7 +4,6 @@ import java.time.LocalDate
 
 class CallListInputModel(
     val competitionName: String,
-    val competitionNumber: Int,
     val address: String,
     val phoneNumber: Int,
     val email: String,

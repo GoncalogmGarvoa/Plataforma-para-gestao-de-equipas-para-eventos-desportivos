@@ -17,7 +17,6 @@ class CallListController(
     ): Int =
         callListService.createCallList(
             callList.competitionName,
-            callList.competitionNumber,
             callList.address,
             callList.phoneNumber,
             callList.email,

@@ -3,7 +3,6 @@ package pt.arbitros.arbnet.repository
 interface CompetitionRepository {
     fun createCompetition(
         competitionName: String,
-        competitionNumber: Int,
         address: String,
         phoneNumber: Int,
         email: String,

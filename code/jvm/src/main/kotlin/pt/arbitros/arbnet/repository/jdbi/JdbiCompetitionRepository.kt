@@ -9,7 +9,6 @@ class JdbiCompetitionRepository(
 ) : CompetitionRepository {
     override fun createCompetition(
         competitionName: String,
-        competitionNumber: Int,
         address: String,
         phoneNumber: Int,
         email: String,

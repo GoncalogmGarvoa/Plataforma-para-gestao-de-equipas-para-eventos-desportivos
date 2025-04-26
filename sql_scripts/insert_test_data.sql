@@ -1,12 +1,16 @@
 
 -- USER
-insert into dbp.users (name, email, password, birth_date, iban, roles)
-values
-  ('João Silva', 'joao@example.com', '1234', '1985-05-10', 'PT50000201231234567890154', 'referee'),
-  ('Maria Souza', 'maria@example.com', 'abcd', '1990-03-22', 'PT50000201231234567890155', 'admin'),
-  ('Carlos Lima', 'carlos@example.com', 'pass1', '1988-07-11', 'PT50000201231234567890156', 'referee'),
-  ('Ana Costa', 'ana@example.com', 'pass2', '1992-04-18', 'PT50000201231234567890157', 'referee'),
-  ('Bruno Dias', 'bruno@example.com', 'pass3', '1983-12-30', 'PT50000201231234567890158', 'admin');
+INSERT INTO dbp.users (name, phone_number, address, email, password, birth_date, iban, roles)
+VALUES
+    ('João Silva', 932326731, 'Street A, 123', 'joao@example.com', '1234', '1985-05-10', 'PT50000201231234567890154', ARRAY['referee', 'player']),
+    ('Maria Souza', 932326732, 'Street B, 456', 'maria@example.com', 'abcd', '1990-03-22', 'PT50000201231234567890155', ARRAY['admin', 'manager']),
+    ('Carlos Lima', 932326733, 'Street C, 789', 'carlos@example.com', 'pass1', '1988-07-11', 'PT50000201231234567890156', ARRAY['referee', 'coach']),
+    ('Ana Costa', 932326734, 'Street D, 101', 'ana@example.com', 'pass2', '1992-04-18', 'PT50000201231234567890157', ARRAY['referee', 'admin']),
+    ('Bruno Dias', 932326735, 'Street E, 202', 'bruno@example.com', 'pass3', '1983-12-30', 'PT50000201231234567890158', ARRAY['admin', 'referee']),
+    ('Sofia Martins', 932326736, 'Street F, 303', 'sofia@example.com', 'pass4', '1995-01-15', 'PT50000201231234567890159', ARRAY['player', 'captain']),
+    ('Miguel Alves', 932326737, 'Street G, 404', 'miguel@example.com', 'pass5', '1987-09-07', 'PT50000201231234567890160', ARRAY['referee', 'player']),
+    ('Laura Pinto', 932326738, 'Street H, 505', 'laura@example.com', 'pass6', '1993-11-23', 'PT50000201231234567890161', ARRAY['manager', 'admin']);
+
 
 -- ADMIN
 insert into dbp.admin (user_id)
