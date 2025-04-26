@@ -1,11 +1,9 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package pt.arbitros.arbnet.http
 
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import pt.arbitros.arbnet.domain.Users
 import pt.arbitros.arbnet.http.model.*
 import pt.arbitros.arbnet.services.Either
@@ -27,7 +25,7 @@ class UsersController(
                 id = aux.id,
                 phoneNumber = aux.phoneNumber,
                 address = aux.address,
-                roles = aux.roles.split(Regex("\\s*,\\s*")).filter { it.isNotBlank() },
+                roles = aux.roles,
                 name = aux.name,
                 email = aux.email,
                 birthDate = aux.birthDate.toString(),
@@ -46,7 +44,7 @@ class UsersController(
                 id = aux.id,
                 phoneNumber = aux.phoneNumber,
                 address = aux.address,
-                roles = aux.roles.split(Regex("\\s*,\\s*")).filter { it.isNotBlank() },
+                roles = aux.roles,
                 name = aux.name,
                 email = aux.email,
                 birthDate = aux.birthDate.toString(),
@@ -89,7 +87,7 @@ class UsersController(
             ),
         )
 
-    @PostMapping(Uris.UsersUris.USER_ROLES)
+    @PutMapping(Uris.UsersUris.USER_ROLES)
     fun updateRoles(
         @RequestBody user: UserRolesUpdateInputModel,
     ): ResponseEntity<Boolean> =
@@ -97,6 +95,7 @@ class UsersController(
             usersService.updateRoles(
                 user.userId,
                 user.roles,
+                user.addOrRemove,
             ),
         )
 }
