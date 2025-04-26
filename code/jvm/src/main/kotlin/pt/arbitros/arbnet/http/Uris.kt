@@ -10,6 +10,7 @@ object Uris {
         const val CREATE_USER = "$PREFIX/users/signup"
         const val UPDATE_USER = "$PREFIX/users/update"
         const val USER_ROLES = "$PREFIX/users/roles"
+        const val USER_ROLES_DELETE = "$PREFIX/users/roles/delete"
     }
 
     object CallListUris {

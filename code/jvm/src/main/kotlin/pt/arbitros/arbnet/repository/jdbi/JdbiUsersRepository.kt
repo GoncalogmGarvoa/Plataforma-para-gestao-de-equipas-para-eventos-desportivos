@@ -75,14 +75,15 @@ class JdbiUsersRepository(
             .bind("iban", iban)
             .execute() > 0
 
-    override fun updateRoles(id: Int, roles: List<String>): Boolean {
-        val rolesArray = handle.connection.createArrayOf("text", roles.toTypedArray())
-        return handle
-            .createUpdate("""UPDATE dbp.users SET roles = :roles WHERE id = :id""")
-            .bind("roles", rolesArray)
+    override fun updateRoles(
+        id: Int,
+        roles: List<String>,
+    ): Boolean =
+        handle
+            .createUpdate("""UPDATE dbp.users SET roles = CAST(:roles AS text[]) WHERE id = :id""")
+            .bindArray("roles", String::class.java, roles)
             .bind("id", id)
             .execute() > 0
-    }
 
     override fun deleteUser(id: Int): Boolean =
         handle
@@ -90,3 +91,4 @@ class JdbiUsersRepository(
             .bind("id", id)
             .execute() > 0
 }
+// val rolesArray = handle.connection.createArrayOf("text", roles.toTypedArray())
