@@ -47,13 +47,20 @@ class JdbiParticipantRepository(
         callListId: Int
     ): Boolean = handle
         .createUpdate(
-            """update dbp.participant set confirmation_status = 'accepted' where call_list_id = :callListId and referee_id = :participantId and match_day_id in (<days>)
-                    update dbp.participant set confirmation_status = 'declined' where call_list_id = :callListId and referee_id = :participantId and match_day_id not in (<days>)
-                """.trimMargin(),
+            """
+        update dbp.participant
+        set confirmation_status = case 
+            when match_day_id in (<days>) then 'accepted'
+            else 'declined'
+        end
+        where call_list_id = :callListId
+          and referee_id = :participantId
+        """.trimIndent()
         )
         .bind("callListId", callListId)
         .bind("participantId", participantId)
         .bindList("days", days)
         .execute() > 0
+
 }
 
