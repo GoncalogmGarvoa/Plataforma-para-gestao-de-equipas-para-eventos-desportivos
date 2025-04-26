@@ -20,7 +20,7 @@ class JdbiUsersRepository(
     ): Int =
         handle
             .createUpdate(
-                """insert into dbp.users (name, phone_Number, address, email, password, birth_date, iban, roles) values (:name, :phone_number, :address ,:email, :password, :birth_date, :iban, :roles)""",
+                """insert into dbp.users (name, phone_Number, address, email, password, birth_date, iban, roles) values (:name, :phone_number, :address ,:email, :password, :birth_date, :iban, '{}')""",
             ).bind("name", name)
             .bind("phone_number", phoneNumber)
             .bind("address", address)
@@ -28,7 +28,6 @@ class JdbiUsersRepository(
             .bind("password", password)
             .bind("birth_date", birthDate)
             .bind("iban", iban)
-            .bind("roles", "")
             .executeAndReturnGeneratedKeys()
             .mapTo<Int>()
             .one()

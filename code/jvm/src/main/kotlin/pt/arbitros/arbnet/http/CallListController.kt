@@ -23,7 +23,7 @@ class CallListController(
             callList.email,
             callList.association,
             callList.location,
-            callList.deadLine,
+            callList.deadline,
             callList.councilId,
             callList.participant,
             callList.matchDaySessions,
@@ -34,8 +34,6 @@ class CallListController(
         @RequestBody roleAssignmentsInfo: List<RoleAssignmentsInput>,
     ): Boolean =
         callListService.assignRoles(
-            roleAssignmentsInfo
+            roleAssignmentsInfo,
         )
-
-
 }

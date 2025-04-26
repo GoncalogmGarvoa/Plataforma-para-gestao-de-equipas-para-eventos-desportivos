@@ -10,7 +10,7 @@ create table dbp.users (
                            password varchar(255) not null,
                            birth_date date not null,
                            iban varchar(25) not null,
-                           roles varchar(255),
+                           roles text[] DEFAULT '{}',
                            status VARCHAR(10)CHECK (status IN ('active', 'inactive'))DEFAULT 'active'
 
 );

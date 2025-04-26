@@ -7,5 +7,28 @@ data class MatchDaySessionsInput(
     val sessions: List<LocalTime>,
 )
 
-// (LocalTime.of(9, 0)),
-// (LocalTime.of(15, 30))
+/*
+"matchDaySessions": [
+{
+    "matchDay": "2025-05-21",
+    "sessions": [
+    "15:30"
+    ]
+},
+{
+    "matchDay": "2025-05-22",
+    "sessions": [
+    "09:00",
+    "15:30"
+    ]
+},
+{
+    "matchDay": "2025-05-23",
+    "sessions": [
+    "09:00",
+    "15:30"
+    ]
+}
+]
+
+ */
