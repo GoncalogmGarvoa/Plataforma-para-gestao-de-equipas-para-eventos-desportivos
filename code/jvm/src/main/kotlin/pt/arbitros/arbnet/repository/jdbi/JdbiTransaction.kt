@@ -11,6 +11,7 @@ class JdbiTransaction(
     override val competitionRepository: CompetitionRepository = JdbiCompetitionRepository(handle)
     override val sessionsRepository: SessionsRepository = JdbiSessionsRepository(handle)
     override val matchDayRepository: MatchDayRepository = JdbiMatchDayRepository(handle)
+    override val participantRepository: ParticipantRepository = JdbiParticipantRepository(handle)
 
     override fun rollback() {
         handle.rollback()

@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import pt.arbitros.arbnet.http.model.CallListInputModel
+import pt.arbitros.arbnet.http.model.RoleAssignmentsInput
 import pt.arbitros.arbnet.services.CallListService
 
 @RestController
@@ -22,24 +23,17 @@ class CallListController(
             callList.email,
             callList.association,
             callList.location,
+            callList.deadLine,
+            callList.councilId,
             callList.participant,
-            callList.timeLine,
-            callList.type,
             callList.matchDaySessions,
         )
+
+    @PostMapping(Uris.CallListUris.ASSIGN_ROLES)
+    fun assingRoles(
+        @RequestBody roleAssignmentsInfo: List<RoleAssignmentsInput>,
+    ): Boolean =
+        callListService.assignRoles(
+            roleAssignmentsInfo
+        )
 }
-//
-// [
-// {
-//    "matchDay": 21,
-//    "sessions": ["15:30"]
-// },
-// {
-//    "matchDay": 22,
-//    "sessions": ["09:00", "15:30"]
-// },
-// {
-//    "matchDay": 23,
-//    "sessions": ["09:00", "15:30"]
-// }
-// ]

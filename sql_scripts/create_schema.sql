@@ -59,7 +59,7 @@ create table dbp.competition (
 create table dbp.call_list (
                                id serial,
                                deadline date not null,
-                               call_type varchar(100),
+                               call_type varchar(100) default 'calllist' check (call_type in ('calllist', 'confirmation', 'finaljury')),
                                council_id int,
                                competition_id int not null,
                                primary key (id, council_id),
@@ -69,12 +69,12 @@ create table dbp.call_list (
 
 create table dbp.role (
                           id serial primary key,
-                          name varchar(100) not null
+                          name varchar(100) unique not null
 );
 
 create table dbp.match_day (
                                id serial,
-                               match_date int not null,
+                               match_date date not null,
                                competition_id int,
                                primary key (id, competition_id),
                                foreign key (competition_id) references dbp.competition(competition_number)
@@ -87,7 +87,7 @@ create table dbp.participant (
                                  competition_id_match_day int,
                                  referee_id int,
                                  role_id int,
-                                 confirmation_status varchar(20) check (confirmation_status in ('waiting', 'accepted', 'declined')),
+                                 confirmation_status varchar(20) default 'waiting' check (confirmation_status in ('waiting', 'accepted', 'declined')),
                                  primary key (call_list_id, match_day_id, referee_id, role_id),
                                  foreign key (role_id) references dbp.role(id),
                                  foreign key (call_list_id, council_id) references dbp.call_list(id, council_id),
@@ -120,7 +120,7 @@ create table dbp.session_referees (
                                       competition_id_match_day int,
                                       primary key (position_id, session_id, referee_id, match_day_id_session, competition_id_match_day),
                                       foreign key (session_id, match_day_id_session, competition_id_match_day)
-                                          references dbp.session(id, match_day_id, competition_id_match_day),
+                                      references dbp.session(id, match_day_id, competition_id_match_day),
                                       foreign key (referee_id) references dbp.referee(user_id),
                                       foreign key (position_id) references dbp.position(id)
 );

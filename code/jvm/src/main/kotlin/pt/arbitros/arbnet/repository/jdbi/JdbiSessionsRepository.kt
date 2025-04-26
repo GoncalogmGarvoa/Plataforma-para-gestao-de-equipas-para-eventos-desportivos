@@ -11,7 +11,12 @@ class JdbiSessionsRepository(
         competitionId: Int,
         matchDate: Int,
         startTime: LocalTime,
-    ): Boolean {
-        TODO("Not yet implemented")
-    }
+    ): Boolean =
+        handle
+            .createUpdate(
+                """insert into dbp.session (start_time, match_day_id, competition_id_match_day) values (:start_time, :match_date, :competition_id)""",
+            ).bind("competition_id", competitionId)
+            .bind("match_date", matchDate)
+            .bind("start_time", startTime)
+            .execute() > 0
 }

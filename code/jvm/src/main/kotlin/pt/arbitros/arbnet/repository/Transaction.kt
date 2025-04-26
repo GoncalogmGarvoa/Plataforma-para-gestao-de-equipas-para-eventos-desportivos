@@ -8,6 +8,7 @@ interface Transaction {
     val matchDayRepository: MatchDayRepository
     val sessionsRepository: SessionsRepository
     val participantRepository: ParticipantRepository
+    val roleRepository: RoleRepository
 
     fun rollback()
 }

@@ -5,7 +5,6 @@ import java.time.LocalDate
 interface CallListRepository {
     fun createCallList(
         deadline: LocalDate,
-        callType: String,
         councilId: Int,
         competitionId: Int,
     ): Int

@@ -10,15 +10,13 @@ class JdbiCallListRepository(
 ) : CallListRepository {
     override fun createCallList(
         deadline: LocalDate,
-        callType: String,
         councilId: Int,
         competitionId: Int,
     ): Int =
         handle
             .createUpdate(
-                """insert into dbp.call_list (deadline, call_type, council_id, competition_id) values (:deadline, :call_type, :council_id, :competition_id)""",
+                """insert into dbp.call_list (deadline, council_id, competition_id) values (:deadline, :council_id, :competition_id)""",
             ).bind("deadline", deadline)
-            .bind("call_type", callType)
             .bind("council_id", councilId)
             .bind("competition_id", competitionId)
             .executeAndReturnGeneratedKeys()
