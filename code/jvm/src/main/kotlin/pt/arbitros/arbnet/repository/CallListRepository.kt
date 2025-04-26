@@ -9,6 +9,7 @@ interface CallListRepository {
         competitionId: Int,
     ): Int
 
+
 //    fun findCallListById(id: Int): CallList?
 //
 //    fun getCallListsByCouncil(councilId: Int): List<CallList>

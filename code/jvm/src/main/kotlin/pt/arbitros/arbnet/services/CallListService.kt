@@ -114,4 +114,16 @@ class CallListService(
         }
         return true
     }
+
+    fun updateParticipantConfirmationStatus(
+        days: List<Int>,
+        participantId: Int,
+        callListId : Int,
+    ): Boolean {
+        transactionManager.run {
+            val participantRepository = it.participantRepository
+            participantRepository.updateParticipantConfirmationStatus(days, participantId, callListId)
+        }
+        return true
+    }
 }

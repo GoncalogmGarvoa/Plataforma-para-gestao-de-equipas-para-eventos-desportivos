@@ -1,9 +1,11 @@
 package pt.arbitros.arbnet.http
 
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import pt.arbitros.arbnet.http.model.CallListInputModel
+import pt.arbitros.arbnet.http.model.ParticipantUpdateInput
 import pt.arbitros.arbnet.http.model.RoleAssignmentsInput
 import pt.arbitros.arbnet.services.CallListService
 
@@ -34,5 +36,15 @@ class CallListController(
     ): Boolean =
         callListService.assignRoles(
             roleAssignmentsInfo,
+        )
+
+    @PutMapping(Uris.CallListUris.UPDATE_PARTICIPANT_CONFIRMATION_STATUS)
+    fun updateParticipantConfirmationStatus(
+        @RequestBody participantUpdate: ParticipantUpdateInput
+    )  : Boolean =
+        callListService.updateParticipantConfirmationStatus(
+            participantUpdate.days,
+            participantUpdate.participantId,
+            participantUpdate.callListId
         )
 }
