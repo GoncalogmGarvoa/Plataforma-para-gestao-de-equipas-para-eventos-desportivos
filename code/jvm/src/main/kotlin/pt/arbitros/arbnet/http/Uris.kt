@@ -9,6 +9,7 @@ object Uris {
         const val GET_BY_EMAIL = "$PREFIX/users/email"
         const val CREATE_USER = "$PREFIX/users/signup"
         const val UPDATE_USER = "$PREFIX/users/update"
+        const val USER_ROLES = "$PREFIX/users/roles"
     }
 
     object CallListUris {
