@@ -30,5 +30,10 @@ interface UsersRepository {
         iban: String,
     ): Boolean
 
+    fun updateRoles(
+        id: Int,
+        roles: List<String>,
+    ): Boolean
+
     fun deleteUser(id: Int): Boolean
 }

@@ -90,15 +90,17 @@ class UsersService(
 
     fun updateRoles(
         id: Int,
-        roles: Int,
-        matchDayId: Int,
+        roles: String,
     ): Boolean =
         transactionManager.run {
-            val participantRepository = it.participantRepository
-            return@run participantRepository.updateParticipantRole(
-                id,
-                roles,
-                matchDayId,
-            )
+            val usersRepository = it.usersRepository
+            if (usersDomain.validRole(roles)) throw Exception("Role $roles is not valid")
+            val user = usersRepository.getUserById(id) ?: throw Exception("User with id $id not found")
+            if (user.roles.contains(roles)) {
+                throw Exception("User with id $id already has role $roles")
+            }
+            val newRoles = user.roles + roles
+            val updated = usersRepository.updateRoles(id, newRoles)
+            updated
         }
 }

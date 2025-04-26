@@ -11,5 +11,11 @@ data class Users(
     val password: String,
     val birthDate: LocalDate,
     val iban: String,
-    val roles: String,
+    val roles: List<String>,
 )
+
+enum class UserRole(val roleName: String) {
+    ADMIN("admin"),
+    USER("user"),
+    REFEREE("referee");
+}

@@ -97,7 +97,6 @@ class UsersController(
             usersService.updateRoles(
                 user.userId,
                 user.roles,
-                user.matchDayId,
             ),
         )
 }
