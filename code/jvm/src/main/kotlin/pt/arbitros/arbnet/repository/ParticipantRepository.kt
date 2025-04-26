@@ -10,6 +10,12 @@ interface ParticipantRepository {
         roleId: Int,
     ): Boolean
 
+    fun updateParticipantRole(
+        participantId: Int,
+        roleId: Int,
+        matchDayId: Int,
+    ): Boolean
+
 //    fun findParticipantsByCallList(callListId: Int): List<Participant>
 //
 //    fun updateConfirmationStatus(

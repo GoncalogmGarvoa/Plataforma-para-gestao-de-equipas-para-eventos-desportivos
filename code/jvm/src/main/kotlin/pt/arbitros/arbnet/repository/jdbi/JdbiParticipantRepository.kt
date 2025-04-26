@@ -24,6 +24,17 @@ class JdbiParticipantRepository(
             .bind("competition_id", competitionId)
             .bind("referee_id", refereeId)
             .bind("role", roleId)
-            .bind("confirmation_status", "waiting") // Define o valor padrão como "waiting"
+            .bind("confirmation_status", "waiting") // TODO ir buscar o valor do enum
             .execute() > 0
+
+    override fun updateParticipantRole(participantId: Int, roleId: Int, matchDayId: Int): Boolean {
+        return handle
+            .createUpdate(
+                """update dbp.participant set role = :roleId where id = :participantId and match_day_id = :matchDayId""",
+            )
+            .bind("roleId", roleId)
+            .bind("participantId", participantId)
+            .bind("matchDayId", matchDayId)
+            .execute() > 0
+    }
 }

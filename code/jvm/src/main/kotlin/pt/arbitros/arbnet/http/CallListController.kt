@@ -31,9 +31,9 @@ class CallListController(
 
     @PostMapping(Uris.CallListUris.ASSIGN_ROLES)
     fun assingRoles(
-        @RequestBody callList: List<RoleAssignmentsInput>,
+        @RequestBody roleAssignmentsInfo: List<RoleAssignmentsInput>,
     ): Boolean =
         callListService.assignRoles(
-            // TODO implement this
+            roleAssignmentsInfo
         )
 }

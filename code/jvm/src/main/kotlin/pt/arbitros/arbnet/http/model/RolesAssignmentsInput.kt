@@ -1,8 +1,8 @@
 package pt.arbitros.arbnet.http.model
 
 data class DayAssignmentInput(
-    val day: String, // or LocalDate
-    val personId: Int,
+    val matchDayId: Int,
+    val participantId: Int,
 )
 
 data class RoleAssignmentsInput(

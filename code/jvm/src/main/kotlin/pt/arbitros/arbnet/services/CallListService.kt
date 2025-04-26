@@ -2,6 +2,7 @@ package pt.arbitros.arbnet.services
 
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.http.model.MatchDaySessionsInput
+import pt.arbitros.arbnet.http.model.RoleAssignmentsInput
 import pt.arbitros.arbnet.repository.TransactionManager
 import java.time.LocalDate
 
@@ -95,8 +96,26 @@ class CallListService(
         return 0
     }
 
-    fun assignRoles(): Boolean {
-        // TODO
+    fun assignRoles(roleAssignmentsInfo : List<RoleAssignmentsInput>): Boolean {
+
+        transactionManager.run {
+            val roleRepository = it.roleRepository
+            val participantRepository = it.participantRepository
+
+            roleAssignmentsInfo.forEach() { roleAssignment ->
+                val roleId = roleRepository.getRoleIdByName(roleAssignment.role)
+                roleAssignment.assignments.forEach { assignment ->
+                    val sucess =
+                        participantRepository.updateParticipantRole(
+                            assignment.participantId,
+                            roleId,
+                            assignment.matchDayId,
+                        )
+                    }
+                }
+            }
+        }
+
         return true
     }
 }
