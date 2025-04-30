@@ -5,11 +5,12 @@ import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.http.model.MatchDaySessionsInput
 import pt.arbitros.arbnet.http.model.RoleAssignmentsInput
 import pt.arbitros.arbnet.repository.TransactionManager
+import pt.arbitros.arbnet.transactionRepo
 import java.time.LocalDate
 
 @Component
 class CallListService(
-    @Qualifier("jdbiTransactionManager") private val transactionManager: TransactionManager,
+    @Qualifier(transactionRepo) private val transactionManager: TransactionManager,
     // private val usersDomain: UsersDomain,
     // private val clock: Clock
 ) {
@@ -119,7 +120,7 @@ class CallListService(
     fun updateParticipantConfirmationStatus(
         days: List<Int>,
         participantId: Int,
-        callListId : Int,
+        callListId: Int,
     ): Boolean {
         transactionManager.run {
             val participantRepository = it.participantRepository

@@ -5,11 +5,12 @@ import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.Users
 import pt.arbitros.arbnet.domain.UsersDomain
 import pt.arbitros.arbnet.repository.TransactionManager
+import pt.arbitros.arbnet.transactionRepo
 import java.time.LocalDate
 
 @Component
 class UsersService(
-    @Qualifier("jdbiTransactionManager") private val transactionManager: TransactionManager,
+    @Qualifier(transactionRepo) private val transactionManager: TransactionManager,
     private val usersDomain: UsersDomain,
     // private val clock: Clock
 ) {

@@ -22,3 +22,8 @@ class ArbNetApplication {
 fun main(args: Array<String>) {
     runApplication<ArbNetApplication>(*args)
 }
+
+@Suppress("ktlint:standard:property-naming")
+const val transactionRepo = "transactionManagerJdbi"
+// transactionManagerMem
+// transactionManagerJdbi
