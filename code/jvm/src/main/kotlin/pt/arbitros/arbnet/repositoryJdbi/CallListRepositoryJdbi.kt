@@ -11,7 +11,6 @@ class CallListRepositoryJdbi(
     override fun createCallList(
         deadline: LocalDate,
         councilId: Int,
-        callListType: String,
         competitionId: Int,
     ): Int =
         handle
