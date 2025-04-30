@@ -2,6 +2,7 @@ package pt.arbitros.arbnet.repositoryJdbi
 
 import org.jdbi.v3.core.Handle
 import pt.arbitros.arbnet.repository.ParticipantRepository
+import kotlin.compareTo
 
 class ParticipantRepositoryJdbi(
     private val handle: Handle,
@@ -39,4 +40,27 @@ class ParticipantRepositoryJdbi(
             .bind("participantId", participantId)
             .bind("matchDayId", matchDayId)
             .execute() > 0
+
+    override fun updateParticipantConfirmationStatus(
+        days: List<Int>,
+        participantId: Int,
+        callListId: Int
+    ): Boolean = handle
+        .createUpdate(
+            """
+        update dbp.participant
+        set confirmation_status = case 
+            when match_day_id in (<days>) then 'accepted'
+            else 'declined'
+        end
+        where call_list_id = :callListId
+          and referee_id = :participantId
+        """.trimIndent()
+        )
+        .bind("callListId", callListId)
+        .bind("participantId", participantId)
+        .bindList("days", days)
+        .execute() > 0
+
 }
+
