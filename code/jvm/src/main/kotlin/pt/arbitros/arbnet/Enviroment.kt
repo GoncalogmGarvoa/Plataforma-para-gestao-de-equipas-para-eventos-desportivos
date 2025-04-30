@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:filename")
+
 package pt.arbitros.arbnet
 
 object Environment {

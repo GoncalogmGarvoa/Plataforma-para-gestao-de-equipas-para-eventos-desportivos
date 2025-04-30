@@ -1,10 +1,10 @@
-package pt.arbitros.arbnet.repository.jdbi
+package pt.arbitros.arbnet.repositoryJdbi
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.arbitros.arbnet.repository.CompetitionRepository
 
-class JdbiCompetitionRepository(
+class CompetitionRepositoryJdbi(
     private val handle: Handle,
 ) : CompetitionRepository {
     override fun createCompetition(

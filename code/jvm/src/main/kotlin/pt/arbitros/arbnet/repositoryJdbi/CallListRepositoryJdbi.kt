@@ -1,16 +1,17 @@
-package pt.arbitros.arbnet.repository.jdbi
+package pt.arbitros.arbnet.repositoryJdbi
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.arbitros.arbnet.repository.CallListRepository
 import java.time.LocalDate
 
-class JdbiCallListRepository(
+class CallListRepositoryJdbi(
     private val handle: Handle,
 ) : CallListRepository {
     override fun createCallList(
         deadline: LocalDate,
         councilId: Int,
+        callListType: String,
         competitionId: Int,
     ): Int =
         handle

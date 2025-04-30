@@ -1,5 +1,6 @@
 package pt.arbitros.arbnet.services
 
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.http.model.MatchDaySessionsInput
 import pt.arbitros.arbnet.http.model.RoleAssignmentsInput
@@ -8,7 +9,7 @@ import java.time.LocalDate
 
 @Component
 class CallListService(
-    private val transactionManager: TransactionManager,
+    @Qualifier("jdbiTransactionManager") private val transactionManager: TransactionManager,
     // private val usersDomain: UsersDomain,
     // private val clock: Clock
 ) {

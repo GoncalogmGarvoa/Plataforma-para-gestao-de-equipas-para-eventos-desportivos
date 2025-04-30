@@ -1,9 +1,9 @@
-package pt.arbitros.arbnet.repository.jdbi
+package pt.arbitros.arbnet.repositoryJdbi
 
 import org.jdbi.v3.core.Handle
 import pt.arbitros.arbnet.repository.ParticipantRepository
 
-class JdbiParticipantRepository(
+class ParticipantRepositoryJdbi(
     private val handle: Handle,
 ) : ParticipantRepository {
     override fun addParticipant(

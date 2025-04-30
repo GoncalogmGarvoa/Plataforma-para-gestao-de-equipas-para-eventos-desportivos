@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.repository.jdbi
+package pt.arbitros.arbnet.repositoryJdbi
 
 // import com.daw.gomoku.repository.jdbi.mappers.PasswordValidationInfoMapper
 // import com.daw.gomoku.repository.jdbi.mappers.TokenValidationInfoMapper

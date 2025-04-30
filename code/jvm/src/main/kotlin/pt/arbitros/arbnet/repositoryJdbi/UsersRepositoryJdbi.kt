@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.repository.jdbi
+package pt.arbitros.arbnet.repositoryJdbi
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -6,7 +6,7 @@ import pt.arbitros.arbnet.domain.Users
 import pt.arbitros.arbnet.repository.UsersRepository
 import java.time.LocalDate
 
-class JdbiUsersRepository(
+class UsersRepositoryJdbi(
     private val handle: Handle,
 ) : UsersRepository {
     override fun createUser(

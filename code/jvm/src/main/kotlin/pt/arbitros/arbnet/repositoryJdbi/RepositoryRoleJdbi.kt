@@ -1,10 +1,10 @@
-package pt.arbitros.arbnet.repository.jdbi
+package pt.arbitros.arbnet.repositoryJdbi
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.arbitros.arbnet.repository.RoleRepository
 
-class JdbiRoleRepository( // TODO review if necessary
+class RepositoryRoleJdbi( // TODO review if necessary
     private val handle: Handle,
 ) : RoleRepository {
     override fun getRoleIdByName(roleName: String): Int =

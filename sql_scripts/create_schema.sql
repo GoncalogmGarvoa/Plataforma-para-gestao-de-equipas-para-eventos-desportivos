@@ -59,7 +59,7 @@ create table dbp.competition (
 create table dbp.call_list (
                                id serial,
                                deadline date not null,
-                               call_type varchar(100) default 'calllist' check (call_type in ('calllist', 'confirmation', 'finaljury')),
+                               call_type varchar(100) default 'callList' check (call_type in ('callList', 'confirmation', 'finalJury')),
                                council_id int,
                                competition_id int not null,
                                primary key (id, council_id),

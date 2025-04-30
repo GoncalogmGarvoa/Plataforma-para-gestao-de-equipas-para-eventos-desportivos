@@ -35,10 +35,12 @@ values
     (3, 'Veteran');
 
 -- CATEGORY_DIR
-insert into dbp.category_dir (referee_id, id, start_date, end_date, category_id)
+
+insert into dbp.category_dir (referee_id,start_date, end_date, category_id)
 values
-     (1, 1, '2023-01-01', null, 1),
-     (3, 2, '2023-03-01', '2024-01-01', 2);
+    (1,'2023/01/01', null, 1),
+    (3,'2023-03-01', '2024-01-01', 2);
+
 
 -- COMPETITION
 insert into dbp.competition (id, competition_number, name, address, email, phone_number, location, association)

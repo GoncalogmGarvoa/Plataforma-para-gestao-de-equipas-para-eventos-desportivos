@@ -1,10 +1,10 @@
-package pt.arbitros.arbnet.repository.jdbi
+package pt.arbitros.arbnet.repositoryJdbi
 
 import org.jdbi.v3.core.Handle
 import pt.arbitros.arbnet.repository.SessionsRepository
 import java.time.LocalTime
 
-class JdbiSessionsRepository(
+class SessionsRepositoryJdbi(
     private val handle: Handle,
 ) : SessionsRepository {
     override fun createSession(
