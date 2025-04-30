@@ -59,4 +59,25 @@ class ParticipantRepositoryMem : ParticipantRepository {
             false
         }
     }
+
+    override fun updateParticipantConfirmationStatus(
+        days: List<Int>,
+        participantId: Int,
+        callListId: Int
+    ): Boolean {
+        var updated = false
+
+        participants.forEachIndexed { index, p ->
+            if (p.callListId == callListId && p.refereeId == participantId) {
+                val newStatus = if (p.matchDayId in days) "accepted" else "declined"
+                if (p.confirmationStatus != newStatus) {
+                    participants[index] = p.copy(confirmationStatus = newStatus)
+                    updated = true
+                }
+            }
+        }
+
+        return updated
+    }
+
 }
