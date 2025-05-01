@@ -2,6 +2,7 @@ package pt.arbitros.arbnet.repositoryJdbi
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
+import pt.arbitros.arbnet.domain.CallList
 import pt.arbitros.arbnet.repository.CallListRepository
 import java.time.LocalDate
 
@@ -31,6 +32,15 @@ class CallListRepositoryJdbi(
             .execute()
         return true
     }
+
+    override fun getCallListById(id: Int): CallList? =
+        handle.createQuery(
+            """select * from dbp.call_list where id = :id""",
+            )
+            .bind("id", id)
+            .mapTo<CallList>()
+            .singleOrNull()
+}
 
 //    override fun findCallListById(id: Int): CallList? =
 //        handle
@@ -75,4 +85,4 @@ class CallListRepositoryJdbi(
 //            .bind("call_list_id", callListId)
 //            .mapTo<Referee>()
 //            .list()
-}
+

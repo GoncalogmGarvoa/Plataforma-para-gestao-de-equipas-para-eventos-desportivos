@@ -1,5 +1,7 @@
 package pt.arbitros.arbnet.repository
 
+import pt.arbitros.arbnet.domain.Participant
+
 interface ParticipantRepository {
     fun addParticipant(
         callListId: Int,
@@ -22,8 +24,13 @@ interface ParticipantRepository {
         callListId: Int,
     ): Boolean
 
+    fun getParticipantById(participantId: Int): Participant?
+
     fun isCallListDone(callListId: Int): Boolean
 
+    fun batchAddParticipants(
+        participants: List<Participant>,
+    ): Boolean
 //    fun findParticipantsByCallList(callListId: Int): List<Participant>
 //
 //    fun updateConfirmationStatus(

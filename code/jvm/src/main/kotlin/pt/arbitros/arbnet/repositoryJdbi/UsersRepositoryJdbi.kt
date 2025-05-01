@@ -11,12 +11,12 @@ class UsersRepositoryJdbi(
 ) : UsersRepository {
     override fun createUser(
         name: String,
-        phoneNumber: Int,
+        phoneNumber: String,
         address: String,
         email: String,
         password: String,
         birthDate: LocalDate,
-        iban: String,
+        iban: String
     ): Int =
         handle
             .createUpdate(
@@ -54,7 +54,7 @@ class UsersRepositoryJdbi(
             .findFirst()
             .isPresent
 
-    override fun existsByPhoneNumber(phoneNumber: Int): Boolean =
+    override fun existsByPhoneNumber(phoneNumber: String): Boolean =
         handle
             .createQuery("SELECT * FROM dbp.users WHERE phone_number = :phone_number")
             .bind("phone_number", phoneNumber)
@@ -73,12 +73,12 @@ class UsersRepositoryJdbi(
     override fun updateUser(
         id: Int,
         name: String,
-        phoneNumber: Int,
+        phoneNumber: String,
         address: String,
         email: String,
         password: String,
         birthDate: LocalDate,
-        iban: String,
+        iban: String
     ): Boolean =
         handle
             .createUpdate(

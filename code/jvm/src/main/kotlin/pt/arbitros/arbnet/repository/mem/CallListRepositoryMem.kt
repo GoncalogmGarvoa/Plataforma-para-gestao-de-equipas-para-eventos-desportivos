@@ -28,4 +28,8 @@ class CallListRepositoryMem : CallListRepository {
     override fun updateCallListStatus(callListId: Int): Boolean {
         TODO("Not yet implemented")
     }
+
+    override fun getCallListById(id: Int): CallList? {
+        TODO("Not yet implemented")
+    }
 }

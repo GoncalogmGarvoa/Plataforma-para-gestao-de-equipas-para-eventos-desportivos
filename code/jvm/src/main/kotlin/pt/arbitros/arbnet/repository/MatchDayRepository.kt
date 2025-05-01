@@ -1,5 +1,6 @@
 package pt.arbitros.arbnet.repository
 
+import pt.arbitros.arbnet.domain.MatchDay
 import java.time.LocalDate
 
 interface MatchDayRepository {
@@ -7,6 +8,10 @@ interface MatchDayRepository {
         competitionId: Int,
         matchDate: LocalDate,
     ): Int
+
+    fun getMatchDayById(
+        id: Int
+    ): MatchDay?
 
 //    fun findMatchDayById(
 //        id: Int,

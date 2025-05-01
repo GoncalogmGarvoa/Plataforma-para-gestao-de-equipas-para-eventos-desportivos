@@ -2,6 +2,8 @@ package pt.arbitros.arbnet.services
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
+import pt.arbitros.arbnet.domain.ConfirmationStatus
+import pt.arbitros.arbnet.domain.Participant
 import pt.arbitros.arbnet.http.model.MatchDaySessionsInput
 import pt.arbitros.arbnet.http.model.RoleAssignmentsInput
 import pt.arbitros.arbnet.repository.TransactionManager
@@ -23,7 +25,7 @@ class CallListService(
         location: String,
         deadline: LocalDate,
         councilId: Int,
-        participant: List<Int>,
+        participants: List<Int>,
         matchDaySessions: List<MatchDaySessionsInput>,
     ): Int {
         val callList =
@@ -35,22 +37,19 @@ class CallListService(
                 val callListRepository = it.callListRepository
                 val participantRepository = it.participantRepository
                 val roleRepository = it.roleRepository
-                val arbitrationCouncilRepository = it.usersRepository
+                //val usersRepository = it.usersRepository
+                val refereeRepository = it.refereeRepository
+                val arbitrationCouncilRepository = it.arbitrationCouncilRepository
 
                 // Check if the council exists
-                val council = arbitrationCouncilRepository.getUserById(councilId)
+                arbitrationCouncilRepository.getCouncilMemberById(councilId)
                     ?: throw Exception("Council with id $councilId not found")
 
                 // Check if the participants exist
-                participant.forEach { userId ->
-                    arbitrationCouncilRepository.getUserById(userId)
-                        ?: throw Exception("User with id $userId not found")
+                val foundReferees = refereeRepository.getAllReferees(participants)
+                if (foundReferees.size != participants.size) {
+                    throw Exception("One or more of the participants were not found")
                 }
-
-
-
-
-
 
                 // Create the competition
                 val competitionId =
@@ -93,21 +92,28 @@ class CallListService(
                         councilId,
                         competitionId,
                     )
-                val roleId = roleRepository.getRoleIdByName("default")
 
-                matchDaySessions.forEach { matchDay ->
+                val participantsToInsert = mutableListOf<Participant>()
+
+                for (matchDay in matchDaySessions) {
                     val matchDayId = matchDayMap[matchDay]!!
-                    participant.forEach { user ->
-                        participantRepository.addParticipant(
-                            callListId,
-                            matchDayId,
-                            councilId,
-                            competitionId,
-                            user,
-                            roleId,
+                    for (userId in participants) {
+                        val participant = Participant(
+                            callListId = callListId,
+                            matchDayId = matchDayId,
+                            councilId = councilId,
+                            competitionIdMatchDay = competitionId,
+                            refereeId = userId,
+                            0,
+                            ConfirmationStatus.WAITING,
                         )
+                        participantsToInsert.add(participant)
                     }
                 }
+
+                participantRepository.batchAddParticipants(participantsToInsert.toList())
+
+
                 callListId
             }
         return callList
@@ -117,10 +123,21 @@ class CallListService(
         transactionManager.run {
             val roleRepository = it.roleRepository
             val participantRepository = it.participantRepository
+            val matchDayRepository = it.matchDayRepository
 
             roleAssignmentsInfo.forEach { roleAssignment ->
+
                 val roleId = roleRepository.getRoleIdByName(roleAssignment.role)
+                    ?: throw Exception("Role with name ${roleAssignment.role} not found")
                 roleAssignment.assignments.forEach { assignment ->
+                    //Check if the participant exists
+                    participantRepository.getParticipantById(assignment.participantId)
+                        ?: throw Exception("Participant with id ${assignment.participantId} not found")
+
+                    //Check if the match day exists
+                    matchDayRepository.getMatchDayById(assignment.matchDayId)
+                        ?: throw Exception("Match day with id ${assignment.matchDayId} not found")
+
                     val sucess =
                         participantRepository.updateParticipantRole(
                             assignment.participantId,
@@ -141,6 +158,15 @@ class CallListService(
         transactionManager.run {
             val participantRepository = it.participantRepository
             val callListRepository = it.callListRepository
+
+            // Check if the participant exists
+            participantRepository.getParticipantById(participantId)
+                ?: throw Exception("Participant with id $participantId not found")
+
+            // Check if the call list exists
+            callListRepository.getCallListById(callListId)
+                ?: throw Exception("Call list with id $callListId not found")
+
             participantRepository.updateParticipantConfirmationStatus(days, participantId, callListId)
             if (participantRepository.isCallListDone(callListId)) {
                 callListRepository.updateCallListStatus(callListId)

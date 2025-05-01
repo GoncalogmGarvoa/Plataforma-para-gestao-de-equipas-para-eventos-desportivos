@@ -1,5 +1,6 @@
 package pt.arbitros.arbnet.repository
 
+import pt.arbitros.arbnet.domain.CallList
 import java.time.LocalDate
 
 interface CallListRepository {
@@ -10,6 +11,8 @@ interface CallListRepository {
     ): Int
 
     fun updateCallListStatus(callListId: Int) : Boolean
+
+    fun getCallListById(id: Int): CallList?
 
 
 //    fun findCallListById(id: Int): CallList?

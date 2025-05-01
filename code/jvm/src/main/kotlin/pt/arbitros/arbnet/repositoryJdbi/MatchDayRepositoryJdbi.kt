@@ -2,6 +2,7 @@ package pt.arbitros.arbnet.repositoryJdbi
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
+import pt.arbitros.arbnet.domain.MatchDay
 import pt.arbitros.arbnet.repository.MatchDayRepository
 import java.time.LocalDate
 
@@ -20,6 +21,16 @@ class MatchDayRepositoryJdbi(
             .executeAndReturnGeneratedKeys()
             .mapTo<Int>()
             .single()
+
+    override fun getMatchDayById(id: Int): MatchDay? =
+        handle
+            .createQuery("""select * from dbp.match_day where id = :id""")
+            .bind("id", id)
+            .mapTo<MatchDay>()
+            .singleOrNull()
+}
+
+
 
     //    override fun findMatchDayById(
 //        id: Int,
@@ -57,4 +68,4 @@ class MatchDayRepositoryJdbi(
 //            .bind("competition_id", matchDay.competitionId)
 //            .bind("date", matchDay.matchDate)
 //            .execute() > 0
-}
+

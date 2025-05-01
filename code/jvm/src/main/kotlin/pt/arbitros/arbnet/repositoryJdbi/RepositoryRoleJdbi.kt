@@ -7,13 +7,13 @@ import pt.arbitros.arbnet.repository.RoleRepository
 class RepositoryRoleJdbi( // TODO review if necessary
     private val handle: Handle,
 ) : RoleRepository {
-    override fun getRoleIdByName(roleName: String): Int =
+    override fun getRoleIdByName(roleName: String): Int? =
         handle
             .createQuery(
                 "select id from dbp.role where name = :role_name",
             ).bind("role_name", roleName)
             .mapTo<Int>()
-            .single()
+            .singleOrNull()
 
     override fun getRoleNameById(roleId: Int): String =
         handle

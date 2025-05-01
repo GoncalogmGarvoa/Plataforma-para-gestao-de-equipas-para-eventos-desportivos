@@ -16,7 +16,7 @@ data class Users(
 
 enum class UserRole(val roleName: String) {
     ADMIN("admin"),
-    USER("user"),
+    ARBITRATION_COUNCIL("arbitration_council"),
     REFEREE("referee");
 }
 

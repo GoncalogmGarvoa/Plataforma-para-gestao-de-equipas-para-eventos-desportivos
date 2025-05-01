@@ -2,8 +2,11 @@ package pt.arbitros.arbnet.services
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
+import pt.arbitros.arbnet.domain.UserRole
 import pt.arbitros.arbnet.domain.Users
 import pt.arbitros.arbnet.domain.UsersDomain
+import pt.arbitros.arbnet.http.model.UserInputModel
+import pt.arbitros.arbnet.http.model.UserUpdateInputModel
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.transactionRepo
 import java.time.LocalDate
@@ -29,54 +32,64 @@ class UsersService(
         }
 
     fun createUser(
-        name: String,
-        phoneNumber: Int,
-        address: String,
-        email: String,
-        password: String,
-        birthDate: String,
-        iban: String,
+        user: UserInputModel,
     ): Int =
         transactionManager.run {
             val usersRepository = it.usersRepository
-            existsByParams(email, iban, phoneNumber)
+
+            validateUser(
+                user.name,
+                user.phoneNumber,
+                user.address,
+                user.email,
+                user.password,
+                user.birthDate,
+                user.iban,
+            )
+
+            existsByParams(user.email, user.iban, user.phoneNumber)
+
             val id =
                 usersRepository.createUser(
-                    name,
-                    phoneNumber,
-                    address,
-                    email,
-                    password,
-                    LocalDate.parse(birthDate),
-                    iban,
+                    user.name,
+                    user.phoneNumber,
+                    user.address,
+                    user.email,
+                    user.password,
+                    LocalDate.parse(user.birthDate),
+                    user.iban,
                 )
             id
         }
 
     fun updateUser(
-        id: Int,
-        name: String,
-        phoneNumber: Int,
-        address: String,
-        email: String,
-        password: String,
-        birthDate: String,
-        iban: String,
+        user : UserUpdateInputModel,
     ): Boolean =
         transactionManager.run {
             val usersRepository = it.usersRepository
-            usersRepository.getUserById(id) ?: throw Exception("User with id $id not found")
-            existsByParams(email, iban, phoneNumber)
+
+            validateUser(
+                user.name,
+                user.phoneNumber,
+                user.address,
+                user.email,
+                user.password,
+                user.birthDate,
+                user.iban,
+            )
+
+            usersRepository.getUserById(user.id) ?: throw Exception("User with id ${user.id} not found")
+            existsByParams(user.email, user.iban, user.phoneNumber)
             val updated =
                 usersRepository.updateUser(
-                    id,
-                    name,
-                    phoneNumber,
-                    address,
-                    email,
-                    password,
-                    LocalDate.parse(birthDate),
-                    iban,
+                    user.id,
+                    user.name,
+                    user.phoneNumber,
+                    user.address,
+                    user.email,
+                    user.password,
+                    LocalDate.parse(user.birthDate),
+                    user.iban,
                 )
             updated
         }
@@ -89,7 +102,7 @@ class UsersService(
             deleted
         }
 
-    fun existsByParams(email: String, iban: String, phoneNumber: Int) =
+    fun existsByParams(email: String, iban: String, phoneNumber: String) =
         transactionManager.run {
             val usersRepository = it.usersRepository
             if (usersRepository.existsByEmail(email)) {
@@ -105,29 +118,71 @@ class UsersService(
 
     fun updateRoles(
         id: Int,
-        roles: String,
+        role: String,
         addOrRemove: Boolean,
-    ): Boolean =
-        transactionManager.run {
-            val usersRepository = it.usersRepository
-            if (!usersDomain.validRole(roles)) throw Exception("Role $roles is not valid")
-            val user = usersRepository.getUserById(id) ?: throw Exception("User with id $id not found")
+    ): Boolean = transactionManager.run {
+        val usersRepository = it.usersRepository
+        val adminRepository = it.adminRepository
+        val arbitrationCouncilRepository = it.arbitrationCouncilRepository
+        val refereeRepository = it.refereeRepository
 
-            if (addOrRemove && user.roles.contains(roles)) {
-                throw Exception("User with id $id already has role $roles")
-            }
-            if (!addOrRemove && !user.roles.contains(roles)) {
-                throw Exception("User with id $id does not have role $roles")
-            }
+        if (!usersDomain.validRole(role)) throw Exception("Role $role is not valid")
+        val user = usersRepository.getUserById(id) ?: throw Exception("User with id $id not found")
 
-            val newRoles =
-                if (addOrRemove) {
-                    user.roles + roles
-                } else {
-                    user.roles - roles
-                }
-
-            val updated = usersRepository.updateRoles(id, newRoles)
-            updated
+        if (addOrRemove && user.roles.contains(role)) {
+            throw Exception("User with id $id already has role $role")
         }
+        if (!addOrRemove && !user.roles.contains(role)) {
+            throw Exception("User with id $id does not have role $role")
+        }
+
+        val roleActions = mapOf(
+            UserRole.ADMIN.roleName to Pair(
+                { adminRepository.createAdmin(id) },
+                { adminRepository.deleteAdmin(id) }
+            ),
+            UserRole.ARBITRATION_COUNCIL.roleName to Pair(
+                { arbitrationCouncilRepository.createCouncilMember(id) },
+                { arbitrationCouncilRepository.deleteCouncilMember(id) }
+            ),
+            UserRole.REFEREE.roleName to Pair(
+                { refereeRepository.createReferee(id) },
+                { refereeRepository.deleteReferee(id) }
+            )
+        )
+
+        val (addAction, removeAction) = roleActions[role]
+            ?: throw Exception("Role $role is not supported for update")
+
+        val newRoles = if (addOrRemove) {
+            addAction()
+            user.roles + role
+        } else {
+            removeAction()
+            user.roles - role
+        }
+
+        usersRepository.updateRoles(id, newRoles)
+    }
+
+    fun validateUser(
+        name: String,
+        phoneNumber: String,
+        address: String,
+        email: String,
+        password: String,
+        birthDate: String,
+        iban: String,
+    ) {
+        require(usersDomain.validName(name)) { "Invalid name" }
+        require(usersDomain.validPhoneNumber(phoneNumber)) { "Invalid phone number" }
+        require(usersDomain.validAddress(address)) { "Invalid address" }
+        require(usersDomain.validEmail(email)) { "Invalid email" }
+        require(usersDomain.validPassword(password)) { "Invalid password" }
+        require(usersDomain.validBirthDate(birthDate)) { "Invalid birth date" }
+        require(usersDomain.validatePortugueseIban(iban)) { "Invalid IBAN" }
+    }
+
 }
+
+
