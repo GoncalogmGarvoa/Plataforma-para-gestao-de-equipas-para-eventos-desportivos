@@ -23,6 +23,15 @@ class CallListRepositoryJdbi(
             .mapTo<Int>()
             .single()
 
+    override fun updateCallListStatus(callListId: Int): Boolean {
+        handle
+            .createUpdate(
+                """update dbp.call_list set call_type = 'confirmation' where id = :call_list_id""",
+            ).bind("call_list_id", callListId)
+            .execute()
+        return true
+    }
+
 //    override fun findCallListById(id: Int): CallList? =
 //        handle
 //            .createQuery("""select * from dbp.call_list where id = :id""")

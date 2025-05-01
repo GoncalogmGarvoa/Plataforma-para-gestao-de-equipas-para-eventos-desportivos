@@ -1,6 +1,7 @@
 package pt.arbitros.arbnet.repositoryJdbi
 
 import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.kotlin.mapTo
 import pt.arbitros.arbnet.repository.ParticipantRepository
 import kotlin.compareTo
 
@@ -61,6 +62,21 @@ class ParticipantRepositoryJdbi(
         .bind("participantId", participantId)
         .bindList("days", days)
         .execute() > 0
+
+    override fun isCallListDone(callListId: Int): Boolean {
+        val count = handle
+            .createQuery(
+                """
+            select count(*) from dbp.participant
+            where call_list_id = :callListId
+              and confirmation_status = 'waiting'
+        """.trimIndent(),
+            )
+            .bind("callListId", callListId)
+            .mapTo<Int>()
+            .single()
+        return count == 0
+    }
 
 }
 

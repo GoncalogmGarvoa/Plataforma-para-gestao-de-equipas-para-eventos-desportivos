@@ -124,7 +124,11 @@ class CallListService(
     ): Boolean {
         transactionManager.run {
             val participantRepository = it.participantRepository
+            val callListRepository = it.callListRepository
             participantRepository.updateParticipantConfirmationStatus(days, participantId, callListId)
+            if (participantRepository.isCallListDone(callListId)) {
+                callListRepository.updateCallListStatus(callListId)
+            }
         }
         return true
     }

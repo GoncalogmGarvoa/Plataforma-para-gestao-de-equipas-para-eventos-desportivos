@@ -9,6 +9,8 @@ interface CallListRepository {
         competitionId: Int,
     ): Int
 
+    fun updateCallListStatus(callListId: Int) : Boolean
+
 
 //    fun findCallListById(id: Int): CallList?
 //

@@ -9,3 +9,9 @@ data class CallList(
     val councilId: Int,
     val competitionId: Int,
 )
+
+enum class CallListType(val callType: String) {
+    CALLLIST("callList"),
+    CONFIRMATION("confirmation"),
+    FINALJURY("finalJury"),
+}

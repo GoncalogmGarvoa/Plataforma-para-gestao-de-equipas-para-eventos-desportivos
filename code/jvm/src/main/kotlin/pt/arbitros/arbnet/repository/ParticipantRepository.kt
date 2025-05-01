@@ -22,6 +22,8 @@ interface ParticipantRepository {
         callListId: Int,
     ): Boolean
 
+    fun isCallListDone(callListId: Int): Boolean
+
 //    fun findParticipantsByCallList(callListId: Int): List<Participant>
 //
 //    fun updateConfirmationStatus(
