@@ -19,3 +19,8 @@ enum class UserRole(val roleName: String) {
     USER("user"),
     REFEREE("referee");
 }
+
+enum class UserStatus(val status: String) {
+    ACTIVE("active"),
+    INACTIVE("inactive"),
+}
