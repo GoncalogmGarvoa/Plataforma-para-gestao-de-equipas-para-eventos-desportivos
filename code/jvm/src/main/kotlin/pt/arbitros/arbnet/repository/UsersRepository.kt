@@ -20,7 +20,12 @@ interface UsersRepository {
 
     fun existsByEmail(email: String): Boolean
 
+    fun existsByPhoneNumber(phoneNumber: Int): Boolean
+
+    fun existsByIban(iban: String): Boolean
+
     fun updateUser(
+        id: Int,
         name: String,
         phoneNumber: Int,
         address: String,

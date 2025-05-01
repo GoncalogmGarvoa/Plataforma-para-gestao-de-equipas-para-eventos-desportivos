@@ -54,7 +54,24 @@ class UsersRepositoryJdbi(
             .findFirst()
             .isPresent
 
+    override fun existsByPhoneNumber(phoneNumber: Int): Boolean =
+        handle
+            .createQuery("SELECT * FROM dbp.users WHERE phone_number = :phone_number")
+            .bind("phone_number", phoneNumber)
+            .mapTo<Int>()
+            .findFirst()
+            .isPresent
+
+    override fun existsByIban(iban: String): Boolean =
+        handle
+            .createQuery("SELECT * FROM dbp.users WHERE iban = :iban")
+            .bind("iban", iban)
+            .mapTo<Int>()
+            .findFirst()
+            .isPresent
+
     override fun updateUser(
+        id: Int,
         name: String,
         phoneNumber: Int,
         address: String,
@@ -65,7 +82,7 @@ class UsersRepositoryJdbi(
     ): Boolean =
         handle
             .createUpdate(
-                """update dbp.users set name = :name, phone_Number= :phoneNumber,address = :address, email = :email, password = :password, birth_date = :birth_date, iban = :iban where email = :email""",
+                """update dbp.users set name = :name, phone_Number= :phoneNumber,address = :address, email = :email, password = :password, birth_date = :birth_date, iban = :iban where id = :id""",
             ).bind("name", name)
             .bind("phone_Number", phoneNumber)
             .bind("address", address)

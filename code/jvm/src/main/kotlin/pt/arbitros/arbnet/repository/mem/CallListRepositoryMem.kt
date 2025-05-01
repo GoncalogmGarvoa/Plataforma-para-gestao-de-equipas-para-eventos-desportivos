@@ -24,4 +24,8 @@ class CallListRepositoryMem : CallListRepository {
         callLists.add(callList)
         return callList.id
     }
+
+    override fun updateCallListStatus(callListId: Int): Boolean {
+        TODO("Not yet implemented")
+    }
 }

@@ -39,6 +39,7 @@ class UsersService(
     ): Int =
         transactionManager.run {
             val usersRepository = it.usersRepository
+            existsByParams(email, iban, phoneNumber)
             val id =
                 usersRepository.createUser(
                     name,
@@ -53,6 +54,7 @@ class UsersService(
         }
 
     fun updateUser(
+        id: Int,
         name: String,
         phoneNumber: Int,
         address: String,
@@ -63,8 +65,11 @@ class UsersService(
     ): Boolean =
         transactionManager.run {
             val usersRepository = it.usersRepository
+            usersRepository.getUserById(id) ?: throw Exception("User with id $id not found")
+            existsByParams(email, iban, phoneNumber)
             val updated =
                 usersRepository.updateUser(
+                    id,
                     name,
                     phoneNumber,
                     address,
@@ -76,18 +81,26 @@ class UsersService(
             updated
         }
 
-    fun deleteUser(id: Int): Boolean =
+    fun deleteUser(id: Int) =
         transactionManager.run {
             val usersRepository = it.usersRepository
+            usersRepository.getUserById(id) ?: throw Exception("User with id $id not found")
             val deleted = usersRepository.deleteUser(id)
             deleted
         }
 
-    fun existsByEmail(email: String): Boolean =
+    fun existsByParams(email: String, iban: String, phoneNumber: Int) =
         transactionManager.run {
             val usersRepository = it.usersRepository
-            val exists = usersRepository.existsByEmail(email)
-            exists
+            if (usersRepository.existsByEmail(email)) {
+                throw Exception("User with email $email already exists")
+            }
+            if (usersRepository.existsByPhoneNumber(phoneNumber)) {
+                throw Exception("User with phone number $phoneNumber already exists")
+            }
+            if (usersRepository.existsByIban(iban)) {
+                throw Exception("User with iban $iban already exists")
+            }
         }
 
     fun updateRoles(

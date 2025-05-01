@@ -35,6 +35,22 @@ class CallListService(
                 val callListRepository = it.callListRepository
                 val participantRepository = it.participantRepository
                 val roleRepository = it.roleRepository
+                val arbitrationCouncilRepository = it.usersRepository
+
+                // Check if the council exists
+                val council = arbitrationCouncilRepository.getUserById(councilId)
+                    ?: throw Exception("Council with id $councilId not found")
+
+                // Check if the participants exist
+                participant.forEach { userId ->
+                    arbitrationCouncilRepository.getUserById(userId)
+                        ?: throw Exception("User with id $userId not found")
+                }
+
+
+
+
+
 
                 // Create the competition
                 val competitionId =
