@@ -35,7 +35,7 @@ class ParticipantRepositoryJdbi(
     ): Boolean =
         handle
             .createUpdate(
-                """update dbp.participant set role = :roleId where id = :participantId and match_day_id = :matchDayId""",
+                """update dbp.participant set role_id = :roleId where referee_id = :participantId and match_day_id = :matchDayId""",
             ).bind("roleId", roleId)
             .bind("participantId", participantId)
             .bind("matchDayId", matchDayId)

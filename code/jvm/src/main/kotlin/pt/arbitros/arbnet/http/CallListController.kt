@@ -30,7 +30,7 @@ class CallListController(
             callList.matchDaySessions,
         )
 
-    @PostMapping(Uris.CallListUris.ASSIGN_ROLES)
+    @PutMapping(Uris.CallListUris.ASSIGN_ROLES)
     fun assingRoles(
         @RequestBody roleAssignmentsInfo: List<RoleAssignmentsInput>,
     ): Boolean =
