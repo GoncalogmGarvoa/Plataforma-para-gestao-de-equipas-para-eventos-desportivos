@@ -6,6 +6,7 @@ import pt.arbitros.arbnet.domain.MatchDay
 import pt.arbitros.arbnet.repository.MatchDayRepository
 import java.time.LocalDate
 
+
 class MatchDayRepositoryJdbi(
     private val handle: Handle,
 ) : MatchDayRepository {
