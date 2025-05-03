@@ -41,7 +41,17 @@ class UsersRepositoryMem : UsersRepository {
 
     override fun existsByEmail(email: String): Boolean = users.any { it.email == email }
 
+    override fun existsByPhoneNumber(phoneNumber: Int): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun existsByIban(iban: String): Boolean {
+        TODO("Not yet implemented")
+    }
+
+
     override fun updateUser(
+        index: Int,
         name: String,
         phoneNumber: Int,
         address: String,
@@ -50,8 +60,6 @@ class UsersRepositoryMem : UsersRepository {
         birthDate: LocalDate,
         iban: String,
     ): Boolean {
-        val index = users.indexOfFirst { it.email == email }
-        if (index == -1) return false
 
         val existing = users[index]
         users[index] =

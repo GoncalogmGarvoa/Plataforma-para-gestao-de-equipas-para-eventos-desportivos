@@ -80,4 +80,16 @@ class ParticipantRepositoryMem : ParticipantRepository {
         return updated
     }
 
+    override fun getParticipantById(participantId: Int): pt.arbitros.arbnet.domain.Participant? {
+        TODO("Not yet implemented")
+    }
+
+    override fun isCallListDone(callListId: Int): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun batchAddParticipants(participants: List<pt.arbitros.arbnet.domain.Participant>): Boolean {
+        TODO("Not yet implemented")
+    }
+
 }

@@ -1,5 +1,6 @@
 package pt.arbitros.arbnet.repository.mem
 
+import pt.arbitros.arbnet.domain.MatchDay
 import pt.arbitros.arbnet.repository.MatchDayRepository
 import java.time.LocalDate
 
@@ -25,5 +26,9 @@ class MatchDayRepositoryMem : MatchDayRepository {
             )
         matchDays.add(matchDay)
         return matchDay.id
+    }
+
+    override fun getMatchDayById(id: Int): MatchDay? {
+        TODO("Not yet implemented")
     }
 }
