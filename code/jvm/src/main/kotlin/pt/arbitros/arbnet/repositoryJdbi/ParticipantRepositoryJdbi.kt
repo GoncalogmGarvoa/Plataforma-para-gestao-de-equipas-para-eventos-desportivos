@@ -101,7 +101,7 @@ class ParticipantRepositoryJdbi(
         participants.forEach {
             batch.bind("call_list_id", it.callListId)
                 .bind("match_day_id", it.matchDayId)
-                .bind("council_id", it.councilId)
+                //.bind("council_id", it.councilId)
                 .bind("competition_id_match_day", it.competitionIdMatchDay)
                 .bind("referee_id", it.refereeId)
                 .bind("role_id", it.roleId)

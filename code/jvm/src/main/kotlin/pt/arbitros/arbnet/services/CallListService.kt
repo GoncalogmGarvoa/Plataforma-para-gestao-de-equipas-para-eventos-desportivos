@@ -101,7 +101,7 @@ class CallListService(
                         val participant = Participant(
                             callListId = callListId,
                             matchDayId = matchDayId,
-                            councilId = councilId,
+                            //councilId = councilId,
                             competitionIdMatchDay = competitionId,
                             refereeId = userId,
                             0,

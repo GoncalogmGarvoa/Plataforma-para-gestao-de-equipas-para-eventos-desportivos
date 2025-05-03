@@ -1,8 +1,9 @@
 package pt.arbitros.arbnet.http.model
 
 class UserUpdateInputModel(
+    val id: Int,
     val name: String,
-    val phoneNumber: Int,
+    val phoneNumber: String,
     val address: String,
     val email: String,
     val birthDate: String,

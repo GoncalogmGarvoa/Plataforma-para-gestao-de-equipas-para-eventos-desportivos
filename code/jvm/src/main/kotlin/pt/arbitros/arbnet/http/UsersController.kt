@@ -60,13 +60,15 @@ class UsersController(
     ): ResponseEntity<Int> =
         ResponseEntity.ok(
             usersService.createUser(
-                user.name,
-                user.phoneNumber,
-                user.address,
-                user.email,
-                user.password,
-                user.birthDate,
-                user.iban,
+                UserInputModel(
+                    user.name,
+                    user.phoneNumber,
+                    user.address,
+                    user.email,
+                    user.password,
+                    user.birthDate,
+                    user.iban
+                ),
             ),
         )
 
@@ -77,13 +79,16 @@ class UsersController(
     ): ResponseEntity<Boolean> =
         ResponseEntity.ok(
             usersService.updateUser(
-                user.name,
-                user.phoneNumber,
-                user.address,
-                user.email,
-                user.password,
-                user.birthDate,
-                user.iban,
+                UserUpdateInputModel(
+                    user.id,
+                    user.name,
+                    user.phoneNumber,
+                    user.address,
+                    user.email,
+                    user.password,
+                    user.birthDate,
+                    user.iban
+                ),
             ),
         )
 

@@ -2,7 +2,7 @@ package pt.arbitros.arbnet.http.model
 
 class UserOutputModel(
     val id: Int,
-    val phoneNumber: Int,
+    val phoneNumber: String,
     val address: String,
     val name: String,
     val email: String,

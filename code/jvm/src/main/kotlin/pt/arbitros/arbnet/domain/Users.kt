@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 data class Users(
     val id: Int,
-    val phoneNumber: Int,
+    val phoneNumber: String,
     val address: String,
     val name: String,
     val email: String,

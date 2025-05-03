@@ -12,7 +12,7 @@ class UsersRepositoryMem : UsersRepository {
 
     override fun createUser(
         name: String,
-        phoneNumber: Int,
+        phoneNumber: String,
         address: String,
         email: String,
         password: String,
@@ -35,13 +35,16 @@ class UsersRepositoryMem : UsersRepository {
         return user.id
     }
 
+
+
     override fun getUserById(id: Int): Users? = users.find { it.id == id }
 
     override fun getUserByEmail(email: String): Users? = users.find { it.email == email }
 
     override fun existsByEmail(email: String): Boolean = users.any { it.email == email }
 
-    override fun existsByPhoneNumber(phoneNumber: Int): Boolean {
+
+    override fun existsByPhoneNumber(phoneNumber: String): Boolean {
         TODO("Not yet implemented")
     }
 
@@ -53,7 +56,7 @@ class UsersRepositoryMem : UsersRepository {
     override fun updateUser(
         index: Int,
         name: String,
-        phoneNumber: Int,
+        phoneNumber: String,
         address: String,
         email: String,
         password: String,

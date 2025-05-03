@@ -62,7 +62,7 @@ create table dbp.call_list (
                                call_type varchar(100) default 'callList' check (call_type in ('callList', 'confirmation', 'finalJury')),
                                council_id int,
                                competition_id int not null,
-                               primary key (id, council_id),
+                               primary key (id),
                                foreign key (council_id) references dbp.arbitration_council(user_id),
                                foreign key (competition_id) references dbp.competition(competition_number)
 );
@@ -83,14 +83,13 @@ create table dbp.match_day (
 create table dbp.participant (
                                  call_list_id int,
                                  match_day_id int,
-                                 council_id int,
                                  competition_id_match_day int,
                                  referee_id int,
                                  role_id int,
                                  confirmation_status varchar(20) default 'waiting' check (confirmation_status in ('waiting', 'accepted', 'declined')),
                                  primary key (call_list_id, match_day_id, referee_id, role_id),
                                  foreign key (role_id) references dbp.role(id),
-                                 foreign key (call_list_id, council_id) references dbp.call_list(id, council_id),
+                                 foreign key (call_list_id) references dbp.call_list(id),
                                  foreign key (match_day_id, competition_id_match_day) references dbp.match_day(id, competition_id),
                                  foreign key (referee_id) references dbp.referee(user_id)
 );
