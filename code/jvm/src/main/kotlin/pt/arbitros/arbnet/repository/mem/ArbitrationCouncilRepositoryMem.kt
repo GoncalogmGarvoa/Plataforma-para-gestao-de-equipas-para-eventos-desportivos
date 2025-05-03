@@ -1,7 +1,7 @@
 package pt.arbitros.arbnet.repository.mem
 
 import pt.arbitros.arbnet.domain.ArbitrationCouncil
-import pt.arbitros.arbnet.repository.Aux.ArbitrationCouncilRepository
+import pt.arbitros.arbnet.repository.ArbitrationCouncilRepository
 
 
 

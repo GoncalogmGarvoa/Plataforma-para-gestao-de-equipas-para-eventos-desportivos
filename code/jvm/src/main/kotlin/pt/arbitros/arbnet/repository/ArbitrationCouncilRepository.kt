@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.repository.Aux
+package pt.arbitros.arbnet.repository
 
 import pt.arbitros.arbnet.domain.ArbitrationCouncil
 

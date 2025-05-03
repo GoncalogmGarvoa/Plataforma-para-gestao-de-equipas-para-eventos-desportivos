@@ -3,7 +3,7 @@ package pt.arbitros.arbnet.repository.jdbi
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.arbitros.arbnet.domain.ArbitrationCouncil
-import pt.arbitros.arbnet.repository.Aux.ArbitrationCouncilRepository
+import pt.arbitros.arbnet.repository.ArbitrationCouncilRepository
 
 class ArbitrationCouncilRepositoryJdbi(
     private val handle: Handle

@@ -4,8 +4,7 @@ package pt.arbitros.arbnet.repository.mem
 
 import org.jdbi.v3.core.Handle
 import pt.arbitros.arbnet.repository.*
-import pt.arbitros.arbnet.repository.Aux.ArbitrationCouncilRepository
-import pt.arbitros.arbnet.repositoryJdbi.*
+import pt.arbitros.arbnet.repository.ArbitrationCouncilRepository
 
 class TransactionMem(
     private val handle: Handle,

@@ -1,9 +1,5 @@
 package pt.arbitros.arbnet.repository
 
-import pt.arbitros.arbnet.repository.AdminRepository
-import pt.arbitros.arbnet.repository.Aux.ArbitrationCouncilRepository
-import pt.arbitros.arbnet.repository.RefereeRepository
-
 interface Transaction {
     val usersRepository: UsersRepository
 

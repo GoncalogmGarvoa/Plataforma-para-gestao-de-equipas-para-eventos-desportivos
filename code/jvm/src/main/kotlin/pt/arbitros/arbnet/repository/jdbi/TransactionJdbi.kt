@@ -4,7 +4,7 @@ package pt.arbitros.arbnet.repository.jdbi
 
 import org.jdbi.v3.core.Handle
 import pt.arbitros.arbnet.repository.*
-import pt.arbitros.arbnet.repository.Aux.ArbitrationCouncilRepository
+import pt.arbitros.arbnet.repository.ArbitrationCouncilRepository
 
 class TransactionJdbi(
     private val handle: Handle,
