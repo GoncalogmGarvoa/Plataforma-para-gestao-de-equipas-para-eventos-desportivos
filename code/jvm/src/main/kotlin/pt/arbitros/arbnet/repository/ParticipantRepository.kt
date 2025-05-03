@@ -9,7 +9,6 @@ interface ParticipantRepository {
         councilId: Int,
         competitionId: Int,
         refereeId: Int,
-        roleId: Int,
     ): Boolean
 
     fun updateParticipantRole(

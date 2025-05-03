@@ -6,7 +6,7 @@ import java.time.LocalDate
 interface UsersRepository {
     fun createUser(
         name: String,
-        phoneNumber: Int,
+        phoneNumber: String,
         address: String,
         email: String,
         password: String,
@@ -20,14 +20,14 @@ interface UsersRepository {
 
     fun existsByEmail(email: String): Boolean
 
-    fun existsByPhoneNumber(phoneNumber: Int): Boolean
+    fun existsByPhoneNumber(phoneNumber: String): Boolean
 
     fun existsByIban(iban: String): Boolean
 
     fun updateUser(
         id: Int,
         name: String,
-        phoneNumber: Int,
+        phoneNumber: String,
         address: String,
         email: String,
         password: String,

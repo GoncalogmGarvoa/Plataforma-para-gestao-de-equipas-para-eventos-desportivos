@@ -32,6 +32,7 @@ class UsersRepositoryJdbi(
             .mapTo<Int>()
             .one()
 
+
     override fun getUserById(id: Int): Users? =
         handle
             .createQuery("""select * from dbp.users where id = :id""")
@@ -54,6 +55,7 @@ class UsersRepositoryJdbi(
             .findFirst()
             .isPresent
 
+
     override fun existsByPhoneNumber(phoneNumber: String): Boolean =
         handle
             .createQuery("SELECT * FROM dbp.users WHERE phone_number = :phone_number")
@@ -69,6 +71,8 @@ class UsersRepositoryJdbi(
             .mapTo<Int>()
             .findFirst()
             .isPresent
+
+
 
     override fun updateUser(
         id: Int,

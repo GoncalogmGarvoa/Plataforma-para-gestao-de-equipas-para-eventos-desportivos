@@ -4,10 +4,15 @@ package pt.arbitros.arbnet.repositoryJdbi
 
 import org.jdbi.v3.core.Handle
 import pt.arbitros.arbnet.repository.*
+import pt.arbitros.arbnet.repository.Aux.ArbitrationCouncilRepository
 
 class TransactionJdbi(
     private val handle: Handle,
+
 ) : Transaction {
+    override val arbitrationCouncilRepository: ArbitrationCouncilRepository = ArbitrationCouncilRepositoryJdbi(handle)
+    override val adminRepository: AdminRepository = AdminRepositoryJdbi(handle)
+    override val refereeRepository: RefereeRepository = RefereeRepositoryJdbi(handle)
     override val usersRepository: UsersRepository = UsersRepositoryJdbi(handle)
     override val callListRepository: CallListRepository = CallListRepositoryJdbi(handle)
     override val competitionRepository: CompetitionRepository = CompetitionRepositoryJdbi(handle)

@@ -28,6 +28,7 @@ class ParticipantRepositoryJdbi(
             .bind("confirmation_status", "waiting")
             .execute() > 0
 
+
     override fun updateParticipantRole(
         participantId: Int,
         roleId: Int,
