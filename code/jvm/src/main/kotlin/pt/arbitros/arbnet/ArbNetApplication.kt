@@ -5,7 +5,7 @@ import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
-import pt.arbitros.arbnet.repositoryJdbi.configureWithAppRequirements
+import pt.arbitros.arbnet.repository.jdbi.configureWithAppRequirements
 
 @SpringBootApplication
 class ArbNetApplication {

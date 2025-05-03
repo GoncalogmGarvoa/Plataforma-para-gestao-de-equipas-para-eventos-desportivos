@@ -4,7 +4,7 @@ import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.repository.Transaction
 import pt.arbitros.arbnet.repository.TransactionManager
-import pt.arbitros.arbnet.repositoryJdbi.TransactionJdbi
+import pt.arbitros.arbnet.repository.jdbi.TransactionJdbi
 
 @Component
 class TransactionManagerMem(

@@ -31,9 +31,7 @@ class UsersService(
             user
         }
 
-    fun createUser(
-        user: UserInputModel,
-    ): Int =
+    fun createUser(user: UserInputModel): Int =
         transactionManager.run {
             val usersRepository = it.usersRepository
 
@@ -62,9 +60,7 @@ class UsersService(
             id
         }
 
-    fun updateUser(
-        user : UserUpdateInputModel,
-    ): Boolean =
+    fun updateUser(user: UserUpdateInputModel): Boolean =
         transactionManager.run {
             val usersRepository = it.usersRepository
 
@@ -102,68 +98,78 @@ class UsersService(
             deleted
         }
 
-    fun existsByParams(email: String, iban: String, phoneNumber: String) =
-        transactionManager.run {
-            val usersRepository = it.usersRepository
-            if (usersRepository.existsByEmail(email)) {
-                throw Exception("User with email $email already exists")
-            }
-            if (usersRepository.existsByPhoneNumber(phoneNumber)) {
-                throw Exception("User with phone number $phoneNumber already exists")
-            }
-            if (usersRepository.existsByIban(iban)) {
-                throw Exception("User with iban $iban already exists")
-            }
+    fun existsByParams(
+        email: String,
+        iban: String,
+        phoneNumber: String,
+    ) = transactionManager.run {
+        val usersRepository = it.usersRepository
+        if (usersRepository.existsByEmail(email)) {
+            throw Exception("User with email $email already exists")
         }
+        if (usersRepository.existsByPhoneNumber(phoneNumber)) {
+            throw Exception("User with phone number $phoneNumber already exists")
+        }
+        if (usersRepository.existsByIban(iban)) {
+            throw Exception("User with iban $iban already exists")
+        }
+    }
 
     fun updateRoles(
         id: Int,
         role: String,
         addOrRemove: Boolean,
-    ): Boolean = transactionManager.run {
-        val usersRepository = it.usersRepository
-        val adminRepository = it.adminRepository
-        val arbitrationCouncilRepository = it.arbitrationCouncilRepository
-        val refereeRepository = it.refereeRepository
+    ): Boolean =
+        transactionManager.run {
+            val usersRepository = it.usersRepository
+            val adminRepository = it.adminRepository
+            val arbitrationCouncilRepository = it.arbitrationCouncilRepository
+            val refereeRepository = it.refereeRepository
 
-        if (!usersDomain.validRole(role)) throw Exception("Role $role is not valid")
-        val user = usersRepository.getUserById(id) ?: throw Exception("User with id $id not found")
+            if (!usersDomain.validRole(role)) throw Exception("Role $role is not valid")
+            val user = usersRepository.getUserById(id) ?: throw Exception("User with id $id not found")
 
-        if (addOrRemove && user.roles.contains(role)) {
-            throw Exception("User with id $id already has role $role")
+            if (addOrRemove && user.roles.contains(role)) {
+                throw Exception("User with id $id already has role $role")
+            }
+            if (!addOrRemove && !user.roles.contains(role)) {
+                throw Exception("User with id $id does not have role $role")
+            }
+
+            val roleActions =
+                mapOf(
+                    UserRole.ADMIN.roleName to
+                        Pair(
+                            { adminRepository.createAdmin(id) },
+                            { adminRepository.deleteAdmin(id) },
+                        ),
+                    UserRole.ARBITRATION_COUNCIL.roleName to
+                        Pair(
+                            { arbitrationCouncilRepository.createCouncilMember(id) },
+                            { arbitrationCouncilRepository.deleteCouncilMember(id) },
+                        ),
+                    UserRole.REFEREE.roleName to
+                        Pair(
+                            { refereeRepository.createReferee(id) },
+                            { refereeRepository.deleteReferee(id) },
+                        ),
+                )
+
+            val (addAction, removeAction) =
+                roleActions[role]
+                    ?: throw Exception("Role $role is not supported for update")
+
+            val newRoles =
+                if (addOrRemove) {
+                    addAction()
+                    user.roles + role
+                } else {
+                    removeAction()
+                    user.roles - role
+                }
+
+            usersRepository.updateRoles(id, newRoles)
         }
-        if (!addOrRemove && !user.roles.contains(role)) {
-            throw Exception("User with id $id does not have role $role")
-        }
-
-        val roleActions = mapOf(
-            UserRole.ADMIN.roleName to Pair(
-                { adminRepository.createAdmin(id) },
-                { adminRepository.deleteAdmin(id) }
-            ),
-            UserRole.ARBITRATION_COUNCIL.roleName to Pair(
-                { arbitrationCouncilRepository.createCouncilMember(id) },
-                { arbitrationCouncilRepository.deleteCouncilMember(id) }
-            ),
-            UserRole.REFEREE.roleName to Pair(
-                { refereeRepository.createReferee(id) },
-                { refereeRepository.deleteReferee(id) }
-            )
-        )
-
-        val (addAction, removeAction) = roleActions[role]
-            ?: throw Exception("Role $role is not supported for update")
-
-        val newRoles = if (addOrRemove) {
-            addAction()
-            user.roles + role
-        } else {
-            removeAction()
-            user.roles - role
-        }
-
-        usersRepository.updateRoles(id, newRoles)
-    }
 
     fun validateUser(
         name: String,
@@ -182,7 +188,4 @@ class UsersService(
         require(usersDomain.validBirthDate(birthDate)) { "Invalid birth date" }
         require(usersDomain.validatePortugueseIban(iban)) { "Invalid IBAN" }
     }
-
 }
-
-

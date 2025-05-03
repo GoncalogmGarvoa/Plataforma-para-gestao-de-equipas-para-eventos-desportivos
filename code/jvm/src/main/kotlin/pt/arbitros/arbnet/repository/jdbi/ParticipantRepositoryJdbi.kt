@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.repositoryJdbi
+package pt.arbitros.arbnet.repository.jdbi
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -28,7 +28,6 @@ class ParticipantRepositoryJdbi(
             .bind("confirmation_status", "waiting")
             .execute() > 0
 
-
     override fun updateParticipantRole(
         participantId: Int,
         roleId: Int,
@@ -45,48 +44,47 @@ class ParticipantRepositoryJdbi(
     override fun updateParticipantConfirmationStatus(
         days: List<Int>,
         participantId: Int,
-        callListId: Int
-    ): Boolean = handle
-        .createUpdate(
-            """
-        update dbp.participant
-        set confirmation_status = case 
-            when match_day_id in (<days>) then 'accepted'
-            else 'declined'
-        end
-        where call_list_id = :callListId
-          and referee_id = :participantId
-        """.trimIndent()
-        )
-        .bind("callListId", callListId)
-        .bind("participantId", participantId)
-        .bindList("days", days)
-        .execute() > 0
+        callListId: Int,
+    ): Boolean =
+        handle
+            .createUpdate(
+                """
+                update dbp.participant
+                set confirmation_status = case 
+                    when match_day_id in (<days>) then 'accepted'
+                    else 'declined'
+                end
+                where call_list_id = :callListId
+                  and referee_id = :participantId
+                """.trimIndent(),
+            ).bind("callListId", callListId)
+            .bind("participantId", participantId)
+            .bindList("days", days)
+            .execute() > 0
 
     override fun getParticipantById(participantId: Int): Participant? =
-        handle.createQuery("""select * from dbp.participant where referee_id = :participantId""")
+        handle
+            .createQuery("""select * from dbp.participant where referee_id = :participantId""")
             .bind("participantId", participantId)
             .mapTo<Participant>()
             .singleOrNull()
 
     override fun isCallListDone(callListId: Int): Boolean {
-        val count = handle
-            .createQuery(
-                """
-            select count(*) from dbp.participant
-            where call_list_id = :callListId
-              and confirmation_status = 'waiting'
-        """.trimIndent(),
-            )
-            .bind("callListId", callListId)
-            .mapTo<Int>()
-            .single()
+        val count =
+            handle
+                .createQuery(
+                    """
+                    select count(*) from dbp.participant
+                    where call_list_id = :callListId
+                      and confirmation_status = 'waiting'
+                    """.trimIndent(),
+                ).bind("callListId", callListId)
+                .mapTo<Int>()
+                .single()
         return count == 0
     }
 
-    override fun batchAddParticipants(
-        participants: List<Participant>
-    ): Boolean {
+    override fun batchAddParticipants(participants: List<Participant>): Boolean {
         val sql = """
         insert into dbp.participant (
             call_list_id, match_day_id, council_id,
@@ -99,9 +97,10 @@ class ParticipantRepositoryJdbi(
 
         val batch = handle.prepareBatch(sql)
         participants.forEach {
-            batch.bind("call_list_id", it.callListId)
+            batch
+                .bind("call_list_id", it.callListId)
                 .bind("match_day_id", it.matchDayId)
-                //.bind("council_id", it.councilId)
+                // .bind("council_id", it.councilId)
                 .bind("competition_id_match_day", it.competitionIdMatchDay)
                 .bind("referee_id", it.refereeId)
                 .bind("role_id", it.roleId)
@@ -110,9 +109,5 @@ class ParticipantRepositoryJdbi(
         }
 
         return batch.execute().all { it > 0 }
-        
     }
-
-
 }
-

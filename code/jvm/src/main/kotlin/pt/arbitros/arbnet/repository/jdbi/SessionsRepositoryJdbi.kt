@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.repositoryJdbi
+package pt.arbitros.arbnet.repository.jdbi
 
 import org.jdbi.v3.core.Handle
 import pt.arbitros.arbnet.repository.SessionsRepository

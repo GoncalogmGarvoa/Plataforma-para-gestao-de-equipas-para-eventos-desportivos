@@ -1,6 +1,5 @@
-package pt.arbitros.arbnet.repositoryJdbi
+package pt.arbitros.arbnet.repository.jdbi
 
-import kotlinx.datetime.LocalDate
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.arbitros.arbnet.domain.ArbitrationCouncil

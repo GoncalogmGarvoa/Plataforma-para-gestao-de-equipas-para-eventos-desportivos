@@ -2,20 +2,6 @@
 
 package pt.arbitros.arbnet.services
 
-import org.jdbi.v3.core.Jdbi
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.MethodSource
-import org.postgresql.ds.PGSimpleDataSource
-import pt.arbitros.arbnet.Environment
-import pt.arbitros.arbnet.domain.UsersDomain
-import pt.arbitros.arbnet.repository.TransactionManager
-import pt.arbitros.arbnet.repository.UsersRepository
-import pt.arbitros.arbnet.repository.mem.UsersRepositoryMem
-import pt.arbitros.arbnet.repositoryJdbi.TransactionManagerJdbi
-import pt.arbitros.arbnet.repositoryJdbi.configureWithAppRequirements
-import java.util.stream.Stream
-
 // todo tests in mem
 /*
 val usersRepository: UsersRepository = UsersRepositoryMem()

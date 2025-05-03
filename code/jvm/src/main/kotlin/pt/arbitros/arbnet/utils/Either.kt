@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.services
+package pt.arbitros.arbnet.utils
 
 sealed class Either<out L, out R> {
     data class Left<out L>(

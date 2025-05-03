@@ -67,7 +67,7 @@ class UsersController(
                     user.email,
                     user.password,
                     user.birthDate,
-                    user.iban
+                    user.iban,
                 ),
             ),
         )
@@ -87,7 +87,7 @@ class UsersController(
                     user.email,
                     user.password,
                     user.birthDate,
-                    user.iban
+                    user.iban,
                 ),
             ),
         )

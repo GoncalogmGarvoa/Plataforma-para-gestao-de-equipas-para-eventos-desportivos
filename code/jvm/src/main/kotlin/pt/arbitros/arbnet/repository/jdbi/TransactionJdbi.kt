@@ -1,6 +1,6 @@
 @file:Suppress("ktlint:standard:no-wildcard-imports")
 
-package pt.arbitros.arbnet.repositoryJdbi
+package pt.arbitros.arbnet.repository.jdbi
 
 import org.jdbi.v3.core.Handle
 import pt.arbitros.arbnet.repository.*
