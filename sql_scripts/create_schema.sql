@@ -5,9 +5,9 @@ create table dbp.users (
                            id serial primary key,
                            phone_number Int not null,
                            address varchar(255) not null,
-                           name varchar(255) not null,
-                           email varchar(255) unique not null,
-                           password varchar(255) not null,
+                           name varchar(100) not null,
+                           email varchar(100) unique not null,
+                           password varchar(30) not null,
                            birth_date date not null,
                            iban varchar(25) not null,
                            roles text[] DEFAULT '{}',
@@ -22,7 +22,7 @@ create table dbp.admin (
 
 create table dbp.category (
                               id serial primary key,
-                              name varchar(255) not null
+                              name varchar(50) not null
 );
 
 create table dbp.referee (
