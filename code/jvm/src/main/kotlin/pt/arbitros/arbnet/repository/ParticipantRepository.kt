@@ -7,6 +7,7 @@ interface ParticipantRepository {
         callListId: Int,
         matchDayId: Int,
         userId: Int,
+        functionId: Int,
         competitionId: Int,
     ): Boolean
 

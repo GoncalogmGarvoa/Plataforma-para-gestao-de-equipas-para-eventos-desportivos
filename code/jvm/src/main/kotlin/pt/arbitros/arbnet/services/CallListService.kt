@@ -115,7 +115,7 @@ class CallListService(
                             matchDayId = matchDayId,
                             // councilId = councilId,
                             competitionIdMatchDay = competitionId,
-                            refereeId = userId,
+                            userId = userId,
                             0,
                             ConfirmationStatus.WAITING,
                         )

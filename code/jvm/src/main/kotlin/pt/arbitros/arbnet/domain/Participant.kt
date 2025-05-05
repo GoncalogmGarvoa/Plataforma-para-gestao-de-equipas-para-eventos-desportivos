@@ -4,8 +4,8 @@ data class Participant(
     val callListId: Int,
     val matchDayId: Int,
     val competitionIdMatchDay: Int,
-    val refereeId: Int,
-    val roleId: Int,
+    val userId: Int,
+    val functionId: Int,
     val confirmationStatus: ConfirmationStatus,
 )
 

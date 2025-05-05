@@ -12,15 +12,17 @@ class ParticipantRepositoryJdbi(
         callListId: Int,
         matchDayId: Int,
         userId: Int,
+        functionId: Int,
         competitionId: Int,
     ): Boolean =
         handle
             .createUpdate(
-                """insert into dbp.participant (call_list_id, match_day_id, user_id, competition_id_match_day, role_id, confirmation_status) 
-               values (:call_list_id, :match_day_id, :user_id, :competition_id_match_day)""",
+                """insert into dbp.participant (call_list_id, match_day_id, user_id, function_id, competition_id_match_day, role_id, confirmation_status) 
+               values (:call_list_id, :match_day_id, :user_id, :function_id, :competition_id_match_day, :role_id, :confirmation_status)""",
             ).bind("call_list_id", callListId)
             .bind("match_day_id", matchDayId)
             .bind("user_id", userId)
+            .bind("function_id", functionId)
             .bind("competition_id_match_day", competitionId)
             .bind("role_id", 0)
             .bind("confirmation_status", "waiting")
@@ -100,8 +102,8 @@ class ParticipantRepositoryJdbi(
                 .bind("match_day_id", it.matchDayId)
                 // .bind("council_id", it.councilId)
                 .bind("competition_id_match_day", it.competitionIdMatchDay)
-                .bind("referee_id", it.refereeId)
-                .bind("role_id", it.roleId)
+                .bind("user_id", it.userId)
+                .bind("role_id", it.functionId)
                 .bind("confirmation_status", it.confirmationStatus)
                 .add()
         }
