@@ -7,7 +7,6 @@ import pt.arbitros.arbnet.repository.ParticipantRepository
 class ParticipantRepositoryMem : ParticipantRepository {
     private val participants = mutableListOf<Participant>()
 
-
 //    private data class Participant(
 //        val id: Int,
 //        val callListId: Int,
@@ -22,7 +21,7 @@ class ParticipantRepositoryMem : ParticipantRepository {
     override fun addParticipant(
         callListId: Int,
         matchDayId: Int,
-        //councilId: Int,
+        // councilId: Int,
         competitionId: Int,
         refereeId: Int,
         roleId: Int,
@@ -42,7 +41,7 @@ class ParticipantRepositoryMem : ParticipantRepository {
 
     override fun updateParticipantRole(
         participantId: Int,
-        roleId: Int,
+        functionId: Int,
         matchDayId: Int,
     ): Boolean {
         val participant =
@@ -51,7 +50,7 @@ class ParticipantRepositoryMem : ParticipantRepository {
             }
         return if (participant != null) {
             participants.remove(participant)
-            participants.add(participant.copy(roleId = roleId))
+            participants.add(participant.copy(roleId = functionId))
             true
         } else {
             false
@@ -61,7 +60,7 @@ class ParticipantRepositoryMem : ParticipantRepository {
     override fun updateParticipantConfirmationStatus(
         days: List<Int>,
         participantId: Int,
-        callListId: Int
+        callListId: Int,
     ): Boolean {
         var updated = false
 
@@ -89,5 +88,4 @@ class ParticipantRepositoryMem : ParticipantRepository {
     override fun batchAddParticipants(participants: List<pt.arbitros.arbnet.domain.Participant>): Boolean {
         TODO("Not yet implemented")
     }
-
 }

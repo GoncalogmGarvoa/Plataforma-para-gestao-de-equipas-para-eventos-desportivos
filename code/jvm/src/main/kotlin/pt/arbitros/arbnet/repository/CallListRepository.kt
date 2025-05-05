@@ -6,14 +6,13 @@ import java.time.LocalDate
 interface CallListRepository {
     fun createCallList(
         deadline: LocalDate,
-        councilId: Int,
+        userId: Int,
         competitionId: Int,
     ): Int
 
-    fun updateCallListStatus(callListId: Int) : Boolean
+    fun updateCallListStatus(callListId: Int): Boolean
 
     fun getCallListById(id: Int): CallList?
-
 
 //    fun findCallListById(id: Int): CallList?
 //

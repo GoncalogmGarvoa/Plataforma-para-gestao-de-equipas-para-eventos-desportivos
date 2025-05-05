@@ -11,32 +11,30 @@ class ParticipantRepositoryJdbi(
     override fun addParticipant(
         callListId: Int,
         matchDayId: Int,
-        councilId: Int,
+        userId: Int,
         competitionId: Int,
-        refereeId: Int,
     ): Boolean =
         handle
             .createUpdate(
-                """insert into dbp.participant (call_list_id, match_day_id, council_id, competition_id_match_day, referee_id, role_id, confirmation_status) 
-               values (:call_list_id, :match_day_id, :council_id, :competition_id_match_day, :referee_id)""",
+                """insert into dbp.participant (call_list_id, match_day_id, user_id, competition_id_match_day, role_id, confirmation_status) 
+               values (:call_list_id, :match_day_id, :user_id, :competition_id_match_day)""",
             ).bind("call_list_id", callListId)
             .bind("match_day_id", matchDayId)
-            .bind("council_id", councilId)
+            .bind("user_id", userId)
             .bind("competition_id_match_day", competitionId)
-            .bind("referee_id", refereeId)
             .bind("role_id", 0)
             .bind("confirmation_status", "waiting")
             .execute() > 0
 
     override fun updateParticipantRole(
         participantId: Int,
-        roleId: Int,
+        functionId: Int,
         matchDayId: Int,
     ): Boolean =
         handle
             .createUpdate(
                 """update dbp.participant set role_id = :roleId where referee_id = :participantId and match_day_id = :matchDayId""",
-            ).bind("roleId", roleId)
+            ).bind("roleId", functionId)
             .bind("participantId", participantId)
             .bind("matchDayId", matchDayId)
             .execute() > 0

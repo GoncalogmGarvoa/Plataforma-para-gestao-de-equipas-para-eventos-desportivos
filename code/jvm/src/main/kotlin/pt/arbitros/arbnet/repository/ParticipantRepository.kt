@@ -6,14 +6,13 @@ interface ParticipantRepository {
     fun addParticipant(
         callListId: Int,
         matchDayId: Int,
-        councilId: Int,
+        userId: Int,
         competitionId: Int,
-        refereeId: Int,
     ): Boolean
 
     fun updateParticipantRole(
         participantId: Int,
-        roleId: Int,
+        functionId: Int,
         matchDayId: Int,
     ): Boolean
 
@@ -27,9 +26,7 @@ interface ParticipantRepository {
 
     fun isCallListDone(callListId: Int): Boolean
 
-    fun batchAddParticipants(
-        participants: List<Participant>,
-    ): Boolean
+    fun batchAddParticipants(participants: List<Participant>): Boolean
 //    fun findParticipantsByCallList(callListId: Int): List<Participant>
 //
 //    fun updateConfirmationStatus(

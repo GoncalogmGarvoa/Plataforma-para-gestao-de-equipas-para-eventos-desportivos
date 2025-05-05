@@ -16,7 +16,7 @@ class UsersRepositoryJdbi(
         email: String,
         password: String,
         birthDate: LocalDate,
-        iban: String
+        iban: String,
     ): Int =
         handle
             .createUpdate(
@@ -31,7 +31,6 @@ class UsersRepositoryJdbi(
             .executeAndReturnGeneratedKeys()
             .mapTo<Int>()
             .one()
-
 
     override fun getUserById(id: Int): Users? =
         handle
@@ -55,7 +54,6 @@ class UsersRepositoryJdbi(
             .findFirst()
             .isPresent
 
-
     override fun existsByPhoneNumber(phoneNumber: String): Boolean =
         handle
             .createQuery("SELECT * FROM dbp.users WHERE phone_number = :phone_number")
@@ -72,8 +70,6 @@ class UsersRepositoryJdbi(
             .findFirst()
             .isPresent
 
-
-
     override fun updateUser(
         id: Int,
         name: String,
@@ -82,7 +78,7 @@ class UsersRepositoryJdbi(
         email: String,
         password: String,
         birthDate: LocalDate,
-        iban: String
+        iban: String,
     ): Boolean =
         handle
             .createUpdate(
@@ -97,13 +93,13 @@ class UsersRepositoryJdbi(
             .execute() > 0
 
     override fun updateRoles(
-        id: Int,
+        userId: Int,
         roles: List<String>,
     ): Boolean =
         handle
             .createUpdate("""UPDATE dbp.users SET roles = CAST(:roles AS text[]) WHERE id = :id""")
             .bindArray("roles", String::class.java, roles)
-            .bind("id", id)
+            .bind("id", userId)
             .execute() > 0
 
     override fun deleteUser(id: Int): Boolean =
@@ -112,12 +108,27 @@ class UsersRepositoryJdbi(
             .bind("id", id)
             .execute() > 0
 
-    override fun userHasCouncilRole(councilUserId: Int): Boolean {
-        TODO("Not yet implemented")
-    }
+    // todo check
+    override fun userHasCouncilRole(userId: Int): Boolean =
+        handle
+            .createQuery("""SELECT 1 FROM dbp.role WHERE user_id = :user_id""")
+            .bind("user_id", userId)
+            .mapTo<Int>()
+            .findFirst()
+            .isPresent
 
-    override fun getUsersAndCheckIfReferee(participants: List<Int>): List<Users> {
-        TODO("Not yet implemented")
-    }
+    // todo check
+    override fun getUsersAndCheckIfReferee(participants: List<Int>): List<Users> =
+        handle
+            .createQuery(
+                """
+        SELECT u.* FROM dbp.users u
+        JOIN dbp.users_roles ur ON u.id = ur.user_id
+        JOIN dbp.role r ON ur.role_id = r.id
+        WHERE u.id IN (<participants>)
+          AND r.name = 'referee'
+        """,
+            ).bindList("participants", participants)
+            .mapTo<Users>()
+            .list()
 }
-// val rolesArray = handle.connection.createArrayOf("text", roles.toTypedArray())

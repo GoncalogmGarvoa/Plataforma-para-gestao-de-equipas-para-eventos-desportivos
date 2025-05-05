@@ -86,7 +86,7 @@ create table dbp.participant (
                                  user_id int,
                                  function_id int,
                                  confirmation_status varchar(20) default 'waiting' check (confirmation_status in ('waiting', 'accepted', 'declined')),
-                                 primary key (call_list_id, match_day_id, user_id, function_id),
+                                 primary key (call_list_id, match_day_id, user_id, function_id,competition_id_match_day),
                                  foreign key (function_id) references dbp.function(id),
                                  foreign key (call_list_id) references dbp.call_list(id),
                                  foreign key (match_day_id, competition_id_match_day) references dbp.match_day(id, competition_id),

@@ -11,14 +11,14 @@ class CallListRepositoryJdbi(
 ) : CallListRepository {
     override fun createCallList(
         deadline: LocalDate,
-        councilId: Int,
+        userId: Int,
         competitionId: Int,
     ): Int =
         handle
             .createUpdate(
                 """insert into dbp.call_list (deadline, council_id, competition_id) values (:deadline, :council_id, :competition_id)""",
             ).bind("deadline", deadline)
-            .bind("council_id", councilId)
+            .bind("council_id", userId)
             .bind("competition_id", competitionId)
             .executeAndReturnGeneratedKeys()
             .mapTo<Int>()
@@ -34,10 +34,10 @@ class CallListRepositoryJdbi(
     }
 
     override fun getCallListById(id: Int): CallList? =
-        handle.createQuery(
-            """select * from dbp.call_list where id = :id""",
-            )
-            .bind("id", id)
+        handle
+            .createQuery(
+                """select * from dbp.call_list where id = :id""",
+            ).bind("id", id)
             .mapTo<CallList>()
             .singleOrNull()
 }
@@ -85,4 +85,3 @@ class CallListRepositoryJdbi(
 //            .bind("call_list_id", callListId)
 //            .mapTo<Referee>()
 //            .list()
-

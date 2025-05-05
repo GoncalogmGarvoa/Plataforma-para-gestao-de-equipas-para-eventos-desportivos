@@ -1,9 +1,18 @@
 package pt.arbitros.arbnet.repository
 
 interface UsersRolesRepository {
+    fun userHasRole(
+        userId: Int,
+        roleId: Int,
+    ): Boolean
 
-    fun userHasRole(id: Int, roleId: Int) : Boolean
-    fun addRoleToUser   (id: Int, roleId: Int) : Boolean
-    fun removeRoleFromUser(id: Int, roleId: Int) : Boolean
+    fun addRoleToUser(
+        userId: Int,
+        roleId: Int,
+    ): Boolean
 
+    fun removeRoleFromUser(
+        userId: Int,
+        roleId: Int,
+    ): Boolean
 }

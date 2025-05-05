@@ -36,12 +36,13 @@ interface UsersRepository {
     ): Boolean
 
     fun updateRoles(
-        id: Int,
+        userId: Int,
         roles: List<String>,
     ): Boolean
 
     fun deleteUser(id: Int): Boolean
 
-    fun userHasCouncilRole(councilUserId: Int) : Boolean
-    fun getUsersAndCheckIfReferee(participants: List<Int>) : List<Users>
+    fun userHasCouncilRole(userId: Int): Boolean
+
+    fun getUsersAndCheckIfReferee(participants: List<Int>): List<Users>
 }

@@ -10,7 +10,7 @@ class CallListRepositoryMem : CallListRepository {
 
     override fun createCallList(
         deadline: LocalDate,
-        councilId: Int,
+        userId: Int,
         competitionId: Int,
     ): Int {
         val callList =
@@ -18,7 +18,7 @@ class CallListRepositoryMem : CallListRepository {
                 id = nextId++,
                 deadline = deadline,
                 callType = "callList",
-                councilId = councilId,
+                councilId = userId,
                 competitionId = competitionId,
             )
         callLists.add(callList)

@@ -36,7 +36,7 @@ class CallListService(
         association: String,
         location: String,
         deadline: LocalDate,
-        councilUserId: Int,
+        userId: Int,
         participants: List<Int>,
         matchDaySessions: List<MatchDaySessionsInput>,
     ): Either<CallListError, Int> =
@@ -50,14 +50,14 @@ class CallListService(
             val roleRepository = it.functionRepository
             val usersRepository = it.usersRepository
 
-
             // Check if the council exists
-            if (!usersRepository.userHasCouncilRole(councilUserId))
+            if (!usersRepository.userHasCouncilRole(userId)) {
                 return@run failure(CallListError.ArbitrationCouncilNotFound)
-
+            }
 
             // Check if the participants exist
             val foundReferees = usersRepository.getUsersAndCheckIfReferee(participants)
+
             if (foundReferees.size != participants.size) {
                 return@run failure(CallListError.ParticipantNotFound) // throw Exception("One or more of the participants were not found")
             }
@@ -100,7 +100,7 @@ class CallListService(
             val callListId =
                 callListRepository.createCallList(
                     deadline,
-                    councilUserId,
+                    userId,
                     competitionId,
                 )
 

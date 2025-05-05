@@ -35,14 +35,11 @@ class UsersRepositoryMem : UsersRepository {
         return user.id
     }
 
-
-
     override fun getUserById(id: Int): Users? = users.find { it.id == id }
 
     override fun getUserByEmail(email: String): Users? = users.find { it.email == email }
 
     override fun existsByEmail(email: String): Boolean = users.any { it.email == email }
-
 
     override fun existsByPhoneNumber(phoneNumber: String): Boolean {
         TODO("Not yet implemented")
@@ -51,7 +48,6 @@ class UsersRepositoryMem : UsersRepository {
     override fun existsByIban(iban: String): Boolean {
         TODO("Not yet implemented")
     }
-
 
     override fun updateUser(
         index: Int,
@@ -63,7 +59,6 @@ class UsersRepositoryMem : UsersRepository {
         birthDate: LocalDate,
         iban: String,
     ): Boolean {
-
         val existing = users[index]
         users[index] =
             existing.copy(
@@ -78,10 +73,10 @@ class UsersRepositoryMem : UsersRepository {
     }
 
     override fun updateRoles(
-        id: Int,
+        userId: Int,
         roles: List<String>,
     ): Boolean {
-        val index = users.indexOfFirst { it.id == id }
+        val index = users.indexOfFirst { it.id == userId }
         if (index == -1) return false
 
         val user = users[index]
@@ -90,6 +85,7 @@ class UsersRepositoryMem : UsersRepository {
     }
 
     override fun deleteUser(id: Int): Boolean = users.removeIf { it.id == id }
+
     override fun userHasCouncilRole(councilUserId: Int): Boolean {
         TODO("Not yet implemented")
     }
