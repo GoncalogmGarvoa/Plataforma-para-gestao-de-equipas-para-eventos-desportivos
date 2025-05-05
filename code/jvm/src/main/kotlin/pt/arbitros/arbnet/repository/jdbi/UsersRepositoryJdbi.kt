@@ -20,7 +20,7 @@ class UsersRepositoryJdbi(
     ): Int =
         handle
             .createUpdate(
-                """insert into dbp.users (name, phone_Number, address, email, password, birth_date, iban, roles) values (:name, :phone_number, :address ,:email, :password, :birth_date, :iban, '{}')""",
+                """insert into dbp.users (name, phone_Number, address, email, password, birth_date, iban, roles) values (:name, :phone_number, :address ,:email, :password, :birth_date, :iban)""",
             ).bind("name", name)
             .bind("phone_number", phoneNumber)
             .bind("address", address)
@@ -111,8 +111,13 @@ class UsersRepositoryJdbi(
     // todo check
     override fun userHasCouncilRole(userId: Int): Boolean =
         handle
-            .createQuery("""SELECT 1 FROM dbp.role WHERE user_id = :user_id""")
-            .bind("user_id", userId)
+            .createQuery(
+                """
+        SELECT 1 FROM dbp.users_roles ur
+        JOIN dbp.role r ON ur.role_id = r.id
+        WHERE ur.user_id = :user_id AND r.name = 'arbitration council'
+        """,
+            ).bind("user_id", userId)
             .mapTo<Int>()
             .findFirst()
             .isPresent

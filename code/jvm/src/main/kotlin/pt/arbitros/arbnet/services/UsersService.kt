@@ -2,7 +2,6 @@ package pt.arbitros.arbnet.services
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
-import pt.arbitros.arbnet.domain.UserRole
 import pt.arbitros.arbnet.domain.Users
 import pt.arbitros.arbnet.domain.UsersDomain
 import pt.arbitros.arbnet.http.model.UserInputModel
@@ -115,8 +114,8 @@ class UsersService(
         }
     }
 
-    fun updateRoles(
-        id: Int,
+    fun updateUserRoles(
+        userId: Int,
         roleId: Int,
         addOrRemove: Boolean,
     ): Boolean =
@@ -127,14 +126,16 @@ class UsersService(
 
             roleRepository.getRoleName(roleId)
                 ?: throw Exception("Role with id $roleId not found")
-            usersRepository.getUserById(id)
-                ?: throw Exception("User with id $id not found")
+            usersRepository.getUserById(userId)
+                ?: throw Exception("User with id $userId not found")
 
-            val hasRole = usersRolesRepository.userHasRole(id, roleId)
+            val hasRole = usersRolesRepository.userHasRole(userId, roleId)
 
             when {
-                addOrRemove && !hasRole -> usersRolesRepository.addRoleToUser(id, roleId)
-                !addOrRemove && hasRole -> usersRolesRepository.removeRoleFromUser(id, roleId)
+                addOrRemove && !hasRole -> usersRolesRepository.addRoleToUser(userId, roleId)
+                !addOrRemove && hasRole -> usersRolesRepository.removeRoleFromUser(userId, roleId)
+                !hasRole -> throw Exception("User doesnt have this role")
+                else -> throw Exception("User already has this role")
             }
 
             true

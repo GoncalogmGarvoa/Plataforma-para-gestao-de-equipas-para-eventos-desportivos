@@ -21,18 +21,17 @@ class ParticipantRepositoryMem : ParticipantRepository {
     override fun addParticipant(
         callListId: Int,
         matchDayId: Int,
-        // councilId: Int,
+        userId: Int,
         competitionId: Int,
-        refereeId: Int,
-        roleId: Int,
+        functionId: Int,
     ): Boolean {
         val participant =
             Participant(
                 callListId = callListId,
                 matchDayId = matchDayId,
                 competitionIdMatchDay = competitionId,
-                refereeId = refereeId,
-                roleId = roleId,
+                userId = userId,
+                functionId = functionId,
                 confirmationStatus = ConfirmationStatus.WAITING,
             )
         participants.add(participant)
@@ -50,7 +49,7 @@ class ParticipantRepositoryMem : ParticipantRepository {
             }
         return if (participant != null) {
             participants.remove(participant)
-            participants.add(participant.copy(roleId = functionId))
+            participants.add(participant.copy(functionId = functionId))
             true
         } else {
             false
@@ -65,7 +64,7 @@ class ParticipantRepositoryMem : ParticipantRepository {
         var updated = false
 
         participants.forEachIndexed { index, p ->
-            if (p.callListId == callListId && p.refereeId == participantId) {
+            if (p.callListId == callListId && p.userId == participantId) {
                 val newStatus = if (p.matchDayId in days) ConfirmationStatus.ACCEPTED else ConfirmationStatus.DECLINED
                 if (p.confirmationStatus != newStatus) {
                     participants[index] = p.copy(confirmationStatus = newStatus)

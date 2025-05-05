@@ -97,7 +97,7 @@ class UsersController(
         @RequestBody user: UserRolesUpdateInputModel,
     ): ResponseEntity<Boolean> =
         ResponseEntity.ok(
-            usersService.updateRoles(
+            usersService.updateUserRoles(
                 user.userId,
                 user.roleId,
                 user.addOrRemove,
