@@ -55,7 +55,7 @@ class ParticipantRepositoryJdbi(
                     else 'declined'
                 end
                 where call_list_id = :callListId
-                  and referee_id = :participantId
+                  and user_id = :participantId
                 """.trimIndent(),
             ).bind("callListId", callListId)
             .bind("participantId", participantId)
@@ -88,10 +88,10 @@ class ParticipantRepositoryJdbi(
         val sql = """
         insert into dbp.participant (
             call_list_id, match_day_id, council_id,
-            competition_id_match_day, referee_id, role_id, confirmation_status
+            competition_id_match_day, user_id, function_id, confirmation_status
         ) values (
             :call_list_id, :match_day_id, :council_id,
-            :competition_id_match_day, :referee_id, :role_id, :confirmation_status
+            :competition_id_match_day, :user_id, :function_id, :confirmation_status
         )
         """
 
@@ -100,10 +100,9 @@ class ParticipantRepositoryJdbi(
             batch
                 .bind("call_list_id", it.callListId)
                 .bind("match_day_id", it.matchDayId)
-                // .bind("council_id", it.councilId)
                 .bind("competition_id_match_day", it.competitionIdMatchDay)
                 .bind("user_id", it.userId)
-                .bind("role_id", it.functionId)
+                .bind("function_id", it.functionId)
                 .bind("confirmation_status", it.confirmationStatus)
                 .add()
         }
