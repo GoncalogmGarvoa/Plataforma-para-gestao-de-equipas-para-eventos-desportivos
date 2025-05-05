@@ -18,7 +18,7 @@ create table dbp.role (
                           id serial primary key,
                           name varchar(50) not null
 
-)
+);
 
 create table dbp.users_role (
                                 user_id int,
@@ -26,7 +26,7 @@ create table dbp.users_role (
                                 primary key (user_id, role_id),
                                 foreign key (user_id) references dbp.users(id),
                                 foreign key (role_id) references dbp.role(id)
-)
+);
 
 
 create table dbp.category (

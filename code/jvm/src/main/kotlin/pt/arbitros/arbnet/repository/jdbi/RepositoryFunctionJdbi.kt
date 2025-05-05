@@ -2,12 +2,12 @@ package pt.arbitros.arbnet.repository.jdbi
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
-import pt.arbitros.arbnet.repository.RoleRepository
+import pt.arbitros.arbnet.repository.FunctionRepository
 
-class RepositoryRoleJdbi( // TODO review if necessary
+class RepositoryFunctionJdbi( // TODO review if necessary
     private val handle: Handle,
-) : RoleRepository {
-    override fun getRoleIdByName(roleName: String): Int? =
+) : FunctionRepository {
+    override fun getFunctionIdByName(roleName: String): Int? =
         handle
             .createQuery(
                 "select id from dbp.role where name = :role_name",
@@ -15,7 +15,7 @@ class RepositoryRoleJdbi( // TODO review if necessary
             .mapTo<Int>()
             .singleOrNull()
 
-    override fun getRoleNameById(roleId: Int): String =
+    override fun getFunctionNameById(roleId: Int): String =
         handle
             .createQuery(
                 "select name from dbp.role where id = :role_id",

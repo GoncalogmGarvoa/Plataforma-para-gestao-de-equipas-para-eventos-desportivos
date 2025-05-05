@@ -47,7 +47,7 @@ class CallListService(
             val sessionsRepository = it.sessionsRepository
             val callListRepository = it.callListRepository
             val participantRepository = it.participantRepository
-            val roleRepository = it.roleRepository
+            val roleRepository = it.functionRepository
             // val usersRepository = it.usersRepository
             val refereeRepository = it.refereeRepository
             val arbitrationCouncilRepository = it.arbitrationCouncilRepository
@@ -130,14 +130,14 @@ class CallListService(
 
     fun assignRoles(roleAssignmentsInfo: List<RoleAssignmentsInput>): Either<CallListError, Boolean> =
         transactionManager.run {
-            val roleRepository = it.roleRepository
+            val roleRepository = it.functionRepository
             val participantRepository = it.participantRepository
             val matchDayRepository = it.matchDayRepository
 
             roleAssignmentsInfo.forEach { roleAssignment ->
 
                 val roleId =
-                    roleRepository.getRoleIdByName(roleAssignment.role)
+                    roleRepository.getFunctionIdByName(roleAssignment.role)
                         ?: return@run failure(CallListError.RoleNotFound)
                 roleAssignment.assignments.forEach { assignment ->
                     // Check if the participant exists

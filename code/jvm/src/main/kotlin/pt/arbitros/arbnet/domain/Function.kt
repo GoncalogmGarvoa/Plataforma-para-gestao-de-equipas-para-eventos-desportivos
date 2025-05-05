@@ -1,6 +1,6 @@
 package pt.arbitros.arbnet.domain
 
-data class Role(
+data class Function(
     val id: Int,
     val name: String
 )

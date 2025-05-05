@@ -1,8 +1,8 @@
 package pt.arbitros.arbnet.repository.mem
 
-import pt.arbitros.arbnet.repository.RoleRepository
+import pt.arbitros.arbnet.repository.FunctionRepository
 
-class RoleRepositoryMem : RoleRepository {
+class FunctionRepositoryMem : FunctionRepository {
     private val roles = mutableMapOf<Int, String>()
     private var nextId = 1
 
@@ -15,9 +15,9 @@ class RoleRepositoryMem : RoleRepository {
         return id
     }
 
-    override fun getRoleIdByName(roleName: String): Int =
+    override fun getFunctionIdByName(roleName: String): Int =
         roles.entries.find { it.value == roleName }?.key
             ?: throw NoSuchElementException("Role with name '$roleName' not found")
 
-    override fun getRoleNameById(roleId: Int): String = roles[roleId] ?: throw NoSuchElementException("Role with ID '$roleId' not found")
+    override fun getFunctionNameById(roleId: Int): String = roles[roleId] ?: throw NoSuchElementException("Role with ID '$roleId' not found")
 }

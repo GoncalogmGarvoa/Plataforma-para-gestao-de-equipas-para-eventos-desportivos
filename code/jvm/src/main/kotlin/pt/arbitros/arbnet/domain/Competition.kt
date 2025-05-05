@@ -5,7 +5,7 @@ data class Competition(
     val name: String,
     val address: String,
     val email: String,
-    val phoneNumber: String, // todo Int or String ?
+    val phoneNumber: String,
     val location: String,
     val association: String,
 )
