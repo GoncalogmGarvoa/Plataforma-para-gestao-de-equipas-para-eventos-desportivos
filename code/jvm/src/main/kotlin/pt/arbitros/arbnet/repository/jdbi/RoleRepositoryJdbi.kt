@@ -1,6 +1,7 @@
 package pt.arbitros.arbnet.repository.jdbi
 
 import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.kotlin.mapTo
 import pt.arbitros.arbnet.repository.RoleRepository
 
 class RoleRepositoryJdbi(
@@ -8,7 +9,13 @@ class RoleRepositoryJdbi(
 ) : RoleRepository {
 
     override fun getRoleName(roleId: Int): String? {
-        TODO("Not yet implemented")
+        return handle
+            .createQuery(
+                """select name from dbp.role where id = :roleId""",
+            )
+            .bind("roleId", roleId)
+            .mapTo<String>()
+            .singleOrNull() as String?
     }
 
 }
