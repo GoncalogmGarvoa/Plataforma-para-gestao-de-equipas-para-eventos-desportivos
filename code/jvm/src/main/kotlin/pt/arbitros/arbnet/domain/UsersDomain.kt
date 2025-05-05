@@ -89,6 +89,8 @@ class UsersDomain {
                 }
             }
         }
+        return true
+    }
 
         // Step 4: Compute mod 97
         return numericIban.toBigInteger() % 97.toBigInteger() == BigInteger.ONE
