@@ -3,7 +3,7 @@ CREATE SCHEMA IF NOT EXISTS dbp;
 
 create table dbp.users (
                            id serial primary key,
-                           phone_number Int not null,
+                           phone_number varchar(13) not null ,
                            address varchar(255) not null,
                            name varchar(100) not null,
                            email varchar(100) unique not null,

@@ -37,7 +37,7 @@ class UsersDomain {
         val regex = Regex("^[A-Za-zÀ-ÿ ]+$") // Allows letters (including accented) and spaces
         return name.isNotBlank() &&
             name.length in 3..100 &&
-            name.trim().contains(" ") &&
+            // name.trim().contains(" ") &&
             regex.matches(name)
     }
 
@@ -49,14 +49,18 @@ class UsersDomain {
     }
 
     fun validEmail(email: String): Boolean {
-        val emailRegex = Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{6,}$")
+        val emailRegex = Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,10}$")
         return email.length <= 100 && emailRegex.matches(email)
     }
 
     fun validPassword(password: String): Boolean {
-        val passwordRegex = Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d@#\$%^&+=!]{8,30}$")
+        val passwordRegex = Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,30}$")
         return passwordRegex.matches(password)
     }
+    // ^(?=.*[a-z])                      // pelo menos uma letra minúscula
+    // (?=.*[A-Z])                       // pelo menos uma letra maiúscula
+    // (?=.*\d)                          // pelo menos um dígito
+    // [a-zA-Z\d@#\$%^&+=!]{8,30}$       // apenas estes caracteres, com comprimento de 8 a 30
 
     fun validBirthDate(birthDate: String): Boolean =
         try {
@@ -68,14 +72,12 @@ class UsersDomain {
         }
 
     fun validatePortugueseIban(iban: String): Boolean {
-        // Step 1: Check format
+        val cleanIban = iban.replace("\\s".toRegex(), "")
         val regex = Regex("^PT\\d{23}$")
-        if (!regex.matches(iban)) return false
+        if (!regex.matches(cleanIban)) return false
 
-        // Step 2: Rearrange (move first 4 chars to the end)
-        val rearranged = iban.substring(4) + iban.substring(0, 4)
+        val rearranged = cleanIban.substring(4) + cleanIban.substring(0, 4)
 
-        // Step 3: Convert letters to numbers (A=10 to Z=35)
         val numericIban =
             buildString {
                 for (char in rearranged) {
@@ -87,7 +89,6 @@ class UsersDomain {
                 }
             }
 
-        // Step 4: Compute mod 97
         return BigInteger(numericIban) % BigInteger("97") == BigInteger.ONE
     }
 }

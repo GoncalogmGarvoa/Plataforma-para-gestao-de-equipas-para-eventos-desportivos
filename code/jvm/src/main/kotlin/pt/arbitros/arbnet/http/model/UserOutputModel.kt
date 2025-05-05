@@ -8,5 +8,5 @@ class UserOutputModel(
     val email: String,
     val birthDate: String,
     val iban: String,
-    val roles: List<String>,
+    // val roles: List<String>,
 )

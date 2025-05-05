@@ -7,17 +7,18 @@ drop table if exists dbp.position;
 drop table if exists dbp.session;
 drop table if exists dbp.participant;
 drop table if exists dbp.match_day;
-drop table if exists dbp.role;
-drop table if exists dbp.users_role;
 drop table if exists dbp.call_list;
 
 drop table if exists dbp.competition;
 drop table if exists dbp.category_dir;
 drop table if exists dbp.category;
-drop table if exists dbp.function;
 
 drop table if exists dbp.equipment;
+drop table if exists dbp.users_role;
 drop table if exists dbp.users;
+drop table if exists dbp.role;
+drop table if exists dbp.function;
+
 
 select *
 from dbp.competition_equipment;

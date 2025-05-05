@@ -11,16 +11,20 @@ data class Users(
     val password: String,
     val birthDate: LocalDate,
     val iban: String,
-    val roles: List<String>,
+    // val roles: List<String>,
 )
 
-enum class UserRole(val roleName: String) {
+enum class UserRole(
+    val roleName: String,
+) {
     ADMIN("admin"),
     ARBITRATION_COUNCIL("arbitration_council"),
-    REFEREE("referee");
+    REFEREE("referee"),
 }
 
-enum class UserStatus(val status: String) {
+enum class UserStatus(
+    val status: String,
+) {
     ACTIVE("active"),
     INACTIVE("inactive"),
 }

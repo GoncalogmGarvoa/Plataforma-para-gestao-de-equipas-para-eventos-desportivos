@@ -29,7 +29,7 @@ class UsersRepositoryMem : UsersRepository {
                 password = password,
                 birthDate = birthDate,
                 iban = iban,
-                roles = emptyList(),
+                // roles = emptyList(),
             )
         users.add(user)
         return user.id
@@ -76,12 +76,13 @@ class UsersRepositoryMem : UsersRepository {
         userId: Int,
         roles: List<String>,
     ): Boolean {
-        val index = users.indexOfFirst { it.id == userId }
-        if (index == -1) return false
-
-        val user = users[index]
-        users[index] = user.copy(roles = roles)
-        return true
+        TODO("Not yet implemented")
+//        val index = users.indexOfFirst { it.id == userId }
+//        if (index == -1) return false
+//
+//        val user = users[index]
+//        users[index] = user.copy(roles = roles)
+//        return true
     }
 
     override fun deleteUser(id: Int): Boolean = users.removeIf { it.id == id }

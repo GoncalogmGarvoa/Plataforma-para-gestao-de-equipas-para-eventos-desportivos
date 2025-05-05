@@ -20,7 +20,7 @@ class UsersRepositoryJdbi(
     ): Int =
         handle
             .createUpdate(
-                """insert into dbp.users (name, phone_Number, address, email, password, birth_date, iban, roles) values (:name, :phone_number, :address ,:email, :password, :birth_date, :iban)""",
+                """insert into dbp.users (name, phone_Number, address, email, password, birth_date, iban) values (:name, :phone_number, :address ,:email, :password, :birth_date, :iban)""",
             ).bind("name", name)
             .bind("phone_number", phoneNumber)
             .bind("address", address)

@@ -5,7 +5,7 @@ class UserInputModel(
     val phoneNumber: String,
     val address: String,
     val email: String,
+    val password: String,
     val birthDate: String,
     val iban: String,
-    val password: String,
 )
