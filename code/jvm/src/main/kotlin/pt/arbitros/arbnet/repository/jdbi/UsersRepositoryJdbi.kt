@@ -111,5 +111,13 @@ class UsersRepositoryJdbi(
             .createUpdate("""delete from dbp.users where id = :id""")
             .bind("id", id)
             .execute() > 0
+
+    override fun userHasCouncilRole(councilUserId: Int): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun getUsersAndCheckIfReferee(participants: List<Int>): List<Users> {
+        TODO("Not yet implemented")
+    }
 }
 // val rolesArray = handle.connection.createArrayOf("text", roles.toTypedArray())

@@ -2,6 +2,6 @@ package pt.arbitros.arbnet.http.model
 
 data class UserRolesUpdateInputModel(
     val userId: Int,
-    val roles: String,
+    val roleId: Int,
     val addOrRemove: Boolean,
 )

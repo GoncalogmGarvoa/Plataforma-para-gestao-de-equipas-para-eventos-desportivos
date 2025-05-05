@@ -90,4 +90,11 @@ class UsersRepositoryMem : UsersRepository {
     }
 
     override fun deleteUser(id: Int): Boolean = users.removeIf { it.id == id }
+    override fun userHasCouncilRole(councilUserId: Int): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun getUsersAndCheckIfReferee(participants: List<Int>): List<Users> {
+        TODO("Not yet implemented")
+    }
 }

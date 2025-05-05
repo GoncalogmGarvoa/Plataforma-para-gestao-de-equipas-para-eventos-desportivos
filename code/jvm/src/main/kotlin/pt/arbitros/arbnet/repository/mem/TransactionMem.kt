@@ -10,10 +10,6 @@ class TransactionMem(
 
 ) : Transaction {
 
-    override val arbitrationCouncilRepository: ArbitrationCouncilRepository = ArbitrationCouncilRepositoryMem()
-    override val refereeRepository: RefereeRepository = RefereeRepositoryMem()
-
-    override val adminRepository: AdminRepository = AdminRepositoryMem()
     override val usersRepository: UsersRepository = UsersRepositoryMem()
     override val callListRepository: CallListRepository = CallListRepositoryMem()
     override val competitionRepository: CompetitionRepository = CompetitionRepositoryMem()
@@ -21,6 +17,8 @@ class TransactionMem(
     override val matchDayRepository: MatchDayRepository = MatchDayRepositoryMem()
     override val participantRepository: ParticipantRepository = ParticipantRepositoryMem()
     override val functionRepository: FunctionRepository = FunctionRepositoryMem()
+    override val usersRolesRepository: UsersRolesRepository = UsersRolesRepositoryMem()
+    override val roleRepository: RoleRepository = RoleRepositoryMem()
 
     override fun rollback() {
         handle.rollback()

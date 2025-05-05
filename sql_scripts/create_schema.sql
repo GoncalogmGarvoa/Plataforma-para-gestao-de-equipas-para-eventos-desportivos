@@ -20,7 +20,7 @@ create table dbp.role (
 
 );
 
-create table dbp.users_role (
+create table dbp.users_roles (
                                 user_id int,
                                 role_id int,
                                 primary key (user_id, role_id),

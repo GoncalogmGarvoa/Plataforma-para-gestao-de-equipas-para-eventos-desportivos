@@ -41,4 +41,7 @@ interface UsersRepository {
     ): Boolean
 
     fun deleteUser(id: Int): Boolean
+
+    fun userHasCouncilRole(councilUserId: Int) : Boolean
+    fun getUsersAndCheckIfReferee(participants: List<Int>) : List<Users>
 }

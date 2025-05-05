@@ -99,7 +99,7 @@ class UsersController(
         ResponseEntity.ok(
             usersService.updateRoles(
                 user.userId,
-                user.roles,
+                user.roleId,
                 user.addOrRemove,
             ),
         )

@@ -117,58 +117,27 @@ class UsersService(
 
     fun updateRoles(
         id: Int,
-        role: String,
+        roleId: Int,
         addOrRemove: Boolean,
     ): Boolean =
         transactionManager.run {
             val usersRepository = it.usersRepository
-            val adminRepository = it.adminRepository
-            val arbitrationCouncilRepository = it.arbitrationCouncilRepository
-            val refereeRepository = it.refereeRepository
+            val roleRepository = it.roleRepository
+            val usersRolesRepository = it.usersRolesRepository
 
-            if (!usersDomain.validRole(role)) throw Exception("Role $role is not valid")
-            val user = usersRepository.getUserById(id) ?: throw Exception("User with id $id not found")
+            roleRepository.getRoleName(roleId)
+                ?: throw Exception("Role with id $roleId not found")
+            usersRepository.getUserById(id)
+                ?: throw Exception("User with id $id not found")
 
-            if (addOrRemove && user.roles.contains(role)) {
-                throw Exception("User with id $id already has role $role")
+            val hasRole = usersRolesRepository.userHasRole(id, roleId)
+
+            when {
+                addOrRemove && !hasRole -> usersRolesRepository.addRoleToUser(id, roleId)
+                !addOrRemove && hasRole -> usersRolesRepository.removeRoleFromUser(id, roleId)
             }
-            if (!addOrRemove && !user.roles.contains(role)) {
-                throw Exception("User with id $id does not have role $role")
-            }
 
-            val roleActions =
-                mapOf(
-                    UserRole.ADMIN.roleName to
-                        Pair(
-                            { adminRepository.createAdmin(id) },
-                            { adminRepository.deleteAdmin(id) },
-                        ),
-                    UserRole.ARBITRATION_COUNCIL.roleName to
-                        Pair(
-                            { arbitrationCouncilRepository.createCouncilMember(id) },
-                            { arbitrationCouncilRepository.deleteCouncilMember(id) },
-                        ),
-                    UserRole.REFEREE.roleName to
-                        Pair(
-                            { refereeRepository.createReferee(id) },
-                            { refereeRepository.deleteReferee(id) },
-                        ),
-                )
-
-            val (addAction, removeAction) =
-                roleActions[role]
-                    ?: throw Exception("Role $role is not supported for update")
-
-            val newRoles =
-                if (addOrRemove) {
-                    addAction()
-                    user.roles + role
-                } else {
-                    removeAction()
-                    user.roles - role
-                }
-
-            usersRepository.updateRoles(id, newRoles)
+            true
         }
 
     fun validateUser(

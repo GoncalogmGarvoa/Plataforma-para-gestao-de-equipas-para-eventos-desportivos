@@ -1,6 +1,7 @@
 package pt.arbitros.arbnet.repository
 
 interface Transaction {
+    val usersRolesRepository: UsersRolesRepository
     val usersRepository: UsersRepository
 
     val competitionRepository: CompetitionRepository
@@ -9,6 +10,7 @@ interface Transaction {
     val sessionsRepository: SessionsRepository
     val participantRepository: ParticipantRepository
     val functionRepository: FunctionRepository
+    val roleRepository: RoleRepository
 
     fun rollback()
 }
