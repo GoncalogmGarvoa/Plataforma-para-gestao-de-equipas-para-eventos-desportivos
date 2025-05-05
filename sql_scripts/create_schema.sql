@@ -10,39 +10,38 @@ create table dbp.users (
                            password varchar(30) not null,
                            birth_date date not null,
                            iban varchar(25) not null,
-                           roles text[] DEFAULT '{}',
                            status VARCHAR(10)CHECK (status IN ('active', 'inactive'))DEFAULT 'active'
 
 );
 
-create table dbp.admin (
-                           user_id int primary key,
-                           foreign key (user_id) references dbp.users(id)
-);
+create table dbp.role (
+                          id serial primary key,
+                          name varchar(50) not null
+
+)
+
+create table dbp.users_role (
+                                user_id int,
+                                role_id int,
+                                primary key (user_id, role_id),
+                                foreign key (user_id) references dbp.users(id),
+                                foreign key (role_id) references dbp.role(id)
+)
+
 
 create table dbp.category (
                               id serial primary key,
                               name varchar(50) not null
 );
 
-create table dbp.referee (
-                             user_id int primary key,
-                             foreign key (user_id) references dbp.users(id)
-);
-
-create table dbp.arbitration_council (
-                                         user_id int primary key,
-                                         foreign key (user_id) references dbp.users(id)
-);
-
 create table dbp.category_dir (
-                                  referee_id int,
+                                  user_id int,
                                   id serial,
                                   start_date date not null,
                                   end_date date,
                                   category_id int,
-                                  primary key (id, referee_id, category_id),
-                                  foreign key (referee_id) references dbp.referee(user_id),
+                                  primary key (id, user_id, category_id),
+                                  foreign key (user_id) references dbp.users(id),
                                   foreign key (category_id) references dbp.category(id)
 );
 
@@ -60,16 +59,16 @@ create table dbp.call_list (
                                id serial,
                                deadline date not null,
                                call_type varchar(100) default 'callList' check (call_type in ('callList', 'confirmation', 'finalJury')),
-                               council_id int,
+                               user_id int,
                                competition_id int not null,
                                primary key (id),
-                               foreign key (council_id) references dbp.arbitration_council(user_id),
+                               foreign key (user_id) references dbp.users(id),
                                foreign key (competition_id) references dbp.competition(competition_number)
 );
 
-create table dbp.role (
-                          id serial primary key,
-                          name varchar(100) unique not null
+create table dbp.function (
+                              id serial primary key,
+                              name varchar(50) unique not null
 );
 
 create table dbp.match_day (
@@ -84,14 +83,14 @@ create table dbp.participant (
                                  call_list_id int,
                                  match_day_id int,
                                  competition_id_match_day int,
-                                 referee_id int,
-                                 role_id int,
+                                 user_id int,
+                                 function_id int,
                                  confirmation_status varchar(20) default 'waiting' check (confirmation_status in ('waiting', 'accepted', 'declined')),
-                                 primary key (call_list_id, match_day_id, referee_id, role_id),
-                                 foreign key (role_id) references dbp.role(id),
+                                 primary key (call_list_id, match_day_id, user_id, function_id),
+                                 foreign key (function_id) references dbp.function(id),
                                  foreign key (call_list_id) references dbp.call_list(id),
                                  foreign key (match_day_id, competition_id_match_day) references dbp.match_day(id, competition_id),
-                                 foreign key (referee_id) references dbp.referee(user_id)
+                                 foreign key (user_id) references dbp.users(id)
 );
 
 create table dbp.session (
@@ -114,13 +113,13 @@ create table dbp.position (
 create table dbp.session_referees (
                                       session_id int,
                                       position_id int,
-                                      referee_id int,
+                                      user_id int,
                                       match_day_id_session int,
                                       competition_id_match_day int,
-                                      primary key (position_id, session_id, referee_id, match_day_id_session, competition_id_match_day),
+                                      primary key (position_id, session_id, user_id, match_day_id_session, competition_id_match_day),
                                       foreign key (session_id, match_day_id_session, competition_id_match_day)
-                                      references dbp.session(id, match_day_id, competition_id_match_day),
-                                      foreign key (referee_id) references dbp.referee(user_id),
+                                          references dbp.session(id, match_day_id, competition_id_match_day),
+                                      foreign key (user_id) references dbp.users(id),
                                       foreign key (position_id) references dbp.position(id)
 );
 
