@@ -134,14 +134,14 @@ class UsersService(
             when {
                 addOrRemove && !hasRole -> usersRolesRepository.addRoleToUser(userId, roleId)
                 !addOrRemove && hasRole -> usersRolesRepository.removeRoleFromUser(userId, roleId)
-                !hasRole -> throw Exception("User doesnt have this role")
-                else -> throw Exception("User already has this role")
+                !hasRole -> throw Exception("User doesnt have this role") //TODO verificar que isto nao da sempre trigger
+                else -> throw Exception("User already has this role") // possivelmente colocar if aqui dentro depois ver qual exceçao é que da
             }
 
             true
         }
 
-    fun validateUser(
+    fun validateUser( //todo adicionar exceções aqui possivelmente
         name: String,
         phoneNumber: String,
         address: String,

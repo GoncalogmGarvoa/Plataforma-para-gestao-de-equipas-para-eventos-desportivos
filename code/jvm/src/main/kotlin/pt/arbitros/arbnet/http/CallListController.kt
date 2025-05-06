@@ -26,16 +26,7 @@ class CallListController(
         when (
             val callList =
                 callListService.createCallList(
-                    callList.competitionName,
-                    callList.address,
-                    callList.phoneNumber,
-                    callList.email,
-                    callList.association,
-                    callList.location,
-                    callList.deadline,
-                    callList.councilId,
-                    callList.participant,
-                    callList.matchDaySessions,
+                    callList
                 )
         ) {
             is Success -> ResponseEntity.ok(callList)
@@ -49,7 +40,7 @@ class CallListController(
         }
 
     @PutMapping(Uris.CallListUris.ASSIGN_ROLES)
-    fun assingRoles(
+    fun assignRoles(
         @RequestBody roleAssignmentsInfo: List<RoleAssignmentsInput>,
     ): ResponseEntity<*> {
         val result =

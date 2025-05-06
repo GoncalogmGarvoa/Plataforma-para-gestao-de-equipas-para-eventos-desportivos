@@ -10,7 +10,7 @@ class CallListInputModel(
     val association: String,
     val location: String,
     val councilId: Int,
-    val participant: List<Int>,
+    val participants: List<Int>,
     val deadline: LocalDate,
     val matchDaySessions: List<MatchDaySessionsInput>,
 )

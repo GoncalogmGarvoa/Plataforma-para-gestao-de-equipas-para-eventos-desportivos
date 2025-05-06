@@ -11,7 +11,7 @@ data class CallList(
 )
 
 enum class CallListType(val callType: String) {
-    CALLLIST("callList"),
+    CALL_LIST("callList"),
     CONFIRMATION("confirmation"),
-    FINALJURY("finalJury"),
+    FINAL_JURY("finalJury"),
 }

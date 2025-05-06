@@ -4,7 +4,7 @@ import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.arbitros.arbnet.repository.FunctionRepository
 
-class RepositoryFunctionJdbi( // TODO review if necessary
+class RepositoryFunctionJdbi(
     private val handle: Handle,
 ) : FunctionRepository {
     override fun getFunctionIdByName(roleName: String): Int? =

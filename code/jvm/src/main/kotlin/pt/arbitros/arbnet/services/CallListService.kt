@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.ConfirmationStatus
 import pt.arbitros.arbnet.domain.Participant
+import pt.arbitros.arbnet.http.model.CallListInputModel
 import pt.arbitros.arbnet.http.model.MatchDaySessionsInput
 import pt.arbitros.arbnet.http.model.RoleAssignmentsInput
 import pt.arbitros.arbnet.repository.TransactionManager
@@ -29,16 +30,7 @@ class CallListService(
     // private val clock: Clock
 ) {
     fun createCallList(
-        competitionName: String,
-        address: String,
-        phoneNumber: Int,
-        email: String,
-        association: String,
-        location: String,
-        deadline: LocalDate,
-        userId: Int,
-        participants: List<Int>,
-        matchDaySessions: List<MatchDaySessionsInput>,
+        callList : CallListInputModel,
     ): Either<CallListError, Int> =
         transactionManager.run {
             // Create the competition
@@ -51,33 +43,33 @@ class CallListService(
             val usersRepository = it.usersRepository
 
             // Check if the council exists
-            if (!usersRepository.userHasCouncilRole(userId)) {
+            if (!usersRepository.userHasCouncilRole(callList.councilId)) {
                 return@run failure(CallListError.ArbitrationCouncilNotFound)
             }
 
             // Check if the participants exist
-            val foundReferees = usersRepository.getUsersAndCheckIfReferee(participants)
+            val foundReferees = usersRepository.getUsersAndCheckIfReferee(callList.participants)
 
-            if (foundReferees.size != participants.size) {
+            if (foundReferees.size != callList.participants.size) {
                 return@run failure(CallListError.ParticipantNotFound) // throw Exception("One or more of the participants were not found")
             }
 
             // Create the competition
             val competitionId =
                 competitionRepository.createCompetition(
-                    competitionName,
-                    address,
-                    phoneNumber,
-                    email,
-                    association,
-                    location,
+                    callList.competitionName,
+                    callList.address,
+                    callList.phoneNumber,
+                    callList.email,
+                    callList.association,
+                    callList.location,
                 )
 
             // Create the match day sessions
 
             val matchDayMap = mutableMapOf<MatchDaySessionsInput, Int>()
 
-            matchDaySessions.forEach { matchDay ->
+            callList.matchDaySessions.forEach { matchDay ->
                 val matchDayId =
                     matchDayRepository.createMatchDay(
                         competitionId,
@@ -86,7 +78,7 @@ class CallListService(
                 matchDayMap[matchDay] = matchDayId
             }
 
-            matchDaySessions.forEach { matchDay ->
+            callList.matchDaySessions.forEach { matchDay ->
                 val matchDayId = matchDayMap[matchDay]!!
                 matchDay.sessions.forEach { session ->
                     sessionsRepository.createSession(
@@ -99,16 +91,16 @@ class CallListService(
 
             val callListId =
                 callListRepository.createCallList(
-                    deadline,
-                    userId,
+                    callList.deadline,
+                    callList.councilId,
                     competitionId,
                 )
 
             val participantsToInsert = mutableListOf<Participant>()
 
-            for (matchDay in matchDaySessions) {
+            for (matchDay in callList.matchDaySessions) {
                 val matchDayId = matchDayMap[matchDay]!!
-                for (userId in participants) {
+                for (userId in callList.participants) {
                     val participant =
                         Participant(
                             callListId = callListId,
