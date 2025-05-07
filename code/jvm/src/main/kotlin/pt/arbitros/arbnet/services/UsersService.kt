@@ -90,21 +90,23 @@ class UsersService(
                 user.birthDate,
                 user.iban,
             )
-
-            usersRepository.getUserById(user.id) ?: return@run failure(UsersError.UserNotFound)
-            checkIfExistsInRepo(user.email, user.iban, user.phoneNumber)
-            val updated =
-                usersRepository.updateUser(
-                    user.id,
-                    user.name,
-                    user.phoneNumber,
-                    user.address,
-                    user.email,
-                    user.password,
-                    LocalDate.parse(user.birthDate),
-                    user.iban,
-                )
-            return@run success(updated)
+            val userInfo = usersRepository.getUserById(user.id) ?: return@run failure(UsersError.UserNotFound)
+            if (userInfo as UserUpdateInputModel != user) {
+                checkIfExistsInRepo(user.email, user.iban, user.phoneNumber, userInfo.id)
+                val updated =
+                    usersRepository.updateUser(
+                        user.id,
+                        user.name,
+                        user.phoneNumber,
+                        user.address,
+                        user.email,
+                        user.password,
+                        LocalDate.parse(user.birthDate),
+                        user.iban,
+                    )
+                return@run success(updated)
+            }
+            return@run success(true)
         }
 
     fun deleteUser(id: Int): Either<UsersError, Boolean> =
@@ -119,18 +121,26 @@ class UsersService(
         email: String,
         iban: String,
         phoneNumber: String,
+        excludeUserId: Int? = null,
     ): Either<UsersError, Boolean> =
         transactionManager.run {
             val usersRepository = it.usersRepository
-            if (usersRepository.existsByEmail(email)) {
-                return@run failure(UsersError.EmailAlreadyUsed)
+            if (excludeUserId == null) {
+                if (usersRepository.existsByEmail(email)) return@run failure(UsersError.EmailAlreadyUsed)
+                if (usersRepository.existsByPhoneNumber(phoneNumber)) return@run failure(UsersError.PhoneNumberAlreadyUsed)
+                if (usersRepository.existsByIban(iban)) return@run failure(UsersError.IbanAlreadyUsed)
+            } else {
+                if (usersRepository.existsByEmailExcludingId(email, excludeUserId)) return@run failure(UsersError.EmailAlreadyUsed)
+                if (usersRepository.existsByPhoneNumberExcludingId(
+                        phoneNumber,
+                        excludeUserId,
+                    )
+                ) {
+                    return@run failure(UsersError.PhoneNumberAlreadyUsed)
+                }
+                if (usersRepository.existsByIbanExcludingId(iban, excludeUserId)) return@run failure(UsersError.IbanAlreadyUsed)
             }
-            if (usersRepository.existsByPhoneNumber(phoneNumber)) {
-                return@run failure(UsersError.PhoneNumberAlreadyUsed)
-            }
-            if (usersRepository.existsByIban(iban)) {
-                return@run failure(UsersError.IbanAlreadyUsed)
-            }
+
             return@run success(true)
         }
 
