@@ -10,30 +10,47 @@ import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.transactionRepo
 import java.time.LocalDate
 
+sealed class UsersError {
+    data object RoleNotFound : UsersError()
+
+    data object UserNotFound : UsersError()
+
+    data object UserWithoutRole : UsersError()
+
+    data object UserAlreadyHasRole : UsersError()
+
+    data object EmailAlreadyUsed : UsersError()
+
+    data object PhoneNumberAlreadyUsed : UsersError()
+
+    data object IbanAlreadyUsed : UsersError()
+
+    data object EmailNotFound : UsersError()
+}
+
 @Component
 class UsersService(
     @Qualifier(transactionRepo) private val transactionManager: TransactionManager,
     private val usersDomain: UsersDomain,
     // private val clock: Clock
 ) {
-    fun getUserById(id: Int): Users =
+    fun getUserById(id: Int): Either<UsersError, Users> =
         transactionManager.run {
             val usersRepository = it.usersRepository
-            val user = usersRepository.getUserById(id) ?: throw Exception("User with id $id not found")
-            user
+            val user = usersRepository.getUserById(id) ?: return@run failure(UsersError.UserNotFound)
+            return@run success(user)
         }
 
-    fun getUserByEmail(email: String): Users =
+    fun getUserByEmail(email: String): Either<UsersError, Users> =
         transactionManager.run {
             val usersRepository = it.usersRepository
-            val user = usersRepository.getUserByEmail(email) ?: throw Exception("User with email $email not found")
-            user
+            val user = usersRepository.getUserByEmail(email) ?: return@run failure(UsersError.EmailNotFound)
+            return@run success(user)
         }
 
-    fun createUser(user: UserInputModel): Int =
+    fun createUser(user: UserInputModel): Either<UsersError, Int> =
         transactionManager.run {
             val usersRepository = it.usersRepository
-            val usersRolesRepository = it.usersRolesRepository
 
             validateUser(
                 user.name,
@@ -45,7 +62,7 @@ class UsersService(
                 user.iban,
             )
 
-            existsByParams(user.email, user.iban, user.phoneNumber)
+            checkIfExistsInRepo(user.email, user.iban, user.phoneNumber)
 
             val id =
                 usersRepository.createUser(
@@ -57,11 +74,10 @@ class UsersService(
                     LocalDate.parse(user.birthDate),
                     user.iban,
                 )
-            usersRolesRepository.addRoleToUser(id, 3)
-            id
+            return@run success(id)
         }
 
-    fun updateUser(user: UserUpdateInputModel): Boolean =
+    fun updateUser(user: UserUpdateInputModel): Either<UsersError, Boolean> =
         transactionManager.run {
             val usersRepository = it.usersRepository
 
@@ -75,8 +91,8 @@ class UsersService(
                 user.iban,
             )
 
-            usersRepository.getUserById(user.id) ?: throw Exception("User with id ${user.id} not found")
-            existsByParams(user.email, user.iban, user.phoneNumber, user.id)
+            usersRepository.getUserById(user.id) ?: return@run failure(UsersError.UserNotFound)
+            checkIfExistsInRepo(user.email, user.iban, user.phoneNumber)
             val updated =
                 usersRepository.updateUser(
                     user.id,
@@ -88,65 +104,63 @@ class UsersService(
                     LocalDate.parse(user.birthDate),
                     user.iban,
                 )
-            updated
+            return@run success(updated)
         }
 
-    fun deleteUser(id: Int) =
+    fun deleteUser(id: Int): Either<UsersError, Boolean> =
         transactionManager.run {
             val usersRepository = it.usersRepository
-            usersRepository.getUserById(id) ?: throw Exception("User with id $id not found")
+            usersRepository.getUserById(id) ?: return@run failure(UsersError.UserNotFound)
             val deleted = usersRepository.deleteUser(id)
-            deleted
+            return@run success(deleted)
         }
 
-    fun existsByParams(
+    fun checkIfExistsInRepo(
         email: String,
         iban: String,
         phoneNumber: String,
-        excludeUserId: Int? = null
-    ) = transactionManager.run {
-        val repo = it.usersRepository
-
-        if (excludeUserId == null) {
-            if (repo.existsByEmail(email)) throw Exception("User with email $email already exists")
-            if (repo.existsByPhoneNumber(phoneNumber)) throw Exception("User with phone number $phoneNumber already exists")
-            if (repo.existsByIban(iban)) throw Exception("User with IBAN $iban already exists")
-        } else {
-            if (repo.existsByEmailExcludingId(email, excludeUserId)) throw Exception("User with email $email already exists")
-            if (repo.existsByPhoneNumberExcludingId(phoneNumber, excludeUserId)) throw Exception("User with phone number $phoneNumber already exists")
-            if (repo.existsByIbanExcludingId(iban, excludeUserId)) throw Exception("User with IBAN $iban already exists")
+    ): Either<UsersError, Boolean> =
+        transactionManager.run {
+            val usersRepository = it.usersRepository
+            if (usersRepository.existsByEmail(email)) {
+                return@run failure(UsersError.EmailAlreadyUsed)
+            }
+            if (usersRepository.existsByPhoneNumber(phoneNumber)) {
+                return@run failure(UsersError.PhoneNumberAlreadyUsed)
+            }
+            if (usersRepository.existsByIban(iban)) {
+                return@run failure(UsersError.IbanAlreadyUsed)
+            }
+            return@run success(true)
         }
-    }
-
 
     fun updateUserRoles(
         userId: Int,
         roleId: Int,
         addOrRemove: Boolean,
-    ): Boolean =
+    ): Either<UsersError, Boolean> =
+        // Boolean =
         transactionManager.run {
             val usersRepository = it.usersRepository
             val roleRepository = it.roleRepository
             val usersRolesRepository = it.usersRolesRepository
 
-            roleRepository.getRoleName(roleId)
-                ?: throw Exception("Role with id $roleId not found")
-            usersRepository.getUserById(userId)
-                ?: throw Exception("User with id $userId not found")
+            roleRepository.getRoleName(roleId) ?: return@run failure(UsersError.RoleNotFound)
+            usersRepository.getUserById(userId) ?: return@run failure(UsersError.UserNotFound)
 
             val hasRole = usersRolesRepository.userHasRole(userId, roleId)
 
             when {
                 addOrRemove && !hasRole -> usersRolesRepository.addRoleToUser(userId, roleId)
                 !addOrRemove && hasRole -> usersRolesRepository.removeRoleFromUser(userId, roleId)
-                !hasRole -> throw Exception("User doesnt have this role") //TODO verificar que isto nao da sempre trigger
-                else -> throw Exception("User already has this role") // possivelmente colocar if aqui dentro depois ver qual exceçao é que da
+                !hasRole -> return@run failure(UsersError.UserWithoutRole)
+                else -> return@run failure(UsersError.UserAlreadyHasRole)
             }
 
-            true
+            return@run success(true) // todo change return
         }
 
-    fun validateUser( //todo adicionar exceções aqui possivelmente
+    fun validateUser(
         name: String,
         phoneNumber: String,
         address: String,

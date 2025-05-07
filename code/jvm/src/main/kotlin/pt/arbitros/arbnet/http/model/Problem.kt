@@ -21,6 +21,7 @@ sealed class Problem(
             .header("Content-Type", MEDIA_TYPE)
             .body(this)
 
+    // callList
     data object CallListNotFound : Problem(URI("$PROBLEM_URI_PATH/callList-not-found"))
 
     data object RoleNotFound : Problem(URI("$PROBLEM_URI_PATH/role-not-found"))
@@ -30,4 +31,19 @@ sealed class Problem(
     data object ParticpantNotFound : Problem(URI("$PROBLEM_URI_PATH/participant-not-found"))
 
     data object ArbitrationCouncilNotFound : Problem(URI("$PROBLEM_URI_PATH/arbitrationCouncil-not-found"))
+
+    // Users
+    data object UserNotFound : Problem(URI("$PROBLEM_URI_PATH/user-not-found"))
+
+    data object EmailNotFound : Problem(URI("$PROBLEM_URI_PATH/email-not-found"))
+
+    data object EmailAlreadyUsed : Problem(URI("$PROBLEM_URI_PATH/email-already-used"))
+
+    data object PhoneNumberAlreadyUsed : Problem(URI("$PROBLEM_URI_PATH/phone-number-used"))
+
+    data object IbanAlreadyUsed : Problem(URI("$PROBLEM_URI_PATH/iban-already-used"))
+
+    data object UserAlreadyHasRole : Problem(URI("$PROBLEM_URI_PATH/user-already-has-role"))
+
+    data object UserWithoutRole : Problem(URI("$PROBLEM_URI_PATH/user-without-role"))
 }
