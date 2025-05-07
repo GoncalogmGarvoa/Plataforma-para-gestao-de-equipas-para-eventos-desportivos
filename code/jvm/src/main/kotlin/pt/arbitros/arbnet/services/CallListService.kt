@@ -5,10 +5,10 @@ import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.ConfirmationStatus
 import pt.arbitros.arbnet.domain.Participant
 import pt.arbitros.arbnet.http.model.CallListInputModel
-import pt.arbitros.arbnet.http.model.MatchDaySessionsInput
 import pt.arbitros.arbnet.http.model.FunctionsAssignmentsInput
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.transactionRepo
+import java.time.LocalDate
 
 sealed class CallListError {
     data object ArbitrationCouncilNotFound : CallListError()
@@ -30,10 +30,8 @@ class CallListService(
     // private val usersDomain: UsersDomain,
     // private val clock: Clock
 ) {
-    fun createCallList(
-        callList : CallListInputModel,
-    ): Either<CallListError, Int> =
-        transactionManager.run {
+    fun createCallList(callList: CallListInputModel): Either<CallListError, Int> =
+        transactionManager.run { it ->
             // Create the competition
             val competitionRepository = it.competitionRepository
             val matchDayRepository = it.matchDayRepository
@@ -44,26 +42,17 @@ class CallListService(
             val usersRepository = it.usersRepository
 
             // Check if the council exists
-            if (!usersRepository.userHasCouncilRole(callList.councilId)) {
+            if (!usersRepository.userHasCouncilRole(callList.userId)) {
                 return@run failure(CallListError.ArbitrationCouncilNotFound)
             }
 
             // Check if the participants exist
-            val foundReferees = usersRepository.getUsersAndCheckIfReferee(callList.participants)
 
+            val participantIds = callList.participants.map { it.userId }
+
+            val foundReferees = usersRepository.getUsersAndCheckIfReferee(participantIds)
             if (foundReferees.size != callList.participants.size) {
                 return@run failure(CallListError.ParticipantNotFound)
-            }
-
-            // Check if the functions exist
-            val foundFunctions = functionRepository.getFunctionIds(callList.functions)
-            if(foundFunctions.size != callList.functions.size) {
-                return@run failure(CallListError.FunctionNotFound)
-            }
-
-            // Check if participants and functions have the same size
-            if (foundReferees.size != foundFunctions.size) {
-                return@run failure(CallListError.ParticipantsDontMatchFunctions)
             }
 
             // Create the competition
@@ -78,56 +67,48 @@ class CallListService(
                 )
 
             // Create the match day sessions
-
-            val matchDayMap = mutableMapOf<MatchDaySessionsInput, Int>()
-
-            callList.matchDaySessions.forEach { matchDay ->
-                val matchDayId =
-                    matchDayRepository.createMatchDay(
-                        competitionId,
-                        matchDay.matchDay,
-                    )
-                matchDayMap[matchDay] = matchDayId
-            }
-
-            callList.matchDaySessions.forEach { matchDay ->
-                val matchDayId = matchDayMap[matchDay]!!
-                matchDay.sessions.forEach { session ->
-                    sessionsRepository.createSession(
-                        competitionId,
-                        matchDayId,
-                        session,
-                    )
+            val matchDayMap: Map<LocalDate, Int> =
+                callList.matchDaySessions.associate { md ->
+                    md.matchDay to matchDayRepository.createMatchDay(competitionId, md.matchDay)
+                }
+            callList.matchDaySessions.forEach { md ->
+                val mdId = matchDayMap[md.matchDay]!!
+                md.sessions.forEach { tm ->
+                    sessionsRepository.createSession(competitionId, mdId, tm)
                 }
             }
-
             val callListId =
                 callListRepository.createCallList(
                     callList.deadline,
-                    callList.councilId,
+                    callList.userId,
                     competitionId,
                 )
 
             val participantsToInsert = mutableListOf<Participant>()
 
-            for (matchDay in callList.matchDaySessions) {
-                val matchDayId = matchDayMap[matchDay]!!
-                for (userId in 0..callList.participants.size-1) {
-                    val participant =
-                        Participant(
-                            callListId = callListId,
-                            matchDayId = matchDayId,
-                            // councilId = councilId,
-                            competitionIdMatchDay = competitionId,
-                            userId = foundReferees[userId].id,
-                            foundFunctions[userId],
-                            ConfirmationStatus.WAITING.value,
-                        )
-                    participantsToInsert.add(participant)
-                }
+            callList.participants.forEach { p ->
+                p.functionByMatchDay
+                    .filter { it.second.isNotBlank() }
+                    .forEach { (day, funcName) ->
+                        val funcId =
+                            functionRepository.getFunctionIdByName(funcName)
+                                ?: return@run failure(CallListError.FunctionNotFound)
+                        val mdId =
+                            matchDayMap[day]
+                                ?: return@run failure(CallListError.MatchDayNotFound)
+                        participantsToInsert +=
+                            Participant(
+                                callListId = callListId,
+                                matchDayId = mdId,
+                                competitionIdMatchDay = competitionId,
+                                userId = p.userId,
+                                functionId = funcId,
+                                confirmationStatus = ConfirmationStatus.WAITING.value,
+                            )
+                    }
             }
-            participantRepository.batchAddParticipants(participantsToInsert.toList())
 
+            participantRepository.batchAddParticipants(participantsToInsert.toList())
             return@run success(callListId)
         }
 

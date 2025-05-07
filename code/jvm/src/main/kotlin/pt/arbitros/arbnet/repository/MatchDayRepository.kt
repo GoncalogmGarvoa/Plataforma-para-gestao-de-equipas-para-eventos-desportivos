@@ -9,9 +9,12 @@ interface MatchDayRepository {
         matchDate: LocalDate,
     ): Int
 
-    fun getMatchDayById(
-        id: Int
-    ): MatchDay?
+    fun getMatchDayById(id: Int): MatchDay?
+
+    fun getMatchDayId(
+        competitionId: Int,
+        first: LocalDate,
+    ): Int?
 
 //    fun findMatchDayById(
 //        id: Int,

@@ -6,7 +6,6 @@ import pt.arbitros.arbnet.domain.MatchDay
 import pt.arbitros.arbnet.repository.MatchDayRepository
 import java.time.LocalDate
 
-
 class MatchDayRepositoryJdbi(
     private val handle: Handle,
 ) : MatchDayRepository {
@@ -29,11 +28,20 @@ class MatchDayRepositoryJdbi(
             .bind("id", id)
             .mapTo<MatchDay>()
             .singleOrNull()
+
+    override fun getMatchDayId(
+        competitionId: Int,
+        matchDate: LocalDate,
+    ): Int? =
+        handle
+            .createQuery("""select id from dbp.match_day where competition_id = :cmId and match_date = :date""")
+            .bind("cmId", competitionId)
+            .bind("date", matchDate)
+            .mapTo<Int>()
+            .singleOrNull()
 }
 
-
-
-    //    override fun findMatchDayById(
+//    override fun findMatchDayById(
 //        id: Int,
 //        competitionId: Int,
 //    ): MatchDay? =
@@ -69,4 +77,3 @@ class MatchDayRepositoryJdbi(
 //            .bind("competition_id", matchDay.competitionId)
 //            .bind("date", matchDay.matchDate)
 //            .execute() > 0
-

@@ -9,9 +9,18 @@ class CallListInputModel(
     val email: String,
     val association: String,
     val location: String,
-    val councilId: Int,
-    val participants: List<Int>,
-    val functions: List<String>,
+    val userId: Int,
+    val participants: List<ParticipantChoice>,
     val deadline: LocalDate,
     val matchDaySessions: List<MatchDaySessionsInput>,
+)
+
+data class ParticipantChoice(
+    val userId: Int,
+    val functionByMatchDay: List<Pair<LocalDate, String>>,
+)
+
+data class Aux(
+    val matchDay: LocalDate,
+    val function: String,
 )
