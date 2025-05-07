@@ -20,8 +20,6 @@ sealed class CallListError {
     data object CallListNotFound : CallListError()
 
     data object MatchDayNotFound : CallListError()
-
-    data object ParticipantsDontMatchFunctions : CallListError()
 }
 
 @Component
@@ -30,6 +28,7 @@ class CallListService(
     // private val usersDomain: UsersDomain,
     // private val clock: Clock
 ) {
+    // todo create rollback
     fun createCallList(callList: CallListInputModel): Either<CallListError, Int> =
         transactionManager.run { it ->
             // Create the competition
@@ -88,7 +87,7 @@ class CallListService(
 
             callList.participants.forEach { p ->
                 p.functionByMatchDay
-                    .filter { it.second.isNotBlank() }
+                    .filter { elem -> elem.function.isNotBlank() }
                     .forEach { (day, funcName) ->
                         val funcId =
                             functionRepository.getFunctionIdByName(funcName)

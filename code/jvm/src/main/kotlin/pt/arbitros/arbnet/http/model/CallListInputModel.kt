@@ -17,10 +17,10 @@ class CallListInputModel(
 
 data class ParticipantChoice(
     val userId: Int,
-    val functionByMatchDay: List<Pair<LocalDate, String>>,
+    val functionByMatchDay: List<FunctionByMatchDayDto>,
 )
 
-data class Aux(
+data class FunctionByMatchDayDto(
     val matchDay: LocalDate,
     val function: String,
 )

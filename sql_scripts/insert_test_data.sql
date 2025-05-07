@@ -62,6 +62,9 @@ values
 insert into dbp.function(id, name)
 values
     (0, 'default'), (1, 'Juíz Árbitro'), (2, 'Delegado'), (3, 'Informático')
+insert into dbp.function(id, name)
+values
+    (0, 'DEFAULT'), (1, 'JA'), (2, 'DEL'), (3, 'INF')
 
 -- MATCH_DAY
 insert into dbp.match_day (id, match_date, competition_id)
