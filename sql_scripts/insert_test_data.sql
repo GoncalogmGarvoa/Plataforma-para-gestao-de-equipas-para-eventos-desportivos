@@ -11,22 +11,6 @@ VALUES
     ('Miguel Alves', 932326737, 'Street G, 404', 'miguel@example.com', 'pass5', '1987-09-07', 'PT50000201231234567890160', ARRAY['referee', 'player']),
     ('Laura Pinto', 932326738, 'Street H, 505', 'laura@example.com', 'pass6', '1993-11-23', 'PT50000201231234567890161', ARRAY['manager', 'admin']);
 
-
--- ADMIN
-insert into dbp.admin (user_id)
-values
-    (2), (5);
-
--- REFEREE
-insert into dbp.referee (user_id)
-values
-    (1), (3), (4);
-
--- ARBITRATION_COUNCIL
-insert into dbp.arbitration_council (user_id)
-values
-    (2), (5);
-
 -- CATEGORY
 insert into dbp.category (id, name)
 values
@@ -72,7 +56,12 @@ values
 -- ROLE
 insert into dbp.role (id, name)
 values
-    (1, 'Principal'), (2, 'Auxiliar'), (3, 'Reserva');
+    (1, 'admin'), (2, 'Arbitration_Council'), (3, 'Referee');
+
+-- FUNCTION
+insert into dbp.function(id, name)
+values
+    (0, 'default'), (1, 'Juíz Árbitro'), (2, 'Delegado'), (3, 'Informático')
 
 -- MATCH_DAY
 insert into dbp.match_day (id, match_date, competition_id)

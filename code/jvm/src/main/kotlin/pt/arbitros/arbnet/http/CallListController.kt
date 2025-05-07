@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController
 import pt.arbitros.arbnet.http.model.CallListInputModel
 import pt.arbitros.arbnet.http.model.ParticipantUpdateInput
 import pt.arbitros.arbnet.http.model.Problem
-import pt.arbitros.arbnet.http.model.RoleAssignmentsInput
+import pt.arbitros.arbnet.http.model.FunctionsAssignmentsInput
 import pt.arbitros.arbnet.services.CallListError
 import pt.arbitros.arbnet.services.CallListService
 import pt.arbitros.arbnet.services.Failure
@@ -20,7 +20,7 @@ class CallListController(
     private val callListService: CallListService,
 ) {
     @PostMapping(Uris.CallListUris.CREATE_CALLLIST)
-    fun createUser(
+    fun createCallList(
         @RequestBody callList: CallListInputModel,
     ): ResponseEntity<*> =
         when (
@@ -41,10 +41,10 @@ class CallListController(
 
     @PutMapping(Uris.CallListUris.ASSIGN_ROLES)
     fun assignRoles(
-        @RequestBody roleAssignmentsInfo: List<RoleAssignmentsInput>,
+        @RequestBody roleAssignmentsInfo: List<FunctionsAssignmentsInput>,
     ): ResponseEntity<*> {
         val result =
-            callListService.assignRoles(
+            callListService.assignFunction(
                 roleAssignmentsInfo,
             )
         return when (result) {
@@ -52,7 +52,7 @@ class CallListController(
             is Failure -> {
                 val error = result.value
                 when (error) {
-                    is CallListError.RoleNotFound -> Problem.RoleNotFound.response(HttpStatus.NOT_FOUND)
+                    is CallListError.FunctionNotFound -> Problem.RoleNotFound.response(HttpStatus.NOT_FOUND)
                     is CallListError.MatchDayNotFound -> Problem.MatchDayNotFound.response(HttpStatus.NOT_FOUND)
                     is CallListError.ParticipantNotFound -> Problem.ParticpantNotFound.response(HttpStatus.NOT_FOUND)
                     else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to assign the role")

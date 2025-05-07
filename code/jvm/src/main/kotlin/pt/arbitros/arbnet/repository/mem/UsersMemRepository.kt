@@ -39,13 +39,13 @@ class UsersRepositoryMem : UsersRepository {
 
     override fun getUserByEmail(email: String): Users? = users.find { it.email == email }
 
-    override fun existsByEmail(email: String): Boolean = users.any { it.email == email }
+    override fun existsByEmail(email: String, id: Int?): Boolean = users.any { it.email == email && (it.id != id) }
 
-    override fun existsByPhoneNumber(phoneNumber: String): Boolean {
+    override fun existsByPhoneNumber(phoneNumber: String, id: Int?): Boolean {
         TODO("Not yet implemented")
     }
 
-    override fun existsByIban(iban: String): Boolean {
+    override fun existsByIban(iban: String, id: Int?): Boolean {
         TODO("Not yet implemented")
     }
 

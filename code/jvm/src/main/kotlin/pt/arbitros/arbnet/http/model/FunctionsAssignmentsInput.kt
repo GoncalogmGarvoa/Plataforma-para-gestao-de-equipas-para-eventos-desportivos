@@ -5,7 +5,7 @@ data class DayAssignmentInput(
     val participantId: Int,
 )
 
-data class RoleAssignmentsInput(
-    val role: String,
+data class FunctionsAssignmentsInput(
+    val function: String,
     val assignments: List<DayAssignmentInput>,
 )

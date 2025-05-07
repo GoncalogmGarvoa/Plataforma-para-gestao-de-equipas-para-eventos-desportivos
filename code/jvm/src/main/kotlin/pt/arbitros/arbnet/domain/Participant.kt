@@ -6,11 +6,11 @@ data class Participant(
     val competitionIdMatchDay: Int,
     val userId: Int,
     val functionId: Int,
-    val confirmationStatus: ConfirmationStatus,
+    val confirmationStatus: String,
 )
 
-enum class ConfirmationStatus {
-    WAITING,
-    ACCEPTED,
-    DECLINED,
+enum class ConfirmationStatus(val value : String) {
+    WAITING("waiting"),
+    ACCEPTED("accepted"),
+    DECLINED("declined")
 }

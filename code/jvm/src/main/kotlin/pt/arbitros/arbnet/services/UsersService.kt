@@ -33,6 +33,7 @@ class UsersService(
     fun createUser(user: UserInputModel): Int =
         transactionManager.run {
             val usersRepository = it.usersRepository
+            val usersRolesRepository = it.usersRolesRepository
 
             validateUser(
                 user.name,
@@ -56,6 +57,7 @@ class UsersService(
                     LocalDate.parse(user.birthDate),
                     user.iban,
                 )
+            usersRolesRepository.addRoleToUser(id, 3)
             id
         }
 
@@ -74,7 +76,7 @@ class UsersService(
             )
 
             usersRepository.getUserById(user.id) ?: throw Exception("User with id ${user.id} not found")
-            existsByParams(user.email, user.iban, user.phoneNumber)
+            existsByParams(user.email, user.iban, user.phoneNumber, user.id)
             val updated =
                 usersRepository.updateUser(
                     user.id,
@@ -101,16 +103,17 @@ class UsersService(
         email: String,
         iban: String,
         phoneNumber: String,
+        userIdToExclude: Int? = null,
     ) = transactionManager.run {
         val usersRepository = it.usersRepository
-        if (usersRepository.existsByEmail(email)) {
+        if (usersRepository.existsByEmail(email, userIdToExclude)) {
             throw Exception("User with email $email already exists")
         }
-        if (usersRepository.existsByPhoneNumber(phoneNumber)) {
+        if (usersRepository.existsByPhoneNumber(phoneNumber, userIdToExclude)) {
             throw Exception("User with phone number $phoneNumber already exists")
         }
-        if (usersRepository.existsByIban(iban)) {
-            throw Exception("User with iban $iban already exists")
+        if (usersRepository.existsByIban(iban, userIdToExclude)) {
+            throw Exception("User with IBAN $iban already exists")
         }
     }
 

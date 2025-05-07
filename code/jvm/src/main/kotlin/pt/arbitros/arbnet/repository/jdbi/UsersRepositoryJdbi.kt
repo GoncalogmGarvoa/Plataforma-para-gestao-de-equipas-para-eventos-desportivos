@@ -46,26 +46,29 @@ class UsersRepositoryJdbi(
             .mapTo<Users>()
             .singleOrNull()
 
-    override fun existsByEmail(email: String): Boolean =
+    override fun existsByEmail(email: String, id: Int?): Boolean =
         handle
-            .createQuery("SELECT * FROM dbp.users WHERE email = :email")
+            .createQuery("SELECT * FROM dbp.users WHERE email = :email and id != :id")
             .bind("email", email)
+            .bind("id", id)
             .mapTo<Int>()
             .findFirst()
             .isPresent
 
-    override fun existsByPhoneNumber(phoneNumber: String): Boolean =
+    override fun existsByPhoneNumber(phoneNumber: String, id: Int?): Boolean =
         handle
-            .createQuery("SELECT * FROM dbp.users WHERE phone_number = :phone_number")
+            .createQuery("SELECT * FROM dbp.users WHERE phone_number = :phone_number and id != :id")
             .bind("phone_number", phoneNumber)
+            .bind("id", id)
             .mapTo<Int>()
             .findFirst()
             .isPresent
 
-    override fun existsByIban(iban: String): Boolean =
+    override fun existsByIban(iban: String, id: Int?): Boolean =
         handle
-            .createQuery("SELECT * FROM dbp.users WHERE iban = :iban")
+            .createQuery("SELECT * FROM dbp.users WHERE iban = :iban and id != :id")
             .bind("iban", iban)
+            .bind("id", id)
             .mapTo<Int>()
             .findFirst()
             .isPresent
@@ -82,14 +85,15 @@ class UsersRepositoryJdbi(
     ): Boolean =
         handle
             .createUpdate(
-                """update dbp.users set name = :name, phone_Number= :phoneNumber,address = :address, email = :email, password = :password, birth_date = :birth_date, iban = :iban where id = :id""",
+                """update dbp.users set name = :name, phone_number= :phoneNumber,address = :address, email = :email, password = :password, birth_date = :birth_date, iban = :iban where id = :id""",
             ).bind("name", name)
-            .bind("phone_Number", phoneNumber)
+            .bind("phoneNumber", phoneNumber)
             .bind("address", address)
             .bind("email", email)
             .bind("password", password)
             .bind("birth_date", LocalDate.now())
             .bind("iban", iban)
+            .bind("id", id)
             .execute() > 0
 
     override fun updateRoles(
@@ -115,7 +119,7 @@ class UsersRepositoryJdbi(
                 """
         SELECT 1 FROM dbp.users_roles ur
         JOIN dbp.role r ON ur.role_id = r.id
-        WHERE ur.user_id = :user_id AND r.name = 'arbitration council'
+        WHERE ur.user_id = :user_id AND r.name = 'Arbitration_Council'
         """,
             ).bind("user_id", userId)
             .mapTo<Int>()
@@ -131,7 +135,7 @@ class UsersRepositoryJdbi(
         JOIN dbp.users_roles ur ON u.id = ur.user_id
         JOIN dbp.role r ON ur.role_id = r.id
         WHERE u.id IN (<participants>)
-          AND r.name = 'referee'
+          AND r.name = 'Referee'
         """,
             ).bindList("participants", participants)
             .mapTo<Users>()

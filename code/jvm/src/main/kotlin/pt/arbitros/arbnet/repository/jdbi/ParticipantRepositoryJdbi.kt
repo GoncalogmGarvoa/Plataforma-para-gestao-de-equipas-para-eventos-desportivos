@@ -87,11 +87,11 @@ class ParticipantRepositoryJdbi(
     override fun batchAddParticipants(participants: List<Participant>): Boolean {
         val sql = """
         insert into dbp.participant (
-            call_list_id, match_day_id, council_id,
-            competition_id_match_day, user_id, function_id, confirmation_status
+            call_list_id, match_day_id, competition_id_match_day,
+            user_id, function_id, confirmation_status
         ) values (
-            :call_list_id, :match_day_id, :council_id,
-            :competition_id_match_day, :user_id, :function_id, :confirmation_status
+            :call_list_id, :match_day_id,:competition_id_match_day,
+            :user_id, :function_id, :confirmation_status
         )
         """
 

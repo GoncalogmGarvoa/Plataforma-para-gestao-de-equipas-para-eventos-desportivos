@@ -73,7 +73,7 @@ class UsersController(
         )
 
     // TODO: needs to check with token if its the same user being changed
-    @PostMapping(Uris.UsersUris.UPDATE_USER)
+    @PutMapping(Uris.UsersUris.UPDATE_USER)
     fun updateUser(
         @RequestBody user: UserUpdateInputModel,
     ): ResponseEntity<Boolean> =

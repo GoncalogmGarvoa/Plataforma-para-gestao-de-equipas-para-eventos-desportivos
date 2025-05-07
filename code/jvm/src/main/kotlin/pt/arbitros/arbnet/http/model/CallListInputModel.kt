@@ -11,6 +11,7 @@ class CallListInputModel(
     val location: String,
     val councilId: Int,
     val participants: List<Int>,
+    val functions: List<String>,
     val deadline: LocalDate,
     val matchDaySessions: List<MatchDaySessionsInput>,
 )

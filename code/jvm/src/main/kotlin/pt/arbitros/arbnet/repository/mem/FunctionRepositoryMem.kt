@@ -20,4 +20,7 @@ class FunctionRepositoryMem : FunctionRepository {
             ?: throw NoSuchElementException("Role with name '$roleName' not found")
 
     override fun getFunctionNameById(roleId: Int): String = roles[roleId] ?: throw NoSuchElementException("Role with ID '$roleId' not found")
+    override fun getFunctionIds(functions: List<String>): List<Int> {
+        TODO("Not yet implemented")
+    }
 }

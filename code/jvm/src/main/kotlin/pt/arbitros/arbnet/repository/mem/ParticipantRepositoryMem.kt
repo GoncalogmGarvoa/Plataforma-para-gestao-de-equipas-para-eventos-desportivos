@@ -32,7 +32,7 @@ class ParticipantRepositoryMem : ParticipantRepository {
                 competitionIdMatchDay = competitionId,
                 userId = userId,
                 functionId = functionId,
-                confirmationStatus = ConfirmationStatus.WAITING,
+                confirmationStatus = ConfirmationStatus.WAITING.value,
             )
         participants.add(participant)
         return true
@@ -65,7 +65,7 @@ class ParticipantRepositoryMem : ParticipantRepository {
 
         participants.forEachIndexed { index, p ->
             if (p.callListId == callListId && p.userId == participantId) {
-                val newStatus = if (p.matchDayId in days) ConfirmationStatus.ACCEPTED else ConfirmationStatus.DECLINED
+                val newStatus = if (p.matchDayId in days) ConfirmationStatus.ACCEPTED.value else ConfirmationStatus.DECLINED.value
                 if (p.confirmationStatus != newStatus) {
                     participants[index] = p.copy(confirmationStatus = newStatus)
                     updated = true

@@ -6,21 +6,22 @@ import pt.arbitros.arbnet.domain.ConfirmationStatus
 import pt.arbitros.arbnet.domain.Participant
 import pt.arbitros.arbnet.http.model.CallListInputModel
 import pt.arbitros.arbnet.http.model.MatchDaySessionsInput
-import pt.arbitros.arbnet.http.model.RoleAssignmentsInput
+import pt.arbitros.arbnet.http.model.FunctionsAssignmentsInput
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.transactionRepo
-import java.time.LocalDate
 
 sealed class CallListError {
     data object ArbitrationCouncilNotFound : CallListError()
 
-    data object RoleNotFound : CallListError()
+    data object FunctionNotFound : CallListError()
 
     data object ParticipantNotFound : CallListError()
 
     data object CallListNotFound : CallListError()
 
     data object MatchDayNotFound : CallListError()
+
+    data object ParticipantsDontMatchFunctions : CallListError()
 }
 
 @Component
@@ -39,7 +40,7 @@ class CallListService(
             val sessionsRepository = it.sessionsRepository
             val callListRepository = it.callListRepository
             val participantRepository = it.participantRepository
-            val roleRepository = it.functionRepository
+            val functionRepository = it.functionRepository
             val usersRepository = it.usersRepository
 
             // Check if the council exists
@@ -51,7 +52,18 @@ class CallListService(
             val foundReferees = usersRepository.getUsersAndCheckIfReferee(callList.participants)
 
             if (foundReferees.size != callList.participants.size) {
-                return@run failure(CallListError.ParticipantNotFound) // throw Exception("One or more of the participants were not found")
+                return@run failure(CallListError.ParticipantNotFound)
+            }
+
+            // Check if the functions exist
+            val foundFunctions = functionRepository.getFunctionIds(callList.functions)
+            if(foundFunctions.size != callList.functions.size) {
+                return@run failure(CallListError.FunctionNotFound)
+            }
+
+            // Check if participants and functions have the same size
+            if (foundReferees.size != foundFunctions.size) {
+                return@run failure(CallListError.ParticipantsDontMatchFunctions)
             }
 
             // Create the competition
@@ -100,38 +112,37 @@ class CallListService(
 
             for (matchDay in callList.matchDaySessions) {
                 val matchDayId = matchDayMap[matchDay]!!
-                for (userId in callList.participants) {
+                for (userId in 0..callList.participants.size-1) {
                     val participant =
-                        Participant(
-                            callListId = callListId,
-                            matchDayId = matchDayId,
-                            // councilId = councilId,
-                            competitionIdMatchDay = competitionId,
-                            userId = userId,
-                            0,
-                            ConfirmationStatus.WAITING,
-                        )
-                    participantsToInsert.add(participant)
+                            Participant(
+                                callListId = callListId,
+                                matchDayId = matchDayId,
+                                // councilId = councilId,
+                                competitionIdMatchDay = competitionId,
+                                userId = foundReferees[userId].id,
+                                foundFunctions[userId],
+                                ConfirmationStatus.WAITING.value,
+                            )
+                        participantsToInsert.add(participant)
                 }
             }
-
             participantRepository.batchAddParticipants(participantsToInsert.toList())
 
             return@run success(callListId)
         }
 
-    fun assignRoles(roleAssignmentsInfo: List<RoleAssignmentsInput>): Either<CallListError, Boolean> =
+    fun assignFunction(functionAssignmentsInfo: List<FunctionsAssignmentsInput>): Either<CallListError, Boolean> =
         transactionManager.run {
-            val roleRepository = it.functionRepository
+            val functionRepository = it.functionRepository
             val participantRepository = it.participantRepository
             val matchDayRepository = it.matchDayRepository
 
-            roleAssignmentsInfo.forEach { roleAssignment ->
+            functionAssignmentsInfo.forEach { functionAssignment ->
 
-                val roleId =
-                    roleRepository.getFunctionIdByName(roleAssignment.role)
-                        ?: return@run failure(CallListError.RoleNotFound)
-                roleAssignment.assignments.forEach { assignment ->
+                val functionId =
+                    functionRepository.getFunctionIdByName(functionAssignment.function)
+                        ?: return@run failure(CallListError.FunctionNotFound)
+                functionAssignment.assignments.forEach { assignment ->
                     // Check if the participant exists
                     participantRepository.getParticipantById(assignment.participantId)
                         ?: return@run failure(CallListError.ParticipantNotFound)
@@ -142,7 +153,7 @@ class CallListService(
 
                     participantRepository.updateParticipantRole(
                         assignment.participantId,
-                        roleId,
+                        functionId,
                         assignment.matchDayId,
                     )
                 }
