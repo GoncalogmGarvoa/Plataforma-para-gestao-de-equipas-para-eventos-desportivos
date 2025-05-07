@@ -114,16 +114,16 @@ class CallListService(
                 val matchDayId = matchDayMap[matchDay]!!
                 for (userId in 0..callList.participants.size-1) {
                     val participant =
-                            Participant(
-                                callListId = callListId,
-                                matchDayId = matchDayId,
-                                // councilId = councilId,
-                                competitionIdMatchDay = competitionId,
-                                userId = foundReferees[userId].id,
-                                foundFunctions[userId],
-                                ConfirmationStatus.WAITING.value,
-                            )
-                        participantsToInsert.add(participant)
+                        Participant(
+                            callListId = callListId,
+                            matchDayId = matchDayId,
+                            // councilId = councilId,
+                            competitionIdMatchDay = competitionId,
+                            userId = foundReferees[userId].id,
+                            foundFunctions[userId],
+                            ConfirmationStatus.WAITING.value,
+                        )
+                    participantsToInsert.add(participant)
                 }
             }
             participantRepository.batchAddParticipants(participantsToInsert.toList())

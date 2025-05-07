@@ -103,19 +103,21 @@ class UsersService(
         email: String,
         iban: String,
         phoneNumber: String,
-        userIdToExclude: Int? = null,
+        excludeUserId: Int? = null
     ) = transactionManager.run {
-        val usersRepository = it.usersRepository
-        if (usersRepository.existsByEmail(email, userIdToExclude)) {
-            throw Exception("User with email $email already exists")
-        }
-        if (usersRepository.existsByPhoneNumber(phoneNumber, userIdToExclude)) {
-            throw Exception("User with phone number $phoneNumber already exists")
-        }
-        if (usersRepository.existsByIban(iban, userIdToExclude)) {
-            throw Exception("User with IBAN $iban already exists")
+        val repo = it.usersRepository
+
+        if (excludeUserId == null) {
+            if (repo.existsByEmail(email)) throw Exception("User with email $email already exists")
+            if (repo.existsByPhoneNumber(phoneNumber)) throw Exception("User with phone number $phoneNumber already exists")
+            if (repo.existsByIban(iban)) throw Exception("User with IBAN $iban already exists")
+        } else {
+            if (repo.existsByEmailExcludingId(email, excludeUserId)) throw Exception("User with email $email already exists")
+            if (repo.existsByPhoneNumberExcludingId(phoneNumber, excludeUserId)) throw Exception("User with phone number $phoneNumber already exists")
+            if (repo.existsByIbanExcludingId(iban, excludeUserId)) throw Exception("User with IBAN $iban already exists")
         }
     }
+
 
     fun updateUserRoles(
         userId: Int,

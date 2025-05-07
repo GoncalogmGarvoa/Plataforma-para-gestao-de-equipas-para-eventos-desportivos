@@ -18,11 +18,17 @@ interface UsersRepository {
 
     fun getUserByEmail(email: String): Users?
 
-    fun existsByEmail(email: String, id: Int?): Boolean
+    fun existsByEmail(email: String): Boolean
 
-    fun existsByPhoneNumber(phoneNumber: String, id: Int?): Boolean
+    fun existsByEmailExcludingId(email: String, id: Int): Boolean
 
-    fun existsByIban(iban: String, id: Int?): Boolean
+    fun existsByPhoneNumber(phoneNumber: String): Boolean
+
+    fun existsByPhoneNumberExcludingId(phoneNumber: String, id: Int): Boolean
+
+    fun existsByIban(iban: String): Boolean
+
+    fun existsByIbanExcludingId(iban: String, id: Int): Boolean
 
     fun updateUser(
         id: Int,

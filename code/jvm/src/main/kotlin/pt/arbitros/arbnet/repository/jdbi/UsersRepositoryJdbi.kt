@@ -46,16 +46,32 @@ class UsersRepositoryJdbi(
             .mapTo<Users>()
             .singleOrNull()
 
-    override fun existsByEmail(email: String, id: Int?): Boolean =
+    override fun existsByEmail(email: String): Boolean =
         handle
-            .createQuery("SELECT * FROM dbp.users WHERE email = :email and id != :id")
+            .createQuery("SELECT * FROM dbp.users WHERE email = :email")
+            .bind("email", email)
+            .mapTo<Int>()
+            .findFirst()
+            .isPresent
+
+    override fun existsByEmailExcludingId(email: String, id: Int): Boolean =
+        handle
+            .createQuery("SELECT 1 FROM dbp.users WHERE email = :email AND id != :id")
             .bind("email", email)
             .bind("id", id)
             .mapTo<Int>()
             .findFirst()
             .isPresent
 
-    override fun existsByPhoneNumber(phoneNumber: String, id: Int?): Boolean =
+    override fun existsByPhoneNumber(phoneNumber: String): Boolean =
+        handle
+            .createQuery("SELECT * FROM dbp.users WHERE phone_number = :phone_number")
+            .bind("phone_number", phoneNumber)
+            .mapTo<Int>()
+            .findFirst()
+            .isPresent
+
+    override fun existsByPhoneNumberExcludingId(phoneNumber: String, id: Int): Boolean =
         handle
             .createQuery("SELECT * FROM dbp.users WHERE phone_number = :phone_number and id != :id")
             .bind("phone_number", phoneNumber)
@@ -64,7 +80,15 @@ class UsersRepositoryJdbi(
             .findFirst()
             .isPresent
 
-    override fun existsByIban(iban: String, id: Int?): Boolean =
+    override fun existsByIban(iban: String): Boolean =
+        handle
+            .createQuery("SELECT * FROM dbp.users WHERE iban = :iban")
+            .bind("iban", iban)
+            .mapTo<Int>()
+            .findFirst()
+            .isPresent
+
+    override fun existsByIbanExcludingId(iban: String, id: Int): Boolean =
         handle
             .createQuery("SELECT * FROM dbp.users WHERE iban = :iban and id != :id")
             .bind("iban", iban)
