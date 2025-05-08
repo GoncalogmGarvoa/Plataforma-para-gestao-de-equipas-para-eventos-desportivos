@@ -39,37 +39,38 @@ class UsersRepositoryMem : UsersRepository {
 
     override fun getUserByEmail(email: String): Users? = users.find { it.email == email }
 
-    override fun existsByEmail(email: String): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun existsByEmail(email: String): Boolean = users.any { it.email == email }
 
     override fun existsByEmailExcludingId(
         email: String,
         id: Int,
     ): Boolean {
-        TODO("Not yet implemented")
+        val user = users.find { it.email == email }
+        return user != null && user.id != id
     }
 
     override fun existsByPhoneNumber(phoneNumber: String): Boolean {
-        TODO("Not yet implemented")
+        return users.any { it.phoneNumber == phoneNumber }
     }
 
     override fun existsByPhoneNumberExcludingId(
         phoneNumber: String,
         id: Int,
     ): Boolean {
-        TODO("Not yet implemented")
+        val user = users.find { it.phoneNumber == phoneNumber }
+        return user != null && user.id != id
     }
 
     override fun existsByIban(iban: String): Boolean {
-        TODO("Not yet implemented")
+        return users.any { it.iban == iban }
     }
 
     override fun existsByIbanExcludingId(
         iban: String,
         id: Int,
     ): Boolean {
-        TODO("Not yet implemented")
+        val user = users.find { it.iban == iban }
+        return user != null && user.id != id
     }
 
     override fun updateUser(

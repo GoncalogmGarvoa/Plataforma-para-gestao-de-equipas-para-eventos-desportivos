@@ -51,4 +51,13 @@ class UtilsDomain {
         }
     }
 
+    fun validDate(date: String): Boolean {
+        return try {
+            val parsedDate = LocalDate.parse(date)
+            true
+        } catch (e: Exception) {
+            false // Parsing failed → invalid format or date
+        }
+    }
+
 }

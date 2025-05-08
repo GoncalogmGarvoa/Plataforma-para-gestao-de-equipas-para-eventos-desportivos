@@ -39,6 +39,8 @@ class CallListController(
                 }
         }
 
+
+    //Not in use for now
     @PutMapping(Uris.CallListUris.ASSIGN_ROLES)
     fun assignRoles(
         @RequestBody roleAssignmentsInfo: List<FunctionsAssignmentsInput>,

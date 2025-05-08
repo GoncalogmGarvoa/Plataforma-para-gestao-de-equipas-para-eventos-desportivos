@@ -41,6 +41,7 @@ class CallListService(
             val functionRepository = it.functionRepository
             val usersRepository = it.usersRepository
 
+            // Validating values given by the user
             validateCallList(
                 callList.competitionName,
                 callList.address,
@@ -121,7 +122,7 @@ class CallListService(
             return@run success(callListId)
         }
 
-
+        //Not in use for now
     fun assignFunction(functionAssignmentsInfo: List<FunctionsAssignmentsInput>): Either<CallListError, Boolean> =
         transactionManager.run {
             val functionRepository = it.functionRepository
@@ -186,7 +187,7 @@ class CallListService(
     ) {
         require(utilsDomain.validName(competitionName)) { "Invalid competition name" }
         require(utilsDomain.validAddress(address)) { "Invalid address" }
-        require(utilsDomain.validPhoneNumber(phoneNumber.toString())) { "Invalid phone number" }
+        require(utilsDomain.validPhoneNumber(phoneNumber)) { "Invalid phone number" }
         require(utilsDomain.validEmail(email)) { "Invalid email" }
         require(utilsDomain.validName(association)) { "Invalid association" }
         require(utilsDomain.validName(location)) { "Invalid location" }
