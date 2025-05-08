@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.ConfirmationStatus
 import pt.arbitros.arbnet.domain.Participant
+import pt.arbitros.arbnet.domain.UtilsDomain
 import pt.arbitros.arbnet.http.model.CallListInputModel
 import pt.arbitros.arbnet.http.model.FunctionsAssignmentsInput
 import pt.arbitros.arbnet.repository.TransactionManager
@@ -25,7 +26,7 @@ sealed class CallListError {
 @Component
 class CallListService(
     @Qualifier(transactionRepo) private val transactionManager: TransactionManager,
-    // private val usersDomain: UsersDomain,
+    private val utilsDomain: UtilsDomain,
     // private val clock: Clock
 ) {
     // todo create rollback
@@ -39,6 +40,15 @@ class CallListService(
             val participantRepository = it.participantRepository
             val functionRepository = it.functionRepository
             val usersRepository = it.usersRepository
+
+            validateCallList(
+                callList.competitionName,
+                callList.address,
+                callList.phoneNumber,
+                callList.email,
+                callList.association,
+                callList.location,
+            )
 
             // Check if the council exists
             if (!usersRepository.userHasCouncilRole(callList.userId)) {
@@ -111,6 +121,7 @@ class CallListService(
             return@run success(callListId)
         }
 
+
     fun assignFunction(functionAssignmentsInfo: List<FunctionsAssignmentsInput>): Either<CallListError, Boolean> =
         transactionManager.run {
             val functionRepository = it.functionRepository
@@ -164,4 +175,20 @@ class CallListService(
             }
             return@run success(true)
         }
+
+    private fun validateCallList(
+        competitionName: String,
+        address: String,
+        phoneNumber: String,
+        email: String,
+        association: String,
+        location: String
+    ) {
+        require(utilsDomain.validName(competitionName)) { "Invalid competition name" }
+        require(utilsDomain.validAddress(address)) { "Invalid address" }
+        require(utilsDomain.validPhoneNumber(phoneNumber.toString())) { "Invalid phone number" }
+        require(utilsDomain.validEmail(email)) { "Invalid email" }
+        require(utilsDomain.validName(association)) { "Invalid association" }
+        require(utilsDomain.validName(location)) { "Invalid location" }
+    }
 }

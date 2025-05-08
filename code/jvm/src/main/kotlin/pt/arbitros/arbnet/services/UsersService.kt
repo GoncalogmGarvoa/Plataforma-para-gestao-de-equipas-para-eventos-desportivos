@@ -1,11 +1,11 @@
 package pt.arbitros.arbnet.services
 
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.Role
 import pt.arbitros.arbnet.domain.Users
 import pt.arbitros.arbnet.domain.UsersDomain
+import pt.arbitros.arbnet.domain.UtilsDomain
 import pt.arbitros.arbnet.http.model.UserInputModel
 import pt.arbitros.arbnet.http.model.UserUpdateInputModel
 import pt.arbitros.arbnet.repository.TransactionManager
@@ -34,6 +34,7 @@ sealed class UsersError {
 class UsersService(
     @Qualifier(transactionRepo) private val transactionManager: TransactionManager,
     private val usersDomain: UsersDomain,
+    private val utilsDomain: UtilsDomain
     // private val clock: Clock
 ) {
     fun getUserById(id: Int): Either<UsersError, Users> =
@@ -181,10 +182,10 @@ class UsersService(
         birthDate: String,
         iban: String,
     ) {
-        require(usersDomain.validName(name)) { "Invalid name" }
-        require(usersDomain.validPhoneNumber(phoneNumber)) { "Invalid phone number" }
-        require(usersDomain.validAddress(address)) { "Invalid address" }
-        require(usersDomain.validEmail(email)) { "Invalid email" }
+        require(utilsDomain.validName(name)) { "Invalid name" }
+        require(utilsDomain.validPhoneNumber(phoneNumber)) { "Invalid phone number" }
+        require(utilsDomain.validAddress(address)) { "Invalid address" }
+        require(utilsDomain.validEmail(email)) { "Invalid email" }
         require(usersDomain.validPassword(password)) { "Invalid password" }
         require(usersDomain.validBirthDate(birthDate)) { "Invalid birth date" }
         require(usersDomain.validatePortugueseIban(iban)) { "Invalid IBAN" }
