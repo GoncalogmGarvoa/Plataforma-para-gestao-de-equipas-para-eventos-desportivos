@@ -21,6 +21,18 @@ sealed class CallListError {
     data object CallListNotFound : CallListError()
 
     data object MatchDayNotFound : CallListError()
+
+    data object InvalidCompetitionName : CallListError()
+
+    data object InvalidAddress : CallListError()
+
+    data object InvalidPhoneNumber : CallListError()
+
+    data object InvalidEmail : CallListError()
+
+    data object InvalidAssociation : CallListError()
+
+    data object InvalidLocation : CallListError()
 }
 
 @Component
@@ -42,7 +54,7 @@ class CallListService(
             val usersRepository = it.usersRepository
 
             // Validating values given by the user
-            validateCallList(
+            val validateResult = validateCallList(
                 callList.competitionName,
                 callList.address,
                 callList.phoneNumber,
@@ -50,6 +62,10 @@ class CallListService(
                 callList.association,
                 callList.location,
             )
+
+            if (validateResult is Failure) {
+                return@run validateResult
+            }
 
             // Check if the council exists
             if (!usersRepository.userHasCouncilRole(callList.userId)) {
@@ -184,12 +200,16 @@ class CallListService(
         email: String,
         association: String,
         location: String
-    ) {
-        require(utilsDomain.validName(competitionName)) { "Invalid competition name" }
-        require(utilsDomain.validAddress(address)) { "Invalid address" }
-        require(utilsDomain.validPhoneNumber(phoneNumber)) { "Invalid phone number" }
-        require(utilsDomain.validEmail(email)) { "Invalid email" }
-        require(utilsDomain.validName(association)) { "Invalid association" }
-        require(utilsDomain.validName(location)) { "Invalid location" }
+    ): Either<CallListError, Unit> {
+
+        if (!utilsDomain.validName(competitionName)) return failure(CallListError.InvalidCompetitionName)
+        if (!utilsDomain.validAddress(address)) return failure(CallListError.InvalidAddress)
+        if (!utilsDomain.validPhoneNumber(phoneNumber)) return failure(CallListError.InvalidPhoneNumber)
+        if (!utilsDomain.validEmail(email)) return failure(CallListError.InvalidEmail)
+        if (!utilsDomain.validName(association)) return failure(CallListError.InvalidAssociation)
+        if (!utilsDomain.validName(location)) return failure(CallListError.InvalidLocation)
+
+        return success(Unit)
+
     }
 }

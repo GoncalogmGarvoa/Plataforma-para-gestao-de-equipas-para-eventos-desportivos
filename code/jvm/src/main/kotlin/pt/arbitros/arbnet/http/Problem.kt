@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.http.model
+package pt.arbitros.arbnet.http
 
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -32,6 +32,7 @@ sealed class Problem(
 
     data object ArbitrationCouncilNotFound : Problem(URI("$PROBLEM_URI_PATH/arbitrationCouncil-not-found"))
 
+
     // Users
     data object UserNotFound : Problem(URI("$PROBLEM_URI_PATH/user-not-found"))
 
@@ -47,7 +48,8 @@ sealed class Problem(
 
     data object UserWithoutRole : Problem(URI("$PROBLEM_URI_PATH/user-without-role"))
 
-    // Users request data validation
+    // Request data validation
+
     data object InvalidName : Problem(URI("$PROBLEM_URI_PATH/invalid-name"))
 
     data object InvalidAddress : Problem(URI("$PROBLEM_URI_PATH/invalid-address"))
@@ -61,4 +63,10 @@ sealed class Problem(
     data object InvalidPhoneNumber : Problem(URI("$PROBLEM_URI_PATH/invalid-phone-number"))
 
     data object InvalidEmail : Problem(URI("$PROBLEM_URI_PATH/invalid-email"))
+
+    data object InvalidAssociation : Problem(URI("$PROBLEM_URI_PATH/invalid-association"))
+
+    data object InvalidLocation : Problem(URI("$PROBLEM_URI_PATH/invalid-location"))
+
+    data object InvalidCompetitionName : Problem(URI("$PROBLEM_URI_PATH/invalid-competition-name"))
 }
