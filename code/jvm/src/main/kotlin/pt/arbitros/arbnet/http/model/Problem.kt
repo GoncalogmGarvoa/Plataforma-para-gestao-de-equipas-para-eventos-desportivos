@@ -46,4 +46,19 @@ sealed class Problem(
     data object UserAlreadyHasRole : Problem(URI("$PROBLEM_URI_PATH/user-already-has-role"))
 
     data object UserWithoutRole : Problem(URI("$PROBLEM_URI_PATH/user-without-role"))
+
+    // Users request data validation
+    data object InvalidName : Problem(URI("$PROBLEM_URI_PATH/invalid-name"))
+
+    data object InvalidAddress : Problem(URI("$PROBLEM_URI_PATH/invalid-address"))
+
+    data object InvalidPassword : Problem(URI("$PROBLEM_URI_PATH/invalid-password"))
+
+    data object InvalidBirthDate : Problem(URI("$PROBLEM_URI_PATH/invalid-birth-date"))
+
+    data object InvalidIban : Problem(URI("$PROBLEM_URI_PATH/invalid-iban"))
+
+    data object InvalidPhoneNumber : Problem(URI("$PROBLEM_URI_PATH/invalid-phone-number"))
+
+    data object InvalidEmail : Problem(URI("$PROBLEM_URI_PATH/invalid-email"))
 }

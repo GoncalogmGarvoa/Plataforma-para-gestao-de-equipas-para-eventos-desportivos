@@ -92,6 +92,14 @@ class UsersController(
             is Success -> ResponseEntity.ok(userCreated)
             is Failure ->
                 when (userCreated.value) {
+                    is UsersError.InvalidName -> Problem.InvalidName.response(HttpStatus.BAD_REQUEST)
+                    is UsersError.InvalidPhoneNumber -> Problem.InvalidPhoneNumber.response(HttpStatus.BAD_REQUEST)
+                    is UsersError.InvalidAddress -> Problem.InvalidAddress.response(HttpStatus.BAD_REQUEST)
+                    is UsersError.InvalidEmail -> Problem.InvalidEmail.response(HttpStatus.BAD_REQUEST)
+                    is UsersError.InvalidPassword -> Problem.InvalidPassword.response(HttpStatus.BAD_REQUEST)
+                    is UsersError.InvalidBirthDate -> Problem.InvalidBirthDate.response(HttpStatus.BAD_REQUEST)
+                    is UsersError.InvalidIban -> Problem.InvalidIban.response(HttpStatus.BAD_REQUEST)
+
                     is UsersError.EmailAlreadyUsed -> Problem.EmailAlreadyUsed.response(HttpStatus.CONFLICT)
                     is UsersError.PhoneNumberAlreadyUsed -> Problem.PhoneNumberAlreadyUsed.response(HttpStatus.CONFLICT)
                     is UsersError.IbanAlreadyUsed -> Problem.IbanAlreadyUsed.response(HttpStatus.CONFLICT)
@@ -122,6 +130,14 @@ class UsersController(
             is Success -> ResponseEntity.ok(userUpdated)
             is Failure ->
                 when (userUpdated.value) {
+                    is UsersError.InvalidName -> Problem.InvalidName.response(HttpStatus.BAD_REQUEST)
+                    is UsersError.InvalidPhoneNumber -> Problem.InvalidPhoneNumber.response(HttpStatus.BAD_REQUEST)
+                    is UsersError.InvalidAddress -> Problem.InvalidAddress.response(HttpStatus.BAD_REQUEST)
+                    is UsersError.InvalidEmail -> Problem.InvalidEmail.response(HttpStatus.BAD_REQUEST)
+                    is UsersError.InvalidPassword -> Problem.InvalidPassword.response(HttpStatus.BAD_REQUEST)
+                    is UsersError.InvalidBirthDate -> Problem.InvalidBirthDate.response(HttpStatus.BAD_REQUEST)
+                    is UsersError.InvalidIban -> Problem.InvalidIban.response(HttpStatus.BAD_REQUEST)
+
                     is UsersError.UserNotFound -> Problem.UserNotFound.response(HttpStatus.NOT_FOUND)
                     is UsersError.EmailAlreadyUsed -> Problem.EmailAlreadyUsed.response(HttpStatus.CONFLICT)
                     is UsersError.PhoneNumberAlreadyUsed -> Problem.PhoneNumberAlreadyUsed.response(HttpStatus.CONFLICT)

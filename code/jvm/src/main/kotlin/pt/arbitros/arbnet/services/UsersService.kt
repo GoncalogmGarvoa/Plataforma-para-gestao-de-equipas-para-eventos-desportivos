@@ -28,6 +28,20 @@ sealed class UsersError {
     data object IbanAlreadyUsed : UsersError()
 
     data object EmailNotFound : UsersError()
+
+    data object InvalidName : UsersError()
+
+    data object InvalidAddress : UsersError()
+
+    data object InvalidPassword : UsersError()
+
+    data object InvalidBirthDate : UsersError()
+
+    data object InvalidIban : UsersError()
+
+    data object InvalidPhoneNumber : UsersError()
+
+    data object InvalidEmail : UsersError()
 }
 
 @Component
@@ -55,7 +69,7 @@ class UsersService(
         transactionManager.run {
             val usersRepository = it.usersRepository
 
-            validateUser(
+            val validateResult = validateUser(
                 user.name,
                 user.phoneNumber,
                 user.address,
@@ -64,6 +78,10 @@ class UsersService(
                 user.birthDate,
                 user.iban,
             )
+
+            if (validateResult is Failure) {
+                return@run validateResult
+            }
 
             checkIfExistsInRepo(user.email, user.iban, user.phoneNumber)
 
@@ -84,7 +102,7 @@ class UsersService(
         transactionManager.run {
             val usersRepository = it.usersRepository
 
-            validateUser(
+            val validateResult = validateUser(
                 user.name,
                 user.phoneNumber,
                 user.address,
@@ -93,6 +111,11 @@ class UsersService(
                 user.birthDate,
                 user.iban,
             )
+
+            if (validateResult is Failure) {
+                return@run validateResult
+            }
+
             val userInfo = usersRepository.getUserById(user.id) ?: return@run failure(UsersError.UserNotFound)
             if (userInfo as UserUpdateInputModel != user) {
                 checkIfExistsInRepo(user.email, user.iban, user.phoneNumber, userInfo.id)
@@ -181,14 +204,16 @@ class UsersService(
         password: String,
         birthDate: String,
         iban: String,
-    ) {
-        require(utilsDomain.validName(name)) { "Invalid name" }
-        require(utilsDomain.validPhoneNumber(phoneNumber)) { "Invalid phone number" }
-        require(utilsDomain.validAddress(address)) { "Invalid address" }
-        require(utilsDomain.validEmail(email)) { "Invalid email" }
-        require(usersDomain.validPassword(password)) { "Invalid password" }
-        require(usersDomain.validBirthDate(birthDate)) { "Invalid birth date" }
-        require(usersDomain.validatePortugueseIban(iban)) { "Invalid IBAN" }
+    ): Either<UsersError, Unit> {
+        if (!utilsDomain.validName(name)) return failure(UsersError.InvalidName)
+        if (!utilsDomain.validPhoneNumber(phoneNumber)) return failure(UsersError.InvalidPhoneNumber)
+        if (!utilsDomain.validAddress(address)) return failure(UsersError.InvalidAddress)
+        if (!utilsDomain.validEmail(email)) return failure(UsersError.InvalidEmail)
+        if (!usersDomain.validPassword(password)) return failure(UsersError.InvalidPassword)
+        if (!usersDomain.validBirthDate(birthDate)) return failure(UsersError.InvalidBirthDate)
+        if (!usersDomain.validatePortugueseIban(iban)) return failure(UsersError.InvalidIban)
+
+        return success(Unit)
     }
 
     //TODO check if it makes sense to create a separate service for this
