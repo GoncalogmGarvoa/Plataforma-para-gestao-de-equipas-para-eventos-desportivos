@@ -1,7 +1,9 @@
 package pt.arbitros.arbnet.services
 
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
+import pt.arbitros.arbnet.domain.Role
 import pt.arbitros.arbnet.domain.Users
 import pt.arbitros.arbnet.domain.UsersDomain
 import pt.arbitros.arbnet.http.model.UserInputModel
@@ -159,15 +161,15 @@ class UsersService(
             usersRepository.getUserById(userId) ?: return@run failure(UsersError.UserNotFound)
 
             val hasRole = usersRolesRepository.userHasRole(userId, roleId)
+            val success : Boolean =
+                when {
+                    addOrRemove && !hasRole -> usersRolesRepository.addRoleToUser(userId, roleId)
+                    !addOrRemove && hasRole -> usersRolesRepository.removeRoleFromUser(userId, roleId)
+                    !hasRole -> return@run failure(UsersError.UserWithoutRole)
+                    else -> return@run failure(UsersError.UserAlreadyHasRole)
+                }
 
-            when {
-                addOrRemove && !hasRole -> usersRolesRepository.addRoleToUser(userId, roleId)
-                !addOrRemove && hasRole -> usersRolesRepository.removeRoleFromUser(userId, roleId)
-                !hasRole -> return@run failure(UsersError.UserWithoutRole)
-                else -> return@run failure(UsersError.UserAlreadyHasRole)
-            }
-
-            return@run success(true) // todo change return
+            return@run success(success)
         }
 
     fun validateUser(
@@ -186,5 +188,10 @@ class UsersService(
         require(usersDomain.validPassword(password)) { "Invalid password" }
         require(usersDomain.validBirthDate(birthDate)) { "Invalid birth date" }
         require(usersDomain.validatePortugueseIban(iban)) { "Invalid IBAN" }
+    }
+
+    fun getAllRoles(): Either<UsersError, List<Role> >{
+        TODO("Not yet implemented")
+        //check if it makes sense to create a separate service for this
     }
 }

@@ -16,7 +16,7 @@ create table dbp.users (
 
 create table dbp.role (
                           id serial primary key,
-                          name varchar(50) not null
+                          name varchar(100) not null
 
 );
 
@@ -31,7 +31,7 @@ create table dbp.users_roles (
 
 create table dbp.category (
                               id serial primary key,
-                              name varchar(50) not null
+                              name varchar(100) not null
 );
 
 create table dbp.category_dir (
@@ -50,7 +50,7 @@ create table dbp.competition (
                                  name varchar(100) not null,
                                  address varchar(255) not null,
                                  email varchar(100) not null,
-                                 phone_number varchar(20) not null,
+                                 phone_number varchar(13) not null,
                                  location varchar(100) not null,
                                  association varchar(100) not null
 );
@@ -68,7 +68,7 @@ create table dbp.call_list (
 
 create table dbp.function (
                               id serial primary key,
-                              name varchar(50) unique not null
+                              name varchar(100) unique not null
 );
 
 create table dbp.match_day (
@@ -85,7 +85,7 @@ create table dbp.participant (
                                  competition_id_match_day int,
                                  user_id int,
                                  function_id int,
-                                 confirmation_status varchar(20) default 'waiting' check (confirmation_status in ('waiting', 'accepted', 'declined')),
+                                 confirmation_status varchar(10) default 'waiting' check (confirmation_status in ('waiting', 'accepted', 'declined')),
                                  primary key (call_list_id, match_day_id, user_id, function_id,competition_id_match_day),
                                  foreign key (function_id) references dbp.function(id),
                                  foreign key (call_list_id) references dbp.call_list(id),
@@ -128,7 +128,7 @@ create table dbp.session_referees (
 
 create table dbp.report (
                             id serial,
-                            report_type varchar(50),
+                            report_type varchar(100),
                             competition_id int,
                             primary key (id, competition_id),
                             foreign key (competition_id) references dbp.competition(competition_number)

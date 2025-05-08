@@ -153,4 +153,17 @@ class UsersController(
                     else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to update the roles")
                 }
         }
+
+    @GetMapping(Uris.UsersUris.USER_ROLES)
+    fun getAllRoles(): ResponseEntity<*> =
+        when (
+            val roles = usersService.getAllRoles()
+        ) {
+            is Success -> ResponseEntity.ok(roles)
+            is Failure ->
+                when (roles.value) {
+                    is UsersError.RoleNotFound -> Problem.RoleNotFound.response(HttpStatus.NOT_FOUND)
+                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to get the roles")
+                }
+        }
 }

@@ -7,14 +7,6 @@ import java.time.Period
 
 @Component
 class UsersDomain {
-    fun validRole(roles: String): Boolean {
-        UserRole.entries.forEach {
-            if (it.roleName == roles) {
-                return true
-            }
-        }
-        return false
-    }
 
     fun validStatus(status: String): Boolean {
         UserStatus.entries.forEach {
@@ -23,34 +15,6 @@ class UsersDomain {
             }
         }
         return false
-    }
-
-    // valid only for portuguese phone numbers
-    fun validPhoneNumber(phoneNumber: String): Boolean {
-        val regex = Regex("^\\+351\\d{9}$") // Matches +351 followed by 9 digits
-        return phoneNumber.isNotBlank() &&
-            phoneNumber.length == 13 &&
-            regex.matches(phoneNumber)
-    }
-
-    fun validName(name: String): Boolean {
-        val regex = Regex("^[A-Za-zÀ-ÿ ]+$") // Allows letters (including accented) and spaces
-        return name.isNotBlank() &&
-            name.length in 3..100 &&
-            // name.trim().contains(" ") &&
-            regex.matches(name)
-    }
-
-    fun validAddress(address: String): Boolean {
-        val regex = Regex("^[\\wÀ-ÿ0-9.,'\\-/\\s]+$") // Allows letters, numbers, common punctuation
-        return address.isNotBlank() &&
-            address.length in 5..255 &&
-            regex.matches(address)
-    }
-
-    fun validEmail(email: String): Boolean {
-        val emailRegex = Regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,10}$")
-        return email.length <= 100 && emailRegex.matches(email)
     }
 
     fun validPassword(password: String): Boolean {

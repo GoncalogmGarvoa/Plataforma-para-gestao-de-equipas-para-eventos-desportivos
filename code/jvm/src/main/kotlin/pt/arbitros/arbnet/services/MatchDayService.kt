@@ -1,6 +1,5 @@
 package pt.arbitros.arbnet.services
 
-import pt.arbitros.arbnet.domain.MatchDayDomain
 import pt.arbitros.arbnet.repository.TransactionManager
 
 class MatchDayService(

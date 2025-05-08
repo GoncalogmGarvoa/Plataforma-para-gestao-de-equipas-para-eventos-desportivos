@@ -14,13 +14,4 @@ class CallListDomain {
         return false
     }
 
-    fun validDeadline(deadline: String): Boolean {
-        return try {
-            val date = LocalDate.parse(deadline)  // Expects ISO format
-            val currentDate = LocalDate.now()
-            date.isAfter(currentDate)
-        } catch (e: DateTimeParseException) {
-            false
-        }
-    }
 }

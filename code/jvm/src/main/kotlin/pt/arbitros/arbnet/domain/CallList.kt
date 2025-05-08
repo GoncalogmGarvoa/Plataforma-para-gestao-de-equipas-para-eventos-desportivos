@@ -10,7 +10,7 @@ data class CallList(
     val competitionId: Int,
 )
 
-enum class CallListType(val callType: String) {
+enum class CallListType(val callType: String) { //TODO decidir o nome dos snapshots
     CALL_LIST("callList"),
     CONFIRMATION("confirmation"),
     FINAL_JURY("finalJury"),
