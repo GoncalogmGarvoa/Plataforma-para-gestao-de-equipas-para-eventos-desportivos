@@ -2,6 +2,7 @@ package pt.arbitros.arbnet.repository.jdbi
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
+import pt.arbitros.arbnet.domain.Role
 import pt.arbitros.arbnet.repository.RoleRepository
 
 class RoleRepositoryJdbi(
@@ -16,6 +17,15 @@ class RoleRepositoryJdbi(
             .bind("roleId", roleId)
             .mapTo<String>()
             .singleOrNull() as String?
+    }
+
+    override fun getAllRoles(): List<Role> {
+        return handle
+            .createQuery(
+                """select * from dbp.role""",
+            )
+            .mapTo<Role>()
+            .list()
     }
 
 }

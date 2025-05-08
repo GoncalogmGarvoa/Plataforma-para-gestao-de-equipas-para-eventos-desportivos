@@ -191,8 +191,12 @@ class UsersService(
         require(usersDomain.validatePortugueseIban(iban)) { "Invalid IBAN" }
     }
 
-    fun getAllRoles(): Either<UsersError, List<Role> >{
-        TODO("Not yet implemented")
-        //check if it makes sense to create a separate service for this
-    }
+    //TODO check if it makes sense to create a separate service for this
+    fun getAllRoles(): Either<UsersError, List<Role> > =
+        transactionManager.run {
+            val roleRepository = it.roleRepository
+            val roles = roleRepository.getAllRoles()
+            if (roles.isEmpty()) return@run failure(UsersError.RoleNotFound) //TODO check if this is the right error
+            return@run success(roles)
+        }
 }
