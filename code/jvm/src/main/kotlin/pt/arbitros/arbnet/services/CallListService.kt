@@ -69,17 +69,18 @@ class CallListService(
                     competitionId,
                 ) ?: return@run failure(CallListError.CallListNotFound)
 
-            val participantsResult =
-                createParticipantsOnly(
-                    callList,
-                    matchDayMap,
-                    callListId,
-                    competitionId,
-                    it.functionRepository,
-                    it.participantRepository,
-                )
-
-            if (participantsResult is Failure) return@run participantsResult
+            if (callList.participants?.isEmpty() == true) {
+                val participantsResult =
+                    createParticipantsOnly(
+                        callList,
+                        matchDayMap,
+                        callListId,
+                        competitionId,
+                        it.functionRepository,
+                        it.participantRepository,
+                    )
+                if (participantsResult is Failure) return@run participantsResult
+            }
 
             success(callListId)
         }
@@ -87,7 +88,7 @@ class CallListService(
     private fun validateAndCheckUsers(
         callList: CallListInputModel,
         usersRepository: UsersRepository,
-    ): Either<CallListError, List<Users>> {
+    ): Either<CallListError, List<Users>>? {
         val validateResult =
             validateCallList(
                 callList.competitionName,
@@ -103,14 +104,17 @@ class CallListService(
         if (!usersRepository.userHasCouncilRole(callList.userId)) {
             return failure(CallListError.ArbitrationCouncilNotFound)
         }
+        if (callList.participants?.isEmpty() == true) { // todo change to safe call,    only possible in callList draft needs to check
+            return success(emptyList())
+        } else {
+            val participantIds = callList.participants?.map { it.userId }
+            val foundReferees = usersRepository.getUsersAndCheckIfReferee(participantIds!!) // todo change !!
+            if (foundReferees.size != callList.participants.size) {
+                return failure(CallListError.ParticipantNotFound)
+            }
 
-        val participantIds = callList.participants.map { it.userId }
-        val foundReferees = usersRepository.getUsersAndCheckIfReferee(participantIds)
-        if (foundReferees.size != callList.participants.size) {
-            return failure(CallListError.ParticipantNotFound)
+            return success(foundReferees)
         }
-
-        return success(foundReferees)
     }
 
     private fun createCompetitionAndSessions(
@@ -166,7 +170,7 @@ class CallListService(
     ): Either<CallListError, Unit> {
         val participantsToInsert = mutableListOf<Participant>()
 
-        for (p in callList.participants) {
+        for (p in callList.participants!!) { // todo change to safe call
             for ((day, funcName) in p.functionByMatchDay) {
                 if (funcName.isBlank()) continue
 
