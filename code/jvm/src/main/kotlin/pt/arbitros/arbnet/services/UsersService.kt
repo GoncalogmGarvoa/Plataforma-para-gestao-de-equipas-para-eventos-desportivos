@@ -48,7 +48,7 @@ sealed class UsersError {
 class UsersService(
     @Qualifier(transactionRepo) private val transactionManager: TransactionManager,
     private val usersDomain: UsersDomain,
-    private val utilsDomain: UtilsDomain
+    private val utilsDomain: UtilsDomain,
     // private val clock: Clock
 ) {
     fun getUserById(id: Int): Either<UsersError, Users> =
@@ -69,21 +69,25 @@ class UsersService(
         transactionManager.run {
             val usersRepository = it.usersRepository
 
-            val validateResult = validateUser(
-                user.name,
-                user.phoneNumber,
-                user.address,
-                user.email,
-                user.password,
-                user.birthDate,
-                user.iban,
-            )
+            val validateResult =
+                validateUser(
+                    user.name,
+                    user.phoneNumber,
+                    user.address,
+                    user.email,
+                    user.password,
+                    user.birthDate,
+                    user.iban,
+                )
 
             if (validateResult is Failure) {
-                return@run validateResult
+                return@run failure(validateResult.value)
             }
 
-            checkIfExistsInRepo(user.email, user.iban, user.phoneNumber)
+            val checkRepoResult = checkIfExistsInRepo(user.email, user.iban, user.phoneNumber)
+            if (checkRepoResult is Failure) {
+                return@run failure(checkRepoResult.value)
+            }
 
             val id =
                 usersRepository.createUser(
@@ -102,15 +106,16 @@ class UsersService(
         transactionManager.run {
             val usersRepository = it.usersRepository
 
-            val validateResult = validateUser(
-                user.name,
-                user.phoneNumber,
-                user.address,
-                user.email,
-                user.password,
-                user.birthDate,
-                user.iban,
-            )
+            val validateResult =
+                validateUser(
+                    user.name,
+                    user.phoneNumber,
+                    user.address,
+                    user.email,
+                    user.password,
+                    user.birthDate,
+                    user.iban,
+                )
 
             if (validateResult is Failure) {
                 return@run validateResult
@@ -185,7 +190,7 @@ class UsersService(
             usersRepository.getUserById(userId) ?: return@run failure(UsersError.UserNotFound)
 
             val hasRole = usersRolesRepository.userHasRole(userId, roleId)
-            val success : Boolean =
+            val success: Boolean =
                 when {
                     addOrRemove && !hasRole -> usersRolesRepository.addRoleToUser(userId, roleId)
                     !addOrRemove && hasRole -> usersRolesRepository.removeRoleFromUser(userId, roleId)
@@ -216,12 +221,12 @@ class UsersService(
         return success(Unit)
     }
 
-    //TODO check if it makes sense to create a separate service for this
-    fun getAllRoles(): Either<UsersError, List<Role> > =
+    // TODO check if it makes sense to create a separate service for this
+    fun getAllRoles(): Either<UsersError, List<Role>> =
         transactionManager.run {
             val roleRepository = it.roleRepository
             val roles = roleRepository.getAllRoles()
-            if (roles.isEmpty()) return@run failure(UsersError.RoleNotFound) //TODO check if this is the right error
+            if (roles.isEmpty()) return@run failure(UsersError.RoleNotFound) // TODO check if this is the right error
             return@run success(roles)
         }
 }

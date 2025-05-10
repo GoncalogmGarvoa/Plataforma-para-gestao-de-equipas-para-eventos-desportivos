@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import pt.arbitros.arbnet.http.model.CallListInputModel
-import pt.arbitros.arbnet.http.model.ParticipantUpdateInput
 import pt.arbitros.arbnet.http.model.FunctionsAssignmentsInput
+import pt.arbitros.arbnet.http.model.ParticipantUpdateInput
 import pt.arbitros.arbnet.services.CallListError
 import pt.arbitros.arbnet.services.CallListService
 import pt.arbitros.arbnet.services.Failure
@@ -24,8 +24,8 @@ class CallListController(
     ): ResponseEntity<*> =
         when (
             val callList =
-                callListService.createCallList(
-                    callList
+                callListService.createEvent(
+                    callList,
                 )
         ) {
             is Success -> ResponseEntity.ok(callList)
@@ -44,8 +44,7 @@ class CallListController(
                 }
         }
 
-
-    //Not in use for now
+    // Not in use for now
     @PutMapping(Uris.CallListUris.ASSIGN_ROLES)
     fun assignRoles(
         @RequestBody roleAssignmentsInfo: List<FunctionsAssignmentsInput>,

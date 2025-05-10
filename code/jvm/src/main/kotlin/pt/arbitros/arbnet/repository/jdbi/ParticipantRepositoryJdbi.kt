@@ -62,6 +62,17 @@ class ParticipantRepositoryJdbi(
             .bindList("days", days)
             .execute() > 0
 
+    override fun getParticipantsByCallList(callListId: Int): List<Participant> =
+        handle
+            .createQuery(
+                """
+                SELECT * FROM dbp.participant 
+                WHERE call_list_id = :callListId
+                """.trimIndent(),
+            ).bind("callListId", callListId)
+            .mapTo<Participant>()
+            .list()
+
     override fun getParticipantById(participantId: Int): Participant? =
         handle
             .createQuery("""select * from dbp.participant where referee_id = :participantId""")

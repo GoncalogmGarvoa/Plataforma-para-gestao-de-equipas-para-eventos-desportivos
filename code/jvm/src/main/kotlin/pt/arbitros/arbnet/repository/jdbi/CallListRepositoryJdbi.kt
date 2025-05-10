@@ -13,13 +13,15 @@ class CallListRepositoryJdbi(
         deadline: LocalDate,
         userId: Int,
         competitionId: Int,
+        callType: String,
     ): Int =
         handle
             .createUpdate(
-                """insert into dbp.call_list (deadline, user_id, competition_id) values (:deadline, :user_id, :competition_id)""",
+                """insert into dbp.call_list (deadline, user_id, competition_id,call_type) values (:deadline, :user_id, :competition_id,:callType)""",
             ).bind("deadline", deadline)
             .bind("user_id", userId)
             .bind("competition_id", competitionId)
+            .bind("callType", callType)
             .executeAndReturnGeneratedKeys()
             .mapTo<Int>()
             .single()

@@ -23,6 +23,8 @@ interface ParticipantRepository {
         callListId: Int,
     ): Boolean
 
+    fun getParticipantsByCallList(callListId: Int): List<Participant>
+
     fun getParticipantById(participantId: Int): Participant?
 
     fun isCallListDone(callListId: Int): Boolean

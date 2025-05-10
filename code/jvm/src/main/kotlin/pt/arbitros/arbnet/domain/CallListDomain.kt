@@ -1,17 +1,8 @@
 package pt.arbitros.arbnet.domain
 
-import java.time.LocalDate
-import java.time.format.DateTimeParseException
+import org.springframework.stereotype.Component
 
+@Component
 class CallListDomain {
-
-    fun validCallListType(callListType: String): Boolean {
-        CallListType.entries.forEach {
-            if (it.callType == callListType) {
-                return true
-            }
-        }
-        return false
-    }
-
+    fun validCallListType(callListType: String): Boolean = callListType in CallListType.entries.map { it.callType }
 }

@@ -30,4 +30,8 @@ class CompetitionRepositoryMem : CompetitionRepository {
         competitions.add(competition)
         return competition.competitionNumber
     }
+
+    override fun getCompetitionById(id: Int): Competition? {
+        TODO("Not yet implemented")
+    }
 }

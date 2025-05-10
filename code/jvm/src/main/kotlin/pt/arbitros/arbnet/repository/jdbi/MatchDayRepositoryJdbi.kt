@@ -39,6 +39,13 @@ class MatchDayRepositoryJdbi(
             .bind("date", matchDate)
             .mapTo<Int>()
             .singleOrNull()
+
+    override fun getMatchDaysByCompetition(competitionId: Int): List<MatchDay> =
+        handle
+            .createQuery("""select * from dbp.match_day where competition_id = :competition_id""")
+            .bind("competition_id", competitionId)
+            .mapTo<MatchDay>()
+            .list()
 }
 
 //    override fun findMatchDayById(

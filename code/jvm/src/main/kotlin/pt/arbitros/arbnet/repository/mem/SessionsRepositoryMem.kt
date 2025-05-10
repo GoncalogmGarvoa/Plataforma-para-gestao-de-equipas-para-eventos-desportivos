@@ -24,4 +24,8 @@ class SessionsRepositoryMem : SessionsRepository {
         sessions.add(session)
         return true
     }
+
+    override fun getSessionByMatchId(id: Int): List<Session> {
+        TODO("Not yet implemented")
+    }
 }

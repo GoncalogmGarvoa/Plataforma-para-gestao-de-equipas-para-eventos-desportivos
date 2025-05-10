@@ -1,5 +1,7 @@
 package pt.arbitros.arbnet.repository
 
+import pt.arbitros.arbnet.domain.Competition
+
 interface CompetitionRepository {
     fun createCompetition(
         competitionName: String,
@@ -9,6 +11,8 @@ interface CompetitionRepository {
         association: String,
         location: String,
     ): Int
+
+    fun getCompetitionById(id: Int): Competition?
 
 //    fun findCompetitionById(id: Int): Competition?
 //

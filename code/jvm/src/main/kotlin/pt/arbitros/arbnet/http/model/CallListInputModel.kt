@@ -12,6 +12,7 @@ class CallListInputModel(
     val userId: Int,
     val participants: List<ParticipantChoice>,
     val deadline: LocalDate,
+    val callListType: String,
     val matchDaySessions: List<MatchDaySessionsInput>,
 )
 

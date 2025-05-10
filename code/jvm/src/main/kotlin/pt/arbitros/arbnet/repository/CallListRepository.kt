@@ -8,6 +8,7 @@ interface CallListRepository {
         deadline: LocalDate,
         userId: Int,
         competitionId: Int,
+        callType: String,
     ): Int
 
     fun updateCallListStatus(callListId: Int): Boolean
@@ -24,7 +25,7 @@ interface CallListRepository {
 //        id: Int,
 //        deadline: LocalDate,
 //        callType: String,
-//        councilId: Int,
+//        userId: Int,
 //        competitionId: Int,
 //    ): Boolean
 //

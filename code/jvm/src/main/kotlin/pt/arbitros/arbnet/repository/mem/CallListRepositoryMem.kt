@@ -12,6 +12,7 @@ class CallListRepositoryMem : CallListRepository {
         deadline: LocalDate,
         userId: Int,
         competitionId: Int,
+        callType: String,
     ): Int {
         val callList =
             CallList(

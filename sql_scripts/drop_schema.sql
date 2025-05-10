@@ -14,7 +14,7 @@ drop table if exists dbp.category_dir;
 drop table if exists dbp.category;
 
 drop table if exists dbp.equipment;
-drop table if exists dbp.users_role;
+drop table if exists dbp.users_roles;
 drop table if exists dbp.users;
 drop table if exists dbp.role;
 drop table if exists dbp.function;

@@ -4,15 +4,13 @@ package pt.arbitros.arbnet.services
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
-import pt.arbitros.arbnet.domain.ConfirmationStatus
-import pt.arbitros.arbnet.domain.Participant
-import pt.arbitros.arbnet.domain.Users
-import pt.arbitros.arbnet.domain.UtilsDomain
+import pt.arbitros.arbnet.domain.*
 import pt.arbitros.arbnet.http.model.CallListInputModel
 import pt.arbitros.arbnet.http.model.FunctionsAssignmentsInput
 import pt.arbitros.arbnet.repository.*
 import pt.arbitros.arbnet.transactionRepo
 import java.time.LocalDate
+import java.util.*
 
 sealed class CallListError {
     data object ArbitrationCouncilNotFound : CallListError()
@@ -25,6 +23,8 @@ sealed class CallListError {
 
     data object MatchDayNotFound : CallListError()
 
+    data object SessionNotFound : CallListError() // todo
+
     data object InvalidCompetitionName : CallListError()
 
     data object InvalidAddress : CallListError()
@@ -36,16 +36,20 @@ sealed class CallListError {
     data object InvalidAssociation : CallListError()
 
     data object InvalidLocation : CallListError()
+
+    data object InvalidCallListType : CallListError() // todo
 }
 
 @Component
 class CallListService(
     @Qualifier(transactionRepo) private val transactionManager: TransactionManager,
     private val utilsDomain: UtilsDomain,
+    private val callListDomain: CallListDomain,
     // private val clock: Clock
 ) {
     // todo create rollback
-    fun createCallList(callList: CallListInputModel): Either<CallListError, Int> =
+    // todo Event > callList + competition
+    fun createEvent(callList: CallListInputModel): Either<CallListError, Int> =
         transactionManager.run {
             val result = validateAndCheckUsers(callList, it.usersRepository)
             if (result is Failure) return@run result
@@ -58,14 +62,26 @@ class CallListService(
                     it.sessionsRepository,
                 )
 
-            createCallListAndParticipants(
-                callList,
-                matchDayMap,
-                it.functionRepository,
-                it.callListRepository,
-                it.participantRepository,
-                competitionId,
-            )
+            val callListId =
+                createCallListOnly(
+                    callList,
+                    it.callListRepository,
+                    competitionId,
+                ) ?: return@run failure(CallListError.CallListNotFound)
+
+            val participantsResult =
+                createParticipantsOnly(
+                    callList,
+                    matchDayMap,
+                    callListId,
+                    competitionId,
+                    it.functionRepository,
+                    it.participantRepository,
+                )
+
+            if (participantsResult is Failure) return@run participantsResult
+
+            success(callListId)
         }
 
     private fun validateAndCheckUsers(
@@ -80,6 +96,7 @@ class CallListService(
                 callList.email,
                 callList.association,
                 callList.location,
+                callList.callListType,
             )
         if (validateResult is Failure) return validateResult
 
@@ -127,21 +144,26 @@ class CallListService(
         return competitionId to matchDayMap
     }
 
-    private fun createCallListAndParticipants(
+    private fun createCallListOnly(
+        callList: CallListInputModel,
+        callListRepository: CallListRepository,
+        competitionId: Int,
+    ): Int =
+        callListRepository.createCallList(
+            callList.deadline,
+            callList.userId,
+            competitionId,
+            callList.callListType,
+        )
+
+    private fun createParticipantsOnly(
         callList: CallListInputModel,
         matchDayMap: Map<LocalDate, Int>,
-        functionRepository: FunctionRepository,
-        callListRepository: CallListRepository,
-        participantRepository: ParticipantRepository,
+        callListId: Int,
         competitionId: Int,
-    ): Either<CallListError, Int> {
-        val callListId =
-            callListRepository.createCallList(
-                callList.deadline,
-                callList.userId,
-                competitionId,
-            )
-
+        functionRepository: FunctionRepository,
+        participantRepository: ParticipantRepository,
+    ): Either<CallListError, Unit> {
         val participantsToInsert = mutableListOf<Participant>()
 
         for (p in callList.participants) {
@@ -169,7 +191,7 @@ class CallListService(
         }
 
         participantRepository.batchAddParticipants(participantsToInsert)
-        return success(callListId)
+        return success(Unit)
     }
 
     // Not in use for now
@@ -227,6 +249,80 @@ class CallListService(
             return@run success(true)
         }
 
+    private fun getParticipantsByCallList(callListId: Int): Either<CallListError, List<Participant>> =
+        transactionManager.run {
+            val participantRepository = it.participantRepository
+            val callListRepository = it.callListRepository
+
+            // Check if the call list exists
+            callListRepository.getCallListById(callListId)
+                ?: return@run failure(CallListError.CallListNotFound)
+
+            val participants = participantRepository.getParticipantsByCallList(callListId)
+            return@run success(participants)
+        }
+
+    private fun getCompetitionByCallList(callListId: Int): Either<CallListError, Competition> =
+        transactionManager.run {
+            val callListRepository = it.callListRepository
+            val competitionRepository = it.competitionRepository
+
+            // Check if the call list exists
+            val callList =
+                callListRepository.getCallListById(callListId)
+                    ?: return@run failure(CallListError.CallListNotFound)
+
+            val competition =
+                competitionRepository.getCompetitionById(callList.competitionId)
+                    ?: return@run failure(CallListError.CallListNotFound)
+
+            return@run success(competition)
+        }
+
+    private fun getMatchDaysByCallList(callListId: Int): Either<CallListError, List<MatchDay>> =
+        transactionManager.run {
+            val callListRepository = it.callListRepository
+            val matchDayRepository = it.matchDayRepository
+
+            // Check if the call list exists
+            val callList =
+                callListRepository.getCallListById(callListId)
+                    ?: return@run failure(CallListError.CallListNotFound)
+
+            val matchDays =
+                matchDayRepository.getMatchDaysByCompetition(callList.competitionId)
+                    ?: return@run failure(CallListError.MatchDayNotFound)
+
+            return@run success(matchDays)
+        }
+
+    private fun getSessionByMatchDay(matchDayId: Int): Either<CallListError, List<Session>> =
+        transactionManager.run {
+            val matchDayRepository = it.matchDayRepository
+            val sessionsRepository = it.sessionsRepository
+
+            // Check if the call list exists
+            val matchDay =
+                matchDayRepository.getMatchDayById(matchDayId)
+                    ?: return@run failure(CallListError.CallListNotFound)
+
+            val session =
+                sessionsRepository.getSessionByMatchId(matchDay.id)
+                    ?: return@run failure(CallListError.SessionNotFound)
+            return@run success(session)
+        }
+
+    // todo change return to CallListOutputModel
+    fun getCallListById(id: Int): Either<CallListError, CallList> =
+        transactionManager.run {
+            val callListRepository = it.callListRepository
+            val callList =
+                callListRepository.getCallListById(id)
+                    ?: return@run failure(CallListError.CallListNotFound)
+
+            return@run success(callList)
+        }
+
     private fun validateCallList(
         competitionName: String,
         address: String,
@@ -234,7 +330,9 @@ class CallListService(
         email: String,
         association: String,
         location: String,
+        callType: String,
     ): Either<CallListError, Unit> {
+        if (!callListDomain.validCallListType(callType)) return failure(CallListError.InvalidCallListType)
         if (!utilsDomain.validName(competitionName)) return failure(CallListError.InvalidCompetitionName)
         if (!utilsDomain.validAddress(address)) return failure(CallListError.InvalidAddress)
         if (!utilsDomain.validPhoneNumber(phoneNumber)) return failure(CallListError.InvalidPhoneNumber)

@@ -2,6 +2,7 @@ package pt.arbitros.arbnet.repository.jdbi
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
+import pt.arbitros.arbnet.domain.Competition
 import pt.arbitros.arbnet.repository.CompetitionRepository
 
 class CompetitionRepositoryJdbi(
@@ -27,6 +28,14 @@ class CompetitionRepositoryJdbi(
             .executeAndReturnGeneratedKeys()
             .mapTo<Int>()
             .one()
+
+    override fun getCompetitionById(id: Int): Competition? =
+        handle
+            .createQuery("""select * from dbp.competition where id = :id""")
+            .bind("id", id)
+            .mapTo<Competition>()
+            .singleOrNull()
+}
 
 //        handle
 //            .createUpdate(
@@ -80,4 +89,3 @@ class CompetitionRepositoryJdbi(
 //            .createUpdate("""delete from dbp.competitions where id = :id""")
 //            .bind("id", id)
 //            .execute() > 0
-}

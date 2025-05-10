@@ -76,6 +76,10 @@ class ParticipantRepositoryMem : ParticipantRepository {
         return updated
     }
 
+    override fun getParticipantsByCallList(callListId: Int): List<Participant> {
+        TODO("Not yet implemented")
+    }
+
     override fun getParticipantById(participantId: Int): pt.arbitros.arbnet.domain.Participant? {
         TODO("Not yet implemented")
     }

@@ -16,6 +16,8 @@ interface MatchDayRepository {
         first: LocalDate,
     ): Int?
 
+    fun getMatchDaysByCompetition(competitionId: Int): List<MatchDay>
+
 //    fun findMatchDayById(
 //        id: Int,
 //        competitionId: Int,

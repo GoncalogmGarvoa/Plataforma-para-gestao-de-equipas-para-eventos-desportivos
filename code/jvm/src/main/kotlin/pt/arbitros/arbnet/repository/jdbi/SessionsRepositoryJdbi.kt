@@ -1,6 +1,7 @@
 package pt.arbitros.arbnet.repository.jdbi
 
 import org.jdbi.v3.core.Handle
+import pt.arbitros.arbnet.domain.Session
 import pt.arbitros.arbnet.repository.SessionsRepository
 import java.time.LocalTime
 
@@ -19,4 +20,15 @@ class SessionsRepositoryJdbi(
             .bind("match_date", matchDate)
             .bind("start_time", startTime)
             .execute() > 0
+
+    override fun getSessionByMatchId(matchDayId: Int): List<Session> =
+        handle
+            .createQuery(
+                """
+                SELECT * FROM dbp.session 
+                WHERE match_day_id = :matchDayId
+                """.trimIndent(),
+            ).bind("matchDayId", matchDayId)
+            .mapTo(Session::class.java)
+            .list()
 }
