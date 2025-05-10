@@ -12,7 +12,7 @@ class CompetitionRepositoryMem : CompetitionRepository {
     override fun createCompetition(
         competitionName: String,
         address: String,
-        phoneNumber: Int,
+        phoneNumber: String,
         email: String,
         association: String,
         location: String,
