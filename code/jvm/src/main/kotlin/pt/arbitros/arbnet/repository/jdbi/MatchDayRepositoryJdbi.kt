@@ -3,6 +3,8 @@ package pt.arbitros.arbnet.repository.jdbi
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.arbitros.arbnet.domain.MatchDay
+import pt.arbitros.arbnet.domain.MatchDayDTO
+import pt.arbitros.arbnet.domain.Session
 import pt.arbitros.arbnet.repository.MatchDayRepository
 import java.time.LocalDate
 
@@ -40,12 +42,42 @@ class MatchDayRepositoryJdbi(
             .mapTo<Int>()
             .singleOrNull()
 
-    override fun getMatchDaysByCompetition(competitionId: Int): List<MatchDay> =
-        handle
-            .createQuery("""select * from dbp.match_day where competition_id = :competition_id""")
-            .bind("competition_id", competitionId)
-            .mapTo<MatchDay>()
-            .list()
+//    override fun getMatchDaysByCompetition(competitionId: Int): List<MatchDay> =
+//        handle
+//            .createQuery("""select * from dbp.match_day where competition_id = :competition_id""")
+//            .bind("competition_id", competitionId)
+//            .mapTo<MatchDay>()
+//            .list()
+
+    override fun getMatchDaysByCompetition(competitionId: Int): List<MatchDay> {
+        val matchDays =
+            handle
+                .createQuery("SELECT * FROM dbp.match_day WHERE competition_id = :competition_id")
+                .bind("competition_id", competitionId)
+                .mapTo<MatchDayDTO>()
+                .list()
+
+        return matchDays.map { matchDay ->
+            val sessions =
+                handle
+                    .createQuery(
+                        """
+                        SELECT * FROM dbp.session 
+                        WHERE match_day_id = :match_day_id AND competition_id_match_day = :competition_id
+                        """.trimIndent(),
+                    ).bind("match_day_id", matchDay.id)
+                    .bind("competition_id", competitionId)
+                    .mapTo<Session>()
+                    .list()
+
+            MatchDay(
+                id = matchDay.id,
+                matchDate = matchDay.matchDate,
+                competitionId = matchDay.competitionId,
+                sessions = sessions,
+            )
+        }
+    }
 }
 
 //    override fun findMatchDayById(

@@ -12,3 +12,9 @@ data class MatchDay(
 
     fun removeSession(session: Session): MatchDay = this.copy(sessions = this.sessions - session)
 }
+
+data class MatchDayDTO(
+    val id: Int,
+    val matchDate: LocalDate,
+    val competitionId: Int,
+)

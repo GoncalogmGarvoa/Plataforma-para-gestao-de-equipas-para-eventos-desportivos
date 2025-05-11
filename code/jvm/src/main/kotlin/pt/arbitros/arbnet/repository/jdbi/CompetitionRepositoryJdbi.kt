@@ -31,7 +31,7 @@ class CompetitionRepositoryJdbi(
 
     override fun getCompetitionById(id: Int): Competition? =
         handle
-            .createQuery("""select * from dbp.competition where id = :id""")
+            .createQuery("""select * from dbp.competition where competition_number = :id""")
             .bind("id", id)
             .mapTo<Competition>()
             .singleOrNull()

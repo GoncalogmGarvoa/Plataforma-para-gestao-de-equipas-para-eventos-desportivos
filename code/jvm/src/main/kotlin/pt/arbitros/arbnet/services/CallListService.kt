@@ -279,14 +279,14 @@ class CallListService(
         return success(competition)
     }
 
-    fun getMatchDaysByCallList(
+    fun getMatchDaysByCompetitionId(
         tx: Transaction,
-        callList: CallList,
+        competitionId: Int,
     ): Either<CallListError, List<MatchDay>> {
         val matchDayRepository = tx.matchDayRepository
 
         val matchDays =
-            matchDayRepository.getMatchDaysByCompetition(callList.competitionId)
+            matchDayRepository.getMatchDaysByCompetition(competitionId)
                 ?: return failure(CallListError.MatchDayNotFound)
 
         return success(matchDays)
@@ -302,7 +302,7 @@ class CallListService(
 
             val competitionResult = getCompetitionById(tx, callList.competitionId)
             val participantsResult = getParticipantsByCallList(tx, callList)
-            val matchDaysResult = getMatchDaysByCallList(tx, callList)
+            val matchDaysResult = getMatchDaysByCompetitionId(tx, callList.competitionId)
 
             when {
                 competitionResult is Failure -> return@run failure(competitionResult.value)
