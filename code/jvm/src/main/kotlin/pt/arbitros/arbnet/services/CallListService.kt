@@ -256,90 +256,63 @@ class CallListService(
             return@run success(true)
         }
 
-    fun getParticipantsByCallList(callListId: Int): Either<CallListError, List<Participant>> =
-        transactionManager.run {
-            val participantRepository = it.participantRepository
-            val callListRepository = it.callListRepository
+    fun getParticipantsByCallList(
+        tx: Transaction,
+        callList: CallList,
+    ): Either<CallListError, List<Participant>> {
+        val participantRepository = tx.participantRepository
 
-            // Check if the call list exists
-            callListRepository.getCallListById(callListId)
-                ?: return@run failure(CallListError.CallListNotFound)
+        val participants = participantRepository.getParticipantsByCallList(callList.id)
+        return success(participants)
+    }
 
-            val participants = participantRepository.getParticipantsByCallList(callListId)
-            return@run success(participants)
-        }
+    fun getCompetitionById(
+        tx: Transaction,
+        competitionId: Int,
+    ): Either<CallListError, Competition> {
+        val competitionRepository = tx.competitionRepository
 
-    fun getCompetitionByCallList(callListId: Int): Either<CallListError, Competition> =
-        transactionManager.run {
-            val callListRepository = it.callListRepository
-            val competitionRepository = it.competitionRepository
+        val competition =
+            competitionRepository.getCompetitionById(competitionId)
+                ?: return failure(CallListError.CompetitionNotFound)
 
-            // Check if the call list exists
-            val callList =
-                callListRepository.getCallListById(callListId)
-                    ?: return@run failure(CallListError.CallListNotFound)
+        return success(competition)
+    }
 
-            val competition =
-                competitionRepository.getCompetitionById(callList.competitionId)
-                    ?: return@run failure(CallListError.CallListNotFound)
+    fun getMatchDaysByCallList(
+        tx: Transaction,
+        callList: CallList,
+    ): Either<CallListError, List<MatchDay>> {
+        val matchDayRepository = tx.matchDayRepository
 
-            return@run success(competition)
-        }
+        val matchDays =
+            matchDayRepository.getMatchDaysByCompetition(callList.competitionId)
+                ?: return failure(CallListError.MatchDayNotFound)
 
-    fun getMatchDaysByCallList(callListId: Int): Either<CallListError, List<MatchDay>> =
-        transactionManager.run {
-            val callListRepository = it.callListRepository
-            val matchDayRepository = it.matchDayRepository
-
-            // Check if the call list exists
-            val callList =
-                callListRepository.getCallListById(callListId)
-                    ?: return@run failure(CallListError.CallListNotFound)
-
-            val matchDays =
-                matchDayRepository.getMatchDaysByCompetition(callList.competitionId)
-                    ?: return@run failure(CallListError.MatchDayNotFound)
-
-            return@run success(matchDays)
-        }
-
-    fun getSessionByMatchDay(matchDayId: Int): Either<CallListError, List<Session>> =
-        transactionManager.run {
-            val matchDayRepository = it.matchDayRepository
-            val sessionsRepository = it.sessionsRepository
-
-            // Check if the call list exists
-            val matchDay =
-                matchDayRepository.getMatchDayById(matchDayId)
-                    ?: return@run failure(CallListError.CallListNotFound)
-
-            val session =
-                sessionsRepository.getSessionByMatchId(matchDay.id)
-                    ?: return@run failure(CallListError.SessionNotFound)
-            return@run success(session)
-        }
+        return success(matchDays)
+    }
 
     fun getEventById(id: Int): Either<CallListError, Event> =
-        transactionManager.run {
-            val callListRepository = it.callListRepository
-            val competitionRepository = it.competitionRepository
-            val participantRepository = it.participantRepository
-            val matchDayRepository = it.matchDayRepository
-            val sessionsRepository = it.sessionsRepository
+        transactionManager.run { tx ->
+            val callListRepository = tx.callListRepository
 
-            val callList: CallList =
+            val callList =
                 callListRepository.getCallListById(id)
                     ?: return@run failure(CallListError.CallListNotFound)
 
-            val competition =
-                competitionRepository.getCompetitionById(callList.competitionId)
-                    ?: return@run failure(CallListError.CallListNotFound)
+            val competitionResult = getCompetitionById(tx, callList.competitionId)
+            val participantsResult = getParticipantsByCallList(tx, callList)
+            val matchDaysResult = getMatchDaysByCallList(tx, callList)
 
-            val participants = participantRepository.getParticipantsByCallList(id)
+            when {
+                competitionResult is Failure -> return@run failure(competitionResult.value)
+                participantsResult is Failure -> return@run failure(participantsResult.value)
+                matchDaysResult is Failure -> return@run failure(matchDaysResult.value)
+            }
 
-            val matchDays: List<MatchDay> =
-                matchDayRepository.getMatchDaysByCompetition(callList.competitionId)
-                    ?: return@run failure(CallListError.MatchDayNotFound)
+            val competition = (competitionResult as Success).value
+            val participants = (participantsResult as Success).value
+            val matchDays = (matchDaysResult as Success).value
 
             val event =
                 Event(
