@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import pt.arbitros.arbnet.domain.Event
 import pt.arbitros.arbnet.http.model.CallListInputModel
 import pt.arbitros.arbnet.http.model.CallListOutputModel
 import pt.arbitros.arbnet.http.model.FunctionsAssignmentsInput
@@ -41,7 +42,7 @@ class CallListController(
                     is CallListError.InvalidAssociation -> Problem.InvalidAssociation.response(HttpStatus.BAD_REQUEST)
                     is CallListError.InvalidLocation -> Problem.InvalidLocation.response(HttpStatus.BAD_REQUEST)
                     is CallListError.MatchDayNotFound -> Problem.MatchDayNotFound.response(HttpStatus.NOT_FOUND)
-                    is CallListError.ParticipantNotFound -> Problem.ParticpantNotFound.response(HttpStatus.NOT_FOUND)
+                    is CallListError.ParticipantNotFound -> Problem.ParticipantNotFound.response(HttpStatus.NOT_FOUND)
                     is CallListError.ArbitrationCouncilNotFound -> Problem.ArbitrationCouncilNotFound.response(
                         HttpStatus.NOT_FOUND
                     )
@@ -66,7 +67,7 @@ class CallListController(
                 when (error) {
                     is CallListError.FunctionNotFound -> Problem.RoleNotFound.response(HttpStatus.NOT_FOUND)
                     is CallListError.MatchDayNotFound -> Problem.MatchDayNotFound.response(HttpStatus.NOT_FOUND)
-                    is CallListError.ParticipantNotFound -> Problem.ParticpantNotFound.response(HttpStatus.NOT_FOUND)
+                    is CallListError.ParticipantNotFound -> Problem.ParticipantNotFound.response(HttpStatus.NOT_FOUND)
                     else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to assign the role")
                 }
             }
@@ -89,7 +90,7 @@ class CallListController(
                 val error = result.value
                 when (error) {
                     is CallListError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
-                    is CallListError.ParticipantNotFound -> Problem.ParticpantNotFound.response(HttpStatus.NOT_FOUND)
+                    is CallListError.ParticipantNotFound -> Problem.ParticipantNotFound.response(HttpStatus.NOT_FOUND)
                     else -> ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body("Failed to change the confirmation status")
                 }
@@ -101,30 +102,46 @@ class CallListController(
     fun getCallList(
         @PathVariable id: Int
     ): ResponseEntity<*> {
-
-    }
         val callList = callListService.getCallListById(id)
         val matchDays = callListService.getMatchDaysByCallList(id)
         val competition = callListService.getCompetitionByCallList(id)
         val participants = callListService.getParticipantsByCallList(id)
 
-        when (
-            val event = Event(competition.)
+        return if (callList is Success &&
+            matchDays is Success &&
+            competition is Success &&
+            participants is Success
         ) {
-            is Success -> ResponseEntity.ok(
-                CallListOutputModel(
-                callList.value.deadline,
-                callList.value.callType,
-                callList.value.councilId,
-                callList.value.competitionId
+            ResponseEntity.ok(
+                Event(
+                    competition.value.name,
+                    competition.value.address,
+                    competition.value.phoneNumber,
+                    competition.value.email,
+                    competition.value.association,
+                    competition.value.location,
+                    callList.value.councilId,
+                    participants.value,
+                    callList.value.deadline,
+                    callList.value.callType,
+                    matchDays.value
                 )
             )
-            is Failure ->
-            when (callList.value) {
-                is CallListError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
-                else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to get the call list")
-
-            }
+        } else if(callList is Failure) {
+            callList.value is CallListError.CallListNotFound
+                Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
+        } else if(matchDays is Failure) {
+            matchDays.value is CallListError.MatchDayNotFound
+                Problem.MatchDayNotFound.response(HttpStatus.NOT_FOUND)
+        } else if(competition is Failure) {
+            competition.value is CallListError.CompetitionNotFound
+                Problem.CompetitionNotFound.response(HttpStatus.NOT_FOUND)
+        } else if(participants is Failure) {
+            participants.value is CallListError.ParticipantNotFound
+                Problem.ParticipantNotFound.response(HttpStatus.NOT_FOUND)
+        } else {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to get the call list")
+        }
     }
 }
 

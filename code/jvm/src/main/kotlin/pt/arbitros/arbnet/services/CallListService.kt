@@ -23,6 +23,8 @@ sealed class CallListError {
 
     data object MatchDayNotFound : CallListError()
 
+    data object CompetitionNotFound: CallListError()
+
     data object SessionNotFound : CallListError() // todo
 
     data object InvalidCompetitionName : CallListError()
@@ -135,9 +137,9 @@ class CallListService(
 
         val matchDayMap =
             callList.
-                /*matchDaySessions.associate { md ->
+                matchDaySessions.associate { md ->
                 md.matchDay to matchDayRepository.createMatchDay(competitionId, md.matchDay)
-            }*/
+            }
 
         callList.matchDaySessions.forEach { md ->
             val mdId = matchDayMap[md.matchDay]!!
@@ -172,7 +174,7 @@ class CallListService(
         val participantsToInsert = mutableListOf<Participant>()
 
         for (p in callList.participants!!) { // todo change to safe call
-            for ((day, funcName) in p.participantAndRoles) {
+            for ((day, funcName) in p.participantAndRole) {
                 if (funcName.isBlank()) continue
 
                 val funcId =
