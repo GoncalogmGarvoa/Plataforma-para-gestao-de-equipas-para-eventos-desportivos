@@ -105,7 +105,9 @@ class CallListService(
         if (!usersRepository.userHasCouncilRole(callList.userId)) {
             return failure(CallListError.ArbitrationCouncilNotFound)
         }
-        if (callList.participants?.isEmpty() == true) { // todo change to safe call,    only possible in callList draft needs to check
+
+        if (callList.participants?.isEmpty() == true) {
+            // todo change to safe call,    only possible in callList draft needs to check
             return success(emptyList())
         } else {
             val participantIds = callList.participants?.map { it.userId }

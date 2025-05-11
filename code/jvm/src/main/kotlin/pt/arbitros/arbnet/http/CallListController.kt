@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import pt.arbitros.arbnet.domain.Event
 import pt.arbitros.arbnet.http.model.CallListInputModel
+import pt.arbitros.arbnet.http.model.EventOutputModel
 import pt.arbitros.arbnet.http.model.FunctionsAssignmentsInput
 import pt.arbitros.arbnet.http.model.ParticipantUpdateInput
 import pt.arbitros.arbnet.services.CallListError
@@ -108,7 +108,7 @@ class CallListController(
             is Success -> {
                 val value = event.value
                 ResponseEntity.ok(
-                    Event(
+                    EventOutputModel(
                         value.competitionName,
                         value.address,
                         value.phoneNumber,
