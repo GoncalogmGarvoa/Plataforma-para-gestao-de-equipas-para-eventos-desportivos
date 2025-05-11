@@ -10,7 +10,6 @@ import pt.arbitros.arbnet.http.model.FunctionsAssignmentsInput
 import pt.arbitros.arbnet.repository.*
 import pt.arbitros.arbnet.transactionRepo
 import java.time.LocalDate
-import java.util.*
 
 sealed class CallListError {
     data object ArbitrationCouncilNotFound : CallListError()
@@ -23,7 +22,7 @@ sealed class CallListError {
 
     data object MatchDayNotFound : CallListError()
 
-    data object CompetitionNotFound: CallListError()
+    data object CompetitionNotFound : CallListError()
 
     data object SessionNotFound : CallListError() // todo
 
@@ -136,10 +135,11 @@ class CallListService(
             )
 
         val matchDayMap =
-            callList.
-                matchDaySessions.associate { md ->
-                md.matchDay to matchDayRepository.createMatchDay(competitionId, md.matchDay)
-            }
+            callList
+                .matchDaySessions
+                .associate { md ->
+                    md.matchDay to matchDayRepository.createMatchDay(competitionId, md.matchDay)
+                }
 
         callList.matchDaySessions.forEach { md ->
             val mdId = matchDayMap[md.matchDay]!!
@@ -319,15 +319,44 @@ class CallListService(
             return@run success(session)
         }
 
-    // todo change return to CallListOutputModel
-    fun getCallListById(id: Int): Either<CallListError, CallList> =
+    fun getEventById(id: Int): Either<CallListError, Event> =
         transactionManager.run {
             val callListRepository = it.callListRepository
-            val callList =
+            val competitionRepository = it.competitionRepository
+            val participantRepository = it.participantRepository
+            val matchDayRepository = it.matchDayRepository
+            val sessionsRepository = it.sessionsRepository
+
+            val callList: CallList =
                 callListRepository.getCallListById(id)
                     ?: return@run failure(CallListError.CallListNotFound)
 
-            return@run success(callList)
+            val competition =
+                competitionRepository.getCompetitionById(callList.competitionId)
+                    ?: return@run failure(CallListError.CallListNotFound)
+
+            val participants = participantRepository.getParticipantsByCallList(id)
+
+            val matchDays: List<MatchDay> =
+                matchDayRepository.getMatchDaysByCompetition(callList.competitionId)
+                    ?: return@run failure(CallListError.MatchDayNotFound)
+
+            val event =
+                Event(
+                    competitionName = competition.name,
+                    address = competition.address,
+                    phoneNumber = competition.phoneNumber,
+                    email = competition.email,
+                    association = competition.association,
+                    location = competition.location,
+                    userId = callList.userId,
+                    participants = participants,
+                    deadline = callList.deadline,
+                    callListType = callList.callType,
+                    matchDaySessions = matchDays,
+                )
+
+            return@run success(event)
         }
 
     private fun validateCallList(

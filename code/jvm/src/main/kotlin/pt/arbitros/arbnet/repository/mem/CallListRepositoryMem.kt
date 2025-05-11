@@ -19,7 +19,7 @@ class CallListRepositoryMem : CallListRepository {
                 id = nextId++,
                 deadline = deadline,
                 callType = "callList",
-                councilId = userId,
+                userId = userId,
                 competitionId = competitionId,
             )
         callLists.add(callList)
