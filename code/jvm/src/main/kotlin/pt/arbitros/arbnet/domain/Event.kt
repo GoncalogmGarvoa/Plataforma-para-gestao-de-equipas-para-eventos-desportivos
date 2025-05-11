@@ -1,7 +1,5 @@
 package pt.arbitros.arbnet.domain
 
-import pt.arbitros.arbnet.http.model.MatchDaySessionsInput
-import pt.arbitros.arbnet.http.model.ParticipantChoice
 import java.time.LocalDate
 
 class Event (
@@ -15,5 +13,5 @@ class Event (
     val participants: List<Participant>?,
     val deadline: LocalDate,
     val callListType: String,
-    val matchDaySessions: List<MatchDaySessionsInput>,
+    val matchDaySessions: List<MatchDay>,
 )
