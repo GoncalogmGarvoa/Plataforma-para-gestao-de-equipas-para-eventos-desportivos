@@ -25,6 +25,15 @@ class SessionsRepositoryMem : SessionsRepository {
         return true
     }
 
+    override fun updateSession(
+        sessionId: Int,
+        competitionId: Int,
+        matchDate: Int,
+        startTime: LocalTime
+    ): Boolean {
+        TODO("Not yet implemented")
+    }
+
     override fun getSessionByMatchId(id: Int): List<Session> {
         TODO("Not yet implemented")
     }

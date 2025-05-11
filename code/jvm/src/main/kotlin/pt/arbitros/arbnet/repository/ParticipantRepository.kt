@@ -30,16 +30,7 @@ interface ParticipantRepository {
     fun isCallListDone(callListId: Int): Boolean
 
     fun batchAddParticipants(participants: List<Participant>): Boolean
-//    fun findParticipantsByCallList(callListId: Int): List<Participant>
-//
-//    fun updateConfirmationStatus(
-//        callListId: Int,
-//        matchDayId: Int,
-//        refereeId: Int,
-//        roleId: Int,
-//        status: ConfirmationStatus,
-//    ): Boolean
-//
+
 //    fun removeParticipant(
 //        callListId: Int,
 //        matchDayId: Int,

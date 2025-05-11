@@ -11,6 +11,13 @@ interface CallListRepository {
         callType: String,
     ): Int
 
+    fun updateCallList(
+        id: Int,
+        deadline: LocalDate,
+        callType: String,
+        competitionId: Int,
+    ): Int
+
     fun updateCallListStatus(callListId: Int): Boolean
 
     fun getCallListById(id: Int): CallList?

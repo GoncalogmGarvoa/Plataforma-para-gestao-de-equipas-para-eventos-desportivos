@@ -9,6 +9,11 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import pt.arbitros.arbnet.http.model.*
+import pt.arbitros.arbnet.http.model.CallListInputModel
+import pt.arbitros.arbnet.http.model.CallListInputUpdateModel
+import pt.arbitros.arbnet.http.model.EventOutputModel
+import pt.arbitros.arbnet.http.model.FunctionsAssignmentsInput
+import pt.arbitros.arbnet.http.model.ParticipantUpdateInput
 import pt.arbitros.arbnet.services.CallListError
 import pt.arbitros.arbnet.services.CallListService
 import pt.arbitros.arbnet.services.Failure
@@ -146,6 +151,32 @@ class CallListController(
                 when (event.value) {
                     is CallListError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
                     else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(event.value)
+                }
+        }
+
+    @PutMapping(Uris.CallListUris.UPDATE_CALLLIST)
+    fun updateCallList(
+        @RequestBody callList: CallListInputUpdateModel
+    ): ResponseEntity<*> =
+        when(
+            val callList =
+                callListService.updateEvent(
+                    callList,
+                )
+        ) {
+            is Success -> ResponseEntity.ok(callList)
+            is Failure ->
+                when (callList.value) {
+                    is CallListError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
+                    is CallListError.InvalidCompetitionName -> Problem.InvalidCompetitionName.response(HttpStatus.BAD_REQUEST)
+                    is CallListError.InvalidAddress -> Problem.InvalidAddress.response(HttpStatus.BAD_REQUEST)
+                    is CallListError.InvalidPhoneNumber -> Problem.InvalidPhoneNumber.response(HttpStatus.BAD_REQUEST)
+                    is CallListError.InvalidEmail -> Problem.InvalidEmail.response(HttpStatus.BAD_REQUEST)
+                    is CallListError.InvalidAssociation -> Problem.InvalidAssociation.response(HttpStatus.BAD_REQUEST)
+                    is CallListError.InvalidLocation -> Problem.InvalidLocation.response(HttpStatus.BAD_REQUEST)
+                    is CallListError.MatchDayNotFound -> Problem.MatchDayNotFound.response(HttpStatus.NOT_FOUND)
+                    is CallListError.ParticipantNotFound -> Problem.ParticipantNotFound.response(HttpStatus.NOT_FOUND)
+                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to create the user")
                 }
         }
 }

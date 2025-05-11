@@ -11,7 +11,7 @@ sealed class Either<out L, out R> {
 }
 
 // Functions for when using Either to represent success or failure
-fun <R> success(value: R) = Either.Right(value)
+fun <R> success(value: R): Either.Right<R> = Either.Right(value)
 
 fun <L> failure(error: L) = Either.Left(error)
 

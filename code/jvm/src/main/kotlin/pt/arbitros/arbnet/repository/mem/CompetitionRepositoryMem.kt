@@ -31,6 +31,18 @@ class CompetitionRepositoryMem : CompetitionRepository {
         return competition.competitionNumber
     }
 
+    override fun updateCompetition(
+        id: Int,
+        competitionName: String,
+        address: String,
+        phoneNumber: String,
+        email: String,
+        association: String,
+        location: String
+    ): Int {
+        TODO("Not yet implemented")
+    }
+
     override fun getCompetitionById(id: Int): Competition? {
         TODO("Not yet implemented")
     }

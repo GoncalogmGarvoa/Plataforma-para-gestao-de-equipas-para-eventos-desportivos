@@ -28,6 +28,14 @@ class MatchDayRepositoryMem : MatchDayRepository {
         return matchDay.id
     }
 
+    override fun updateMatchDay(
+        id: Int?,
+        competitionId: Int,
+        matchDate: LocalDate
+    ): Int {
+        TODO("Not yet implemented")
+    }
+
     override fun getMatchDayById(id: Int): MatchDay? {
         TODO("Not yet implemented")
     }

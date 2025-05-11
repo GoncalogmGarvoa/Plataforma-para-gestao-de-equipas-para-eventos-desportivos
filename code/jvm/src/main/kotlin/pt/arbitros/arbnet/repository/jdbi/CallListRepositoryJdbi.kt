@@ -26,6 +26,24 @@ class CallListRepositoryJdbi(
             .mapTo<Int>()
             .single()
 
+    override fun updateCallList(
+        id: Int,
+        deadline: LocalDate,
+        callType: String,
+        competitionId: Int
+    ): Int =
+        handle
+            .createUpdate(
+                """update dbp.call_list set deadline = :deadline, call_type = :call_type, competition_id = :competition_id where id = :id""",
+            ).bind("id", id)
+            .bind("deadline", deadline)
+            .bind("call_type", callType)
+            .bind("competition_id", competitionId)
+            .executeAndReturnGeneratedKeys()
+            .mapTo<Int>()
+            .single()
+
+
     override fun updateCallListStatus(callListId: Int): Boolean {
         handle
             .createUpdate(

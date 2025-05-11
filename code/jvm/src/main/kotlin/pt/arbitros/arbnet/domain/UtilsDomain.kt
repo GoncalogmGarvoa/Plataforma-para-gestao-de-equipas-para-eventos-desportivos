@@ -34,10 +34,10 @@ class UtilsDomain {
     }
 
     fun validName(name: String): Boolean {
-        val regex = Regex("^[A-Za-zÀ-ÿ0-9]+$")
+        val regex = Regex("^[A-Za-zÀ-ÿ0-9 ]+$") // permite espaços
         return name.isNotBlank() &&
-            name.length in 3..100 &&
-            regex.matches(name)
+             name.length in 3..100 &&
+             regex.matches(name)
     }
 
     fun dateIsAfterToday(date: String): Boolean =

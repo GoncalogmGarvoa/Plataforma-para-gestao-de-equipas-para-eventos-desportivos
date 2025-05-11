@@ -19,5 +19,6 @@ object Uris {
         const val UPDATE_PARTICIPANT_CONFIRMATION_STATUS = "$PREFIX/callList/updateParticipant"
         const val UPDATE_CALLLISTSTAGE = "$PREFIX/callList/updateCallList"
         const val GET_CALLLIST = "$PREFIX/callList/get/{id}"
+        const val UPDATE_CALLLIST = "$PREFIX/callList/update"
     }
 }

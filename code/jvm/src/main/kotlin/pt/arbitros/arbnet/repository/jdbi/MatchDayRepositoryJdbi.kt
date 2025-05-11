@@ -24,6 +24,21 @@ class MatchDayRepositoryJdbi(
             .mapTo<Int>()
             .single()
 
+    override fun updateMatchDay(
+        id: Int?,
+        competitionId: Int,
+        matchDate: LocalDate
+    ): Int =
+        handle
+            .createUpdate(
+                """update dbp.match_day set match_date = :date where id = :id and competition_id = :competition_id""",
+            ).bind("id", id)
+            .bind("competition_id", competitionId)
+            .bind("date", matchDate)
+            .executeAndReturnGeneratedKeys()
+            .mapTo<Int>()
+            .single()
+
     override fun getMatchDayById(id: Int): MatchDay? =
         handle
             .createQuery("""select * from dbp.match_day where id = :id""")

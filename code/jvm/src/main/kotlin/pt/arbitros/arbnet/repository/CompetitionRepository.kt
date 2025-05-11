@@ -12,6 +12,16 @@ interface CompetitionRepository {
         location: String,
     ): Int
 
+    fun updateCompetition(
+        id: Int,
+        competitionName: String,
+        address: String,
+        phoneNumber: String,
+        email: String,
+        association: String,
+        location: String,
+    ): Int
+
     fun getCompetitionById(id: Int): Competition?
 
 //    fun findCompetitionById(id: Int): Competition?

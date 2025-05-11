@@ -26,6 +26,15 @@ class CallListRepositoryMem : CallListRepository {
         return callList.id
     }
 
+    override fun updateCallList(
+        id: Int,
+        deadline: LocalDate,
+        callType: String,
+        competitionId: Int
+    ): Int {
+        TODO("Not yet implemented")
+    }
+
     override fun updateCallListStatus(callListId: Int): Boolean {
         TODO("Not yet implemented")
     }

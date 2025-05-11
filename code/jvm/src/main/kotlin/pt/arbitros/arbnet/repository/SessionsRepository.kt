@@ -10,5 +10,12 @@ interface SessionsRepository {
         startTime: LocalTime,
     ): Boolean
 
+    fun updateSession(
+        sessionId: Int,
+        competitionId: Int,
+        matchDate: Int,
+        startTime: LocalTime,
+    ): Boolean
+
     fun getSessionByMatchId(id: Int): List<Session>
 }

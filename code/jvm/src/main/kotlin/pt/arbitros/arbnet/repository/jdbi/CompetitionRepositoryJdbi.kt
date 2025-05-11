@@ -29,6 +29,27 @@ class CompetitionRepositoryJdbi(
             .mapTo<Int>()
             .one()
 
+    override fun updateCompetition(
+        id: Int,
+        name: String,
+        address: String,
+        phoneNumber: String,
+        email: String,
+        location: String,
+        association: String,
+    ): Int =
+        handle
+            .createUpdate(
+                """update dbp.competition set name = :name, address = :address, email = :email, phone_number = :phone_number, location = :location, association = :association where competition_number = :id""",
+            ).bind("id", id)
+            .bind("name", name)
+            .bind("address", address)
+            .bind("email", email)
+            .bind("phone_number", phoneNumber)
+            .bind("location", location)
+            .bind("association", association)
+            .execute()
+
     override fun getCompetitionById(id: Int): Competition? =
         handle
             .createQuery("""select * from dbp.competition where competition_number = :id""")

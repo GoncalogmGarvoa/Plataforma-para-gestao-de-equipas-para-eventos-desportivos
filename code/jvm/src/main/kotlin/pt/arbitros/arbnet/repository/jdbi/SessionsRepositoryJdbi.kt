@@ -21,6 +21,21 @@ class SessionsRepositoryJdbi(
             .bind("start_time", startTime)
             .execute() > 0
 
+    override fun updateSession(
+        sessionId: Int,
+        competitionId: Int,
+        matchDate: Int,
+        startTime: LocalTime
+    ): Boolean =
+        handle
+            .createUpdate(
+                """update dbp.session set start_time = :start_time, match_day_id = :match_date, competition_id_match_day = :competition_id where id = :session_id""",
+            ).bind("session_id", sessionId)
+            .bind("competition_id", competitionId)
+            .bind("match_date", matchDate)
+            .bind("start_time", startTime)
+            .execute() > 0
+
     override fun getSessionByMatchId(matchDayId: Int): List<Session> =
         handle
             .createQuery(
