@@ -20,6 +20,14 @@ class UsersRolesRepositoryJdbi(
             .findFirst()
             .isPresent
 
+    override fun getUserRolesId(userId: Int): List<Int> =
+        handle
+            .createQuery(
+                """select role_id from dbp.users_roles where user_id = :id""",
+            ).bind("id", userId)
+            .mapTo<Int>()
+            .list()
+
     override fun addRoleToUser(
         userId: Int,
         roleId: Int,

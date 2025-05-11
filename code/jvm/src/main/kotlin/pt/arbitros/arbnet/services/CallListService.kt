@@ -353,4 +353,27 @@ class CallListService(
 
         return success(Unit)
     }
+
+    fun updateCallListStage(callListId: Int): Either<CallListError, Boolean> =
+        transactionManager.run {
+            val callListRepository = it.callListRepository
+
+            val callList =
+                callListRepository.getCallListById(callListId)
+                    ?: return@run failure(CallListError.CallListNotFound)
+
+            val callType =
+                when (callList.callType) {
+                    CallListType.CALL_LIST.callType -> {
+                        CallListType.SEALED_CALL_LIST.callType
+                    }
+                    CallListType.CONFIRMATION.callType -> {
+                        CallListType.FINAL_JURY.callType
+                    }
+                    else -> return@run failure(CallListError.InvalidCallListType)
+                }
+
+            callListRepository.updateCallListStage(callListId, callType)
+            return@run success(true)
+        }
 }

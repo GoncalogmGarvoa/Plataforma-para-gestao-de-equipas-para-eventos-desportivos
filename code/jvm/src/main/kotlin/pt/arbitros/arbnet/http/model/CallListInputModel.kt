@@ -14,7 +14,7 @@ class CallListInputModel(
     val participants: List<ParticipantChoice>?,
     val deadline: LocalDate,
     val callListType: String,
-    val matchDaySessions: List<MatchDaySessionsInput>
+    val matchDaySessions: List<MatchDaySessionsInput>,
 )
 
 data class ParticipantChoice(
@@ -30,4 +30,8 @@ data class FunctionByMatchDayDto(
 data class MatchDaySessionsInput(
     val matchDay: LocalDate,
     val sessions: List<LocalTime>,
+)
+
+data class CallListIdInput(
+    val id: Int,
 )

@@ -19,21 +19,22 @@ class UsersController(
     fun getUserById(
         @PathVariable id: Int,
     ): ResponseEntity<*> =
-        // UserOutputModel
         when (
             val userInfo = usersService.getUserById(id)
         ) {
             is Success ->
                 ResponseEntity.ok(
                     UserOutputModel(
-                        id = userInfo.value.id,
-                        phoneNumber = userInfo.value.phoneNumber,
-                        address = userInfo.value.address,
-                        // roles = aux.roles,
-                        name = userInfo.value.name,
-                        email = userInfo.value.email,
-                        birthDate = userInfo.value.birthDate.toString(),
-                        iban = userInfo.value.iban,
+                        id = userInfo.value.first.id,
+                        phoneNumber = userInfo.value.first.phoneNumber,
+                        address = userInfo.value.first.address,
+                        name = userInfo.value.first.name,
+                        email = userInfo.value.first.email,
+                        birthDate =
+                            userInfo.value.first.birthDate
+                                .toString(),
+                        iban = userInfo.value.first.iban,
+                        roles = userInfo.value.second,
                     ),
                 )
             is Failure ->
@@ -53,14 +54,16 @@ class UsersController(
             is Success ->
                 ResponseEntity.ok(
                     UserOutputModel(
-                        id = userInfo.value.id,
-                        phoneNumber = userInfo.value.phoneNumber,
-                        address = userInfo.value.address,
-                        // roles = aux.roles,
-                        name = userInfo.value.name,
-                        email = userInfo.value.email,
-                        birthDate = userInfo.value.birthDate.toString(),
-                        iban = userInfo.value.iban,
+                        id = userInfo.value.first.id,
+                        phoneNumber = userInfo.value.first.phoneNumber,
+                        address = userInfo.value.first.address,
+                        name = userInfo.value.first.name,
+                        email = userInfo.value.first.email,
+                        birthDate =
+                            userInfo.value.first.birthDate
+                                .toString(),
+                        iban = userInfo.value.first.iban,
+                        roles = userInfo.value.second,
                     ),
                 )
             is Failure ->
@@ -91,6 +94,7 @@ class UsersController(
             is Success -> ResponseEntity.ok(userCreated)
             is Failure ->
                 when (userCreated.value) {
+                    is UsersError.NeededFullName -> Problem.NeededFullName.response(HttpStatus.BAD_REQUEST)
                     is UsersError.InvalidName -> Problem.InvalidName.response(HttpStatus.BAD_REQUEST)
                     is UsersError.InvalidPhoneNumber -> Problem.InvalidPhoneNumber.response(HttpStatus.BAD_REQUEST)
                     is UsersError.InvalidAddress -> Problem.InvalidAddress.response(HttpStatus.BAD_REQUEST)

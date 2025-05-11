@@ -42,6 +42,19 @@ class CallListRepositoryJdbi(
             ).bind("id", id)
             .mapTo<CallList>()
             .singleOrNull()
+
+    override fun updateCallListStage(
+        callListId: Int,
+        callType: String,
+    ): CallList {
+        handle
+            .createUpdate(
+                """update dbp.call_list set call_type = :callType where id = :call_list_id""",
+            ).bind("call_list_id", callListId)
+            .bind("callType", callType)
+            .execute()
+        return getCallListById(callListId) ?: throw IllegalStateException("CallList not found")
+    }
 }
 
 //    override fun findCallListById(id: Int): CallList? =

@@ -27,15 +27,14 @@ class UtilsDomain {
 
     // Used for all address validation
     fun validAddress(address: String): Boolean {
-        val regex = Regex("^[\\wÀ-ÿ0-9.,'\\-/\\s]+$") // Allows letters, numbers, common punctuation
+        val regex = Regex("^[\\wÀ-ÿ0-9.,'ºª\\-/\\s]+$") // Inclui º e ª
         return address.isNotBlank() &&
             address.length in 5..255 &&
             regex.matches(address)
     }
 
-    // Used for all name validation, all names are required to have a max of 100 characters
     fun validName(name: String): Boolean {
-        val regex = Regex("^[A-Za-zÀ-ÿ0-9 ]+$") // Allows letters (including accented) and spaces and numbers
+        val regex = Regex("^[A-Za-zÀ-ÿ0-9]+$")
         return name.isNotBlank() &&
             name.length in 3..100 &&
             regex.matches(name)

@@ -8,10 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import pt.arbitros.arbnet.http.model.CallListInputModel
-import pt.arbitros.arbnet.http.model.EventOutputModel
-import pt.arbitros.arbnet.http.model.FunctionsAssignmentsInput
-import pt.arbitros.arbnet.http.model.ParticipantUpdateInput
+import pt.arbitros.arbnet.http.model.*
 import pt.arbitros.arbnet.services.CallListError
 import pt.arbitros.arbnet.services.CallListService
 import pt.arbitros.arbnet.services.Failure
@@ -95,6 +92,27 @@ class CallListController(
                         ResponseEntity
                             .status(HttpStatus.BAD_REQUEST)
                             .body("Failed to change the confirmation status")
+                }
+            }
+        }
+    }
+
+    @PutMapping(Uris.CallListUris.UPDATE_CALLLISTSTAGE)
+    fun updateCallListStage(
+        @RequestBody callListId: CallListIdInput,
+    ): ResponseEntity<*> {
+        val result =
+            callListService.updateCallListStage(callListId.id)
+        return when (result) {
+            is Success -> ResponseEntity.ok(result.value)
+            is Failure -> {
+                val error = result.value
+                when (error) {
+                    is CallListError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
+                    else ->
+                        ResponseEntity
+                            .status(HttpStatus.BAD_REQUEST)
+                            .body("Failed to change the Stage of callList")
                 }
             }
         }

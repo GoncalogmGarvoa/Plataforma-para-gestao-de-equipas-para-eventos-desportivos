@@ -13,7 +13,6 @@ data class CallList(
 enum class CallListType(
     val callType: String,
 ) {
-    // TODO decidir o nome dos snapshots
     CALL_LIST("callList"),
     SEALED_CALL_LIST("sealedCallList"),
     CONFIRMATION("confirmation"),

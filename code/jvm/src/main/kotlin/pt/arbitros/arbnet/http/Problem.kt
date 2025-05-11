@@ -34,9 +34,10 @@ sealed class Problem(
 
     data object ArbitrationCouncilNotFound : Problem(URI("$PROBLEM_URI_PATH/arbitrationCouncil-not-found"))
 
-
     // Users
     data object UserNotFound : Problem(URI("$PROBLEM_URI_PATH/user-not-found"))
+
+    data object NeededFullName : Problem(URI("$PROBLEM_URI_PATH/needed-full-name"))
 
     data object EmailNotFound : Problem(URI("$PROBLEM_URI_PATH/email-not-found"))
 

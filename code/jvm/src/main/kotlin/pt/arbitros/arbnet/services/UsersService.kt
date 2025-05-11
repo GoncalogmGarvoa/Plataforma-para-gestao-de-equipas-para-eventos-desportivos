@@ -42,6 +42,8 @@ sealed class UsersError {
     data object InvalidPhoneNumber : UsersError()
 
     data object InvalidEmail : UsersError()
+
+    data object NeededFullName : UsersError()
 }
 
 @Component
@@ -51,18 +53,26 @@ class UsersService(
     private val utilsDomain: UtilsDomain,
     // private val clock: Clock
 ) {
-    fun getUserById(id: Int): Either<UsersError, Users> =
+    fun getUserById(id: Int): Either<UsersError, Pair<Users, List<String>>> =
         transactionManager.run {
             val usersRepository = it.usersRepository
+            val usersRolesRepository = it.usersRolesRepository
+            val rolesRepository = it.roleRepository
             val user = usersRepository.getUserById(id) ?: return@run failure(UsersError.UserNotFound)
-            return@run success(user)
+            val rolesId = usersRolesRepository.getUserRolesId(id)
+            val roles = rolesId.mapNotNull { elem -> rolesRepository.getRoleName(elem) }
+            return@run success(user to roles)
         }
 
-    fun getUserByEmail(email: String): Either<UsersError, Users> =
+    fun getUserByEmail(email: String): Either<UsersError, Pair<Users, List<String>>> =
         transactionManager.run {
             val usersRepository = it.usersRepository
+            val usersRolesRepository = it.usersRolesRepository
+            val rolesRepository = it.roleRepository
             val user = usersRepository.getUserByEmail(email) ?: return@run failure(UsersError.EmailNotFound)
-            return@run success(user)
+            val rolesId = usersRolesRepository.getUserRolesId(user.id)
+            val roles = rolesId.mapNotNull { elem -> rolesRepository.getRoleName(elem) }
+            return@run success(user to roles)
         }
 
     fun createUser(user: UserInputModel): Either<UsersError, Int> =
@@ -121,23 +131,21 @@ class UsersService(
                 return@run validateResult
             }
 
-            val userInfo = usersRepository.getUserById(user.id) ?: return@run failure(UsersError.UserNotFound)
-            if (userInfo as UserUpdateInputModel != user) {
-                checkIfExistsInRepo(user.email, user.iban, user.phoneNumber, userInfo.id)
-                val updated =
-                    usersRepository.updateUser(
-                        user.id,
-                        user.name,
-                        user.phoneNumber,
-                        user.address,
-                        user.email,
-                        user.password,
-                        LocalDate.parse(user.birthDate),
-                        user.iban,
-                    )
-                return@run success(updated)
-            }
-            return@run success(true)
+            usersRepository.getUserById(user.id) ?: return@run failure(UsersError.UserNotFound)
+
+            checkIfExistsInRepo(user.email, user.iban, user.phoneNumber, user.id)
+            val updated =
+                usersRepository.updateUser(
+                    user.id,
+                    user.name,
+                    user.phoneNumber,
+                    user.address,
+                    user.email,
+                    user.password,
+                    LocalDate.parse(user.birthDate),
+                    user.iban,
+                )
+            return@run success(updated)
         }
 
     fun deleteUser(id: Int): Either<UsersError, Boolean> =
@@ -210,6 +218,7 @@ class UsersService(
         birthDate: String,
         iban: String,
     ): Either<UsersError, Unit> {
+        if (!name.contains(" ")) return failure(UsersError.NeededFullName)
         if (!utilsDomain.validName(name)) return failure(UsersError.InvalidName)
         if (!utilsDomain.validPhoneNumber(phoneNumber)) return failure(UsersError.InvalidPhoneNumber)
         if (!utilsDomain.validAddress(address)) return failure(UsersError.InvalidAddress)

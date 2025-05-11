@@ -15,6 +15,11 @@ interface CallListRepository {
 
     fun getCallListById(id: Int): CallList?
 
+    fun updateCallListStage(
+        callListId: Int,
+        callType: String,
+    ): CallList
+
 //    fun findCallListById(id: Int): CallList?
 //
 //    fun getCallListsByCouncil(councilId: Int): List<CallList>

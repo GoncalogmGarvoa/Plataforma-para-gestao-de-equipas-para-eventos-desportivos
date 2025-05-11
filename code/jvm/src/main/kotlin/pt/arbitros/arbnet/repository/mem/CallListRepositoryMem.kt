@@ -33,4 +33,11 @@ class CallListRepositoryMem : CallListRepository {
     override fun getCallListById(id: Int): CallList? {
         TODO("Not yet implemented")
     }
+
+    override fun updateCallListStage(
+        callListId: Int,
+        callType: String,
+    ): CallList {
+        TODO("Not yet implemented")
+    }
 }

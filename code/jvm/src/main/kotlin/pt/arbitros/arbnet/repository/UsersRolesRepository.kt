@@ -6,6 +6,8 @@ interface UsersRolesRepository {
         roleId: Int,
     ): Boolean
 
+    fun getUserRolesId(userId: Int): List<Int>
+
     fun addRoleToUser(
         userId: Int,
         roleId: Int,

@@ -10,6 +10,10 @@ class UsersRolesRepositoryMem : UsersRolesRepository {
         roleId: Int,
     ): Boolean = userRoles[userId]?.contains(roleId) ?: false
 
+    override fun getUserRolesId(userId: Int): List<Int> {
+        TODO("Not yet implemented")
+    }
+
     override fun addRoleToUser(
         userId: Int,
         roleId: Int,
