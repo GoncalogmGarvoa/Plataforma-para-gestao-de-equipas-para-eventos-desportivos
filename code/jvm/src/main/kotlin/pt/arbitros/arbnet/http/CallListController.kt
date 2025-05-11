@@ -2,11 +2,14 @@ package pt.arbitros.arbnet.http
 
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import pt.arbitros.arbnet.http.model.CallListInputModel
+import pt.arbitros.arbnet.http.model.CallListOutputModel
 import pt.arbitros.arbnet.http.model.FunctionsAssignmentsInput
 import pt.arbitros.arbnet.http.model.ParticipantUpdateInput
 import pt.arbitros.arbnet.services.CallListError
@@ -39,7 +42,10 @@ class CallListController(
                     is CallListError.InvalidLocation -> Problem.InvalidLocation.response(HttpStatus.BAD_REQUEST)
                     is CallListError.MatchDayNotFound -> Problem.MatchDayNotFound.response(HttpStatus.NOT_FOUND)
                     is CallListError.ParticipantNotFound -> Problem.ParticpantNotFound.response(HttpStatus.NOT_FOUND)
-                    is CallListError.ArbitrationCouncilNotFound -> Problem.ArbitrationCouncilNotFound.response(HttpStatus.NOT_FOUND)
+                    is CallListError.ArbitrationCouncilNotFound -> Problem.ArbitrationCouncilNotFound.response(
+                        HttpStatus.NOT_FOUND
+                    )
+
                     else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to create the user")
                 }
         }
@@ -84,9 +90,42 @@ class CallListController(
                 when (error) {
                     is CallListError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
                     is CallListError.ParticipantNotFound -> Problem.ParticpantNotFound.response(HttpStatus.NOT_FOUND)
-                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to change the confirmation status")
+                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Failed to change the confirmation status")
                 }
             }
         }
     }
+
+    @GetMapping(Uris.CallListUris.GET_CALLLIST)
+    fun getCallList(
+        @PathVariable id: Int
+    ): ResponseEntity<*> {
+
+    }
+        val callList = callListService.getCallListById(id)
+        val matchDays = callListService.getMatchDaysByCallList(id)
+        val competition = callListService.getCompetitionByCallList(id)
+        val participants = callListService.getParticipantsByCallList(id)
+
+        when (
+            val event = Event(competition.)
+        ) {
+            is Success -> ResponseEntity.ok(
+                CallListOutputModel(
+                callList.value.deadline,
+                callList.value.callType,
+                callList.value.councilId,
+                callList.value.competitionId
+                )
+            )
+            is Failure ->
+            when (callList.value) {
+                is CallListError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
+                else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to get the call list")
+
+            }
+    }
 }
+
+

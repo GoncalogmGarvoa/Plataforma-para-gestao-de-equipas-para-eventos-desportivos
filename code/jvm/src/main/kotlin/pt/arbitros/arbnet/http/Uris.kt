@@ -17,5 +17,6 @@ object Uris {
         const val CREATE_CALLLIST = "$PREFIX/callList/creation"
         const val ASSIGN_ROLES = "$PREFIX/callList/assignRoles"
         const val UPDATE_PARTICIPANT_CONFIRMATION_STATUS = "$PREFIX/callList/updateParticipant"
+        const val GET_CALLLIST = "$PREFIX/callList/get/{id}"
     }
 }

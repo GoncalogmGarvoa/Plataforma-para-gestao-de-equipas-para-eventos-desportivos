@@ -22,7 +22,6 @@ class UsersController(
         // UserOutputModel
         when (
             val userInfo = usersService.getUserById(id)
-
         ) {
             is Success ->
                 ResponseEntity.ok(

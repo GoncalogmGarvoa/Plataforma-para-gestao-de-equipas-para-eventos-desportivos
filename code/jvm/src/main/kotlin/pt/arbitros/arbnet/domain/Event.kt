@@ -1,9 +1,10 @@
-package pt.arbitros.arbnet.http.model
+package pt.arbitros.arbnet.domain
 
+import pt.arbitros.arbnet.http.model.MatchDaySessions
+import pt.arbitros.arbnet.http.model.ParticipantChoice
 import java.time.LocalDate
-import java.time.LocalTime
 
-class CallListInputModel(
+class Event (
     val competitionName: String,
     val address: String,
     val phoneNumber: String,
@@ -14,15 +15,6 @@ class CallListInputModel(
     val participants: List<ParticipantChoice>?,
     val deadline: LocalDate,
     val callListType: String,
-)
+    val matchDaySessions: List<MatchDaySessions>,
 
-data class ParticipantChoice(
-    val matchDay: LocalDate,
-    val participantAndRole: List<ParticipantAndRole>,
-    val session: List<LocalTime>
-)
-
-data class ParticipantAndRole(
-    val userId: Int,
-    val function: String,
-)
+    )

@@ -134,9 +134,10 @@ class CallListService(
             )
 
         val matchDayMap =
-            callList.matchDaySessions.associate { md ->
+            callList.
+                /*matchDaySessions.associate { md ->
                 md.matchDay to matchDayRepository.createMatchDay(competitionId, md.matchDay)
-            }
+            }*/
 
         callList.matchDaySessions.forEach { md ->
             val mdId = matchDayMap[md.matchDay]!!
@@ -171,7 +172,7 @@ class CallListService(
         val participantsToInsert = mutableListOf<Participant>()
 
         for (p in callList.participants!!) { // todo change to safe call
-            for ((day, funcName) in p.functionByMatchDay) {
+            for ((day, funcName) in p.participantAndRoles) {
                 if (funcName.isBlank()) continue
 
                 val funcId =
@@ -253,7 +254,7 @@ class CallListService(
             return@run success(true)
         }
 
-    private fun getParticipantsByCallList(callListId: Int): Either<CallListError, List<Participant>> =
+    fun getParticipantsByCallList(callListId: Int): Either<CallListError, List<Participant>> =
         transactionManager.run {
             val participantRepository = it.participantRepository
             val callListRepository = it.callListRepository
@@ -266,7 +267,7 @@ class CallListService(
             return@run success(participants)
         }
 
-    private fun getCompetitionByCallList(callListId: Int): Either<CallListError, Competition> =
+    fun getCompetitionByCallList(callListId: Int): Either<CallListError, Competition> =
         transactionManager.run {
             val callListRepository = it.callListRepository
             val competitionRepository = it.competitionRepository
@@ -283,7 +284,7 @@ class CallListService(
             return@run success(competition)
         }
 
-    private fun getMatchDaysByCallList(callListId: Int): Either<CallListError, List<MatchDay>> =
+    fun getMatchDaysByCallList(callListId: Int): Either<CallListError, List<MatchDay>> =
         transactionManager.run {
             val callListRepository = it.callListRepository
             val matchDayRepository = it.matchDayRepository
@@ -300,7 +301,7 @@ class CallListService(
             return@run success(matchDays)
         }
 
-    private fun getSessionByMatchDay(matchDayId: Int): Either<CallListError, List<Session>> =
+    fun getSessionByMatchDay(matchDayId: Int): Either<CallListError, List<Session>> =
         transactionManager.run {
             val matchDayRepository = it.matchDayRepository
             val sessionsRepository = it.sessionsRepository
