@@ -75,10 +75,10 @@ class ParticipantRepositoryJdbi(
 
     override fun getParticipantById(participantId: Int): Participant? =
         handle
-            .createQuery("""select * from dbp.participant where referee_id = :participantId""")
+            .createQuery("""select * from dbp.participant where user_id = :participantId limit 1 """)
             .bind("participantId", participantId)
             .mapTo<Participant>()
-            .singleOrNull()
+            .firstOrNull()
 
     override fun isCallListDone(callListId: Int): Boolean {
         val count =

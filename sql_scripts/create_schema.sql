@@ -7,7 +7,7 @@ create table dbp.users (
                            address varchar(255) not null,
                            name varchar(100) not null,
                            email varchar(100) unique not null,
-                           password varchar(30) not null,
+                           password varchar(255) not null,
                            birth_date date not null,
                            iban varchar(25) not null,
                            status VARCHAR(10)CHECK (status IN ('active', 'inactive'))DEFAULT 'active'

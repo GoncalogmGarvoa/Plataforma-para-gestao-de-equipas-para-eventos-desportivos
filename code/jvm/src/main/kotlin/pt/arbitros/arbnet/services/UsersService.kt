@@ -223,7 +223,7 @@ class UsersService(
         if (!utilsDomain.validPhoneNumber(phoneNumber)) return failure(UsersError.InvalidPhoneNumber)
         if (!utilsDomain.validAddress(address)) return failure(UsersError.InvalidAddress)
         if (!utilsDomain.validEmail(email)) return failure(UsersError.InvalidEmail)
-        if (!usersDomain.validPassword(password)) return failure(UsersError.InvalidPassword)
+        //if (!usersDomain.validPassword(password)) return failure(UsersError.InvalidPassword)
         if (!usersDomain.validBirthDate(birthDate)) return failure(UsersError.InvalidBirthDate)
         if (!usersDomain.validatePortugueseIban(iban)) return failure(UsersError.InvalidIban)
 

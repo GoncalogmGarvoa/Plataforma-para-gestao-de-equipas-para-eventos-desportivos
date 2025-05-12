@@ -16,15 +16,12 @@ class UsersDomain {
         }
         return false
     }
-
+/*
     fun validPassword(password: String): Boolean {
         val passwordRegex = Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,30}$")
         return passwordRegex.matches(password)
-    }
-    // ^(?=.*[a-z])                      // pelo menos uma letra minúscula
-    // (?=.*[A-Z])                       // pelo menos uma letra maiúscula
-    // (?=.*\d)                          // pelo menos um dígito
-    // [a-zA-Z\d@#\$%^&+=!]{8,30}$       // apenas estes caracteres, com comprimento de 8 a 30
+    }*/
+
 
     fun validBirthDate(birthDate: String): Boolean =
         try {
