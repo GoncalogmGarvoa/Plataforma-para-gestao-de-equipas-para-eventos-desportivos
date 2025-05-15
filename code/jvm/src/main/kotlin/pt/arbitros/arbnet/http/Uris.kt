@@ -21,4 +21,10 @@ object Uris {
         const val GET_CALLLIST = "$PREFIX/callList/get/{id}"
         const val UPDATE_CALLLIST = "$PREFIX/callList/update"
     }
+
+    object ReportUris {
+        const val GET_ALL_REPORTS = "$PREFIX/reports"
+        const val CREATE_REPORT = "$PREFIX/reports/create"
+        const val GET_REPORT_BY_ID = "$PREFIX/reports/id/{id}"
+    }
 }
