@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package pt.arbitros.arbnet.http
 
 import org.springframework.http.HttpStatus
@@ -156,9 +158,9 @@ class CallListController(
 
     @PutMapping(Uris.CallListUris.UPDATE_CALLLIST)
     fun updateCallList(
-        @RequestBody callList: CallListInputUpdateModel
+        @RequestBody callList: CallListInputUpdateModel,
     ): ResponseEntity<*> =
-        when(
+        when (
             val callList =
                 callListService.updateEvent(
                     callList,
