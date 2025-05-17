@@ -11,6 +11,7 @@ interface Transaction {
     val participantRepository: ParticipantRepository
     val functionRepository: FunctionRepository
     val roleRepository: RoleRepository
+    val reportRepository: ReportSQLRepository
 
     fun rollback()
 }

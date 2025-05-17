@@ -26,5 +26,7 @@ object Uris {
         const val GET_ALL_REPORTS = "$PREFIX/reports"
         const val CREATE_REPORT = "$PREFIX/reports/create"
         const val GET_REPORT_BY_ID = "$PREFIX/reports/id/{id}"
+        const val UPDATE_REPORT = "$PREFIX/reports/update"
+        const val SEAL_REPORT = "$PREFIX/reports/seal/{id}"
     }
 }

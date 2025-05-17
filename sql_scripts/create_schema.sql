@@ -127,7 +127,7 @@ create table dbp.session_referees (
 
 
 create table dbp.report (
-                            id serial,
+                            id varchar(100) not null,
                             report_type varchar(100),
                             competition_id int,
                             primary key (id, competition_id),

@@ -51,7 +51,7 @@ class CallListService(
     private val callListDomain: CallListDomain,
     // private val clock: Clock
 ) {
-    // todo create rollback
+
     // todo Event > callList + competition
     fun createEvent(callList: CallListInputModel): Either<CallListError, Int> =
         transactionManager.run {
@@ -71,7 +71,7 @@ class CallListService(
                     callList,
                     it.callListRepository,
                     competitionId,
-                ) ?: return@run failure(CallListError.CallListNotFound)
+                ) ?: return@run failure(CallListError.CallListNotFound) // todo verify
 
             if (callList.participants?.isNotEmpty() == true) {
                 val participantsResult =

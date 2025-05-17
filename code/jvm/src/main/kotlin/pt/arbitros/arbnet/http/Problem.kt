@@ -72,4 +72,9 @@ sealed class Problem(
     data object InvalidLocation : Problem(URI("$PROBLEM_URI_PATH/invalid-location"))
 
     data object InvalidCompetitionName : Problem(URI("$PROBLEM_URI_PATH/invalid-competition-name"))
+
+    // Report
+    data object ReportNotFound : Problem(URI("$PROBLEM_URI_PATH/report-not-found"))
+
+    data object ReportAlreadyExists : Problem(URI("$PROBLEM_URI_PATH/report-already-exists"))
 }
