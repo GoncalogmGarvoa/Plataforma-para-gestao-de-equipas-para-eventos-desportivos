@@ -35,4 +35,9 @@ object Uris {
         const val UPDATE_REPORT = "$PREFIX/reports/update"
         const val SEAL_REPORT = "$PREFIX/reports/seal/{id}"
     }
+
+    object EquipmentUris {
+        const val GET_EQUIPMENT = "$PREFIX/equipment"
+        const val SELECT_EQUIPMENT = "$PREFIX/equipment/select"
+    }
 }

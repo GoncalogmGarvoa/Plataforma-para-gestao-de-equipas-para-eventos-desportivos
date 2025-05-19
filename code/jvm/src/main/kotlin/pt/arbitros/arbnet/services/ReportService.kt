@@ -15,6 +15,7 @@ sealed class ReportError {
     data object AlreadyExists : ReportError()
     data object AlreadySealed : ReportError()
     data object InternalError : ReportError()
+    data object InvalidCompetitionId : ReportError()
 }
 
 @Component
@@ -28,8 +29,10 @@ class ReportService(
         report: ReportCreateInputModel,
     ): Either<ReportError, ReportMongo> {
         return transactionManager.run {
-            it.reportRepository
 
+            if (it.competitionRepository.getCompetitionById(report.competitionId) == null) {
+                return@run failure(ReportError.InvalidCompetitionId)
+            }
 
             val reportMongo = ReportMongo(
                 id = null,
@@ -42,7 +45,6 @@ class ReportService(
 
             return@run success(reportCreated)
         }
-
     }
 
     fun getAllReports(): Either<ReportError, List<ReportMongo>> {
@@ -56,22 +58,27 @@ class ReportService(
     }
 
     fun updateReport(report: ReportUpdateInputModel): Either<ReportError, ReportMongo> {
+        return transactionManager.run {
+            if (it.competitionRepository.getCompetitionById(report.competitionId) == null) {
+                return@run failure(ReportError.InvalidCompetitionId)
+            }
 
-        val existingReport = reportMongoRepository.findById(report.id).orElse(null)
-            ?: return failure(ReportError.NotFound)
+            val existingReport = reportMongoRepository.findById(report.id).orElse(null)
+                ?: return@run failure(ReportError.NotFound)
 
-        if (existingReport.sealed) {
-            return failure(ReportError.AlreadySealed)
+            if (existingReport.sealed) {
+                return@run failure(ReportError.AlreadySealed)
+            }
+
+            val reportMongo = ReportMongo(
+                id = report.id,
+                competitionId = report.competitionId,
+                reportType = report.reportType
+            )
+
+            val updatedReport = reportMongoRepository.save(reportMongo)
+            return@run success(updatedReport)
         }
-
-        val reportMongo = ReportMongo(
-            id = report.id,
-            competitionId = report.competitionId,
-            reportType = report.reportType
-        )
-
-        val updatedReport = reportMongoRepository.save(reportMongo)
-        return success(updatedReport)
     }
 
     fun sealReport(id: String): Either<ReportError, ReportMongo> {
