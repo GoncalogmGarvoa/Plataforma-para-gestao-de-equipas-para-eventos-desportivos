@@ -1,0 +1,77 @@
+.horizontal-menu {
+    display: flex;
+    list-style: none;
+    padding: 0;
+}
+
+.horizontal-menu li {
+    margin-right: 20px;
+}
+
+.horizontal-menu a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+}
+
+.center-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 70vh;
+}
+
+.board-row {
+    display: flex;
+}
+
+.board-cell {
+    position: relative;
+    width: 35px;
+    height: 35px;
+    border: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background-color: #ccffccff;
+}
+
+.board-cell::before {
+    content: "+";
+    font-size: 68px;
+}
+
+.board {
+    display: grid;
+    gap: 0;
+    border: 1px solid black;
+    padding: 0;
+}
+
+.black-piece {
+    position: absolute;
+    background-color: black;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+}
+
+.white-piece {
+    position: absolute;
+    background-color: lightslategrey;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+}
+
+.error-message {
+    color: red;
+    text-decoration: underline;
+}
+
+.success-message {
+    color: forestgreen;
+    text-decoration: underline;
+}
