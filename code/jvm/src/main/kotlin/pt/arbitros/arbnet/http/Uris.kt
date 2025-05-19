@@ -11,6 +11,12 @@ object Uris {
         const val UPDATE_USER = "$PREFIX/users/update"
         const val USER_ROLES = "$PREFIX/users/roles"
         const val USER_ROLES_DELETE = "$PREFIX/users/roles/delete"
+
+        const val TOKEN = "$PREFIX/users/token" // TODO
+        const val GET_BY_TOKEN = "$PREFIX/users/me"
+        const val LOGOUT = "$PREFIX/users/logout" // TODO
+        const val HOME = "$PREFIX/me" // TODO
+        const val GET_COOKIES = "$PREFIX/cookies" // TODO
     }
 
     object CallListUris {

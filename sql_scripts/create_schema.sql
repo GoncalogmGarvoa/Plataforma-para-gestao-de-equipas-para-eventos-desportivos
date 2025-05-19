@@ -7,11 +7,21 @@ create table dbp.users (
                            address varchar(255) not null,
                            name varchar(100) not null,
                            email varchar(100) unique not null,
-                           password varchar(255) not null,
+                           password_validation varchar(255) not null,
                            birth_date date not null,
                            iban varchar(25) not null,
                            status VARCHAR(10)CHECK (status IN ('active', 'inactive'))DEFAULT 'active'
 
+);
+
+
+CREATE TABLE dbp.tokens (
+                            id serial primary key,
+                            user_id int not null,
+                            token_validation text not null,
+                            created_at timestamp not null default NOW(),
+                            last_used_at timestamp,
+                            foreign key (user_id) references dbp.users(id)
 );
 
 create table dbp.role (
@@ -19,6 +29,20 @@ create table dbp.role (
                           name varchar(100) not null
 
 );
+
+CREATE TABLE dbp.user_token_role (
+                                     id SERIAL PRIMARY KEY,
+                                     user_id INT NOT NULL,
+                                     token_id INT NOT NULL,
+                                     role_id INT NOT NULL,
+                                     FOREIGN KEY (user_id) REFERENCES dbp.users(id),
+                                     FOREIGN KEY (token_id) REFERENCES dbp.tokens(id),
+                                     FOREIGN KEY (role_id) REFERENCES dbp.role(id)
+);
+
+
+
+
 
 create table dbp.users_roles (
                                 user_id int,

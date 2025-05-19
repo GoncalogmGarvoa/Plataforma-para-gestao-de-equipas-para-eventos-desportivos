@@ -18,7 +18,8 @@ drop table if exists dbp.users_roles;
 drop table if exists dbp.users;
 drop table if exists dbp.role;
 drop table if exists dbp.function;
-
+drop table if exists dbp.token;
+drop table if exists user_token_role;
 
 select *
 from dbp.competition_equipment;

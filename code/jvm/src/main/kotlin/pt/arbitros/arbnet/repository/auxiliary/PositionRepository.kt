@@ -1,6 +1,6 @@
 package pt.arbitros.arbnet.repository.auxiliary
 
-import pt.arbitros.arbnet.domain.Position
+import pt.arbitros.arbnet.domain.universal.Position
 
 interface PositionRepository {
     fun createPosition(position: Position): Int

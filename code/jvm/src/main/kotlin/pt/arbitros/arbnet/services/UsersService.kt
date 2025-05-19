@@ -1,11 +1,15 @@
 package pt.arbitros.arbnet.services
 
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
-import pt.arbitros.arbnet.domain.Role
-import pt.arbitros.arbnet.domain.Users
-import pt.arbitros.arbnet.domain.UsersDomain
 import pt.arbitros.arbnet.domain.UtilsDomain
+import pt.arbitros.arbnet.domain.universal.Role
+import pt.arbitros.arbnet.domain.users.Token
+import pt.arbitros.arbnet.domain.users.Users
+import pt.arbitros.arbnet.domain.users.UsersDomain
+import pt.arbitros.arbnet.domain.users.UsersUtils
 import pt.arbitros.arbnet.http.model.UserInputModel
 import pt.arbitros.arbnet.http.model.UserUpdateInputModel
 import pt.arbitros.arbnet.repository.TransactionManager
@@ -44,15 +48,88 @@ sealed class UsersError {
     data object InvalidEmail : UsersError()
 
     data object NeededFullName : UsersError()
+
+    data object MissingField : UsersError() // todo
+
+    data object UserOrPasswordAreInvalid : UsersError() // todo
 }
+
+sealed class TokenCreationError {
+    data object UserOrPasswordAreInvalid : TokenCreationError() // todo
+}
+
+data class TokenExternalInfo(
+    val tokenValue: String,
+    val tokenExpiration: Instant,
+)
 
 @Component
 class UsersService(
     @Qualifier(transactionRepo) private val transactionManager: TransactionManager,
+    private val usersUtils: UsersUtils,
     private val usersDomain: UsersDomain,
     private val utilsDomain: UtilsDomain,
-    // private val clock: Clock
+    private val clock: Clock,
 ) {
+    fun createToken(
+        email: String,
+        password: String,
+    ): Either<UsersError, TokenExternalInfo> =
+        transactionManager.run {
+            if (email.isBlank() || password.isBlank()) {
+                return@run failure(UsersError.MissingField)
+            }
+            val usersRepository = it.usersRepository
+            val user: Users = usersRepository.getUserByEmail(email) ?: return@run failure(UsersError.EmailNotFound)
+
+            if (!usersDomain.validatePassword(password, user.passwordValidation)) {
+                if (!usersDomain.validatePassword(password, user.passwordValidation)) {
+                    return@run failure(UsersError.UserOrPasswordAreInvalid)
+                }
+            }
+            val tokenValue = usersDomain.generateTokenValue()
+            val now = clock.now()
+            val newToken =
+                Token(
+                    usersDomain.createTokenValidationInformation(tokenValue),
+                    user.id,
+                    createdAt = now,
+                    lastUsedAt = now,
+                )
+            usersRepository.createToken(newToken, usersDomain.maxNumberOfTokensPerUser)
+            return@run success(
+                TokenExternalInfo(
+                    tokenValue,
+                    usersDomain.getTokenExpiration(newToken),
+                ),
+            )
+        }
+
+    fun revokeToken(token: String): Either<UsersError, Boolean> {
+        val tokenValidationInfo = usersDomain.createTokenValidationInformation(token)
+        return transactionManager.run {
+            it.usersRepository.removeTokenByValidationInfo(tokenValidationInfo)
+            return@run success(true)
+        }
+    }
+
+    fun getUserByToken(token: String): Either<UsersError, Users>? {
+        if (!usersDomain.canBeToken(token)) {
+            return null
+        }
+        return transactionManager.run {
+            val usersRepository = it.usersRepository
+            val tokenValidationInfo = usersDomain.createTokenValidationInformation(token)
+            val userAndToken = usersRepository.getTokenByTokenValidationInfo(tokenValidationInfo)
+            if (userAndToken != null && usersDomain.isTokenTimeValid(clock, userAndToken.second)) {
+                usersRepository.updateTokenLastUsed(userAndToken.second, clock.now())
+                return@run success(userAndToken.first)
+            } else {
+                return@run failure(UsersError.UserNotFound)
+            }
+        }
+    }
+
     fun getUserById(id: Int): Either<UsersError, Pair<Users, List<String>>> =
         transactionManager.run {
             val usersRepository = it.usersRepository
@@ -98,6 +175,7 @@ class UsersService(
             if (checkRepoResult is Failure) {
                 return@run failure(checkRepoResult.value)
             }
+            val passwordValidationInfo = usersDomain.createPasswordValidationInformation(user.password)
 
             val id =
                 usersRepository.createUser(
@@ -105,7 +183,7 @@ class UsersService(
                     user.phoneNumber,
                     user.address,
                     user.email,
-                    user.password,
+                    passwordValidationInfo,
                     LocalDate.parse(user.birthDate),
                     user.iban,
                 )
@@ -132,6 +210,7 @@ class UsersService(
             }
 
             usersRepository.getUserById(user.id) ?: return@run failure(UsersError.UserNotFound)
+            val passwordValidationInfo = usersDomain.createPasswordValidationInformation(user.password)
 
             checkIfExistsInRepo(user.email, user.iban, user.phoneNumber, user.id)
             val updated =
@@ -141,7 +220,7 @@ class UsersService(
                     user.phoneNumber,
                     user.address,
                     user.email,
-                    user.password,
+                    passwordValidationInfo,
                     LocalDate.parse(user.birthDate),
                     user.iban,
                 )
@@ -223,9 +302,9 @@ class UsersService(
         if (!utilsDomain.validPhoneNumber(phoneNumber)) return failure(UsersError.InvalidPhoneNumber)
         if (!utilsDomain.validAddress(address)) return failure(UsersError.InvalidAddress)
         if (!utilsDomain.validEmail(email)) return failure(UsersError.InvalidEmail)
-        //if (!usersDomain.validPassword(password)) return failure(UsersError.InvalidPassword)
-        if (!usersDomain.validBirthDate(birthDate)) return failure(UsersError.InvalidBirthDate)
-        if (!usersDomain.validatePortugueseIban(iban)) return failure(UsersError.InvalidIban)
+        // if (!usersDomain.validPassword(password)) return failure(UsersError.InvalidPassword)
+        if (!usersUtils.validBirthDate(birthDate)) return failure(UsersError.InvalidBirthDate)
+        if (!usersUtils.validatePortugueseIban(iban)) return failure(UsersError.InvalidIban)
 
         return success(Unit)
     }

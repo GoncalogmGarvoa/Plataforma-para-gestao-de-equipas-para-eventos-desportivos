@@ -5,6 +5,7 @@ package pt.arbitros.arbnet.services
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.*
+import pt.arbitros.arbnet.domain.users.Users
 import pt.arbitros.arbnet.http.model.CallListInputLike
 import pt.arbitros.arbnet.http.model.CallListInputModel
 import pt.arbitros.arbnet.http.model.CallListInputUpdateModel
@@ -90,8 +91,8 @@ class CallListService(
         }
 
     fun updateEvent(callList: CallListInputUpdateModel): Either<CallListError, Int> =
-        transactionManager.run{
-            //check if callList with id exists
+        transactionManager.run {
+            // check if callList with id exists
             it.callListRepository.getCallListById(callList.callListId)
                 ?: return@run failure(CallListError.CallListNotFound)
 
@@ -200,9 +201,8 @@ class CallListService(
         callList: CallListInputUpdateModel,
         competitionRepository: CompetitionRepository,
         matchDayRepository: MatchDayRepository,
-        sessionsRepository: SessionsRepository
+        sessionsRepository: SessionsRepository,
     ): Pair<Int, Map<LocalDate, Int>> {
-
         val competitionId =
             competitionRepository.updateCompetition(
                 callList.callListId,
@@ -214,13 +214,13 @@ class CallListService(
                 callList.location,
             )
 
-
         val matchDayMap =
             callList
                 .matchDaySessions
                 .associate { md ->
-                    val matchDayId = matchDayRepository.getMatchDayId(competitionId, md.matchDay)
-                        ?: throw IllegalArgumentException("Match day not found") //TODO ERROR HANDLING
+                    val matchDayId =
+                        matchDayRepository.getMatchDayId(competitionId, md.matchDay)
+                            ?: throw IllegalArgumentException("Match day not found") // TODO ERROR HANDLING
                     md.matchDay to matchDayRepository.updateMatchDay(matchDayId, competitionId, md.matchDay)
                 }
 
@@ -228,8 +228,8 @@ class CallListService(
             val mdId = matchDayMap[md.matchDay]!!
             md.sessions.forEach { tm ->
                 val sessions = sessionsRepository.getSessionByMatchId(mdId)
-                sessions.forEach{
-                    sessionsRepository.updateSession(it.id,competitionId, mdId, tm)
+                sessions.forEach {
+                    sessionsRepository.updateSession(it.id, competitionId, mdId, tm)
                 }
             }
         }

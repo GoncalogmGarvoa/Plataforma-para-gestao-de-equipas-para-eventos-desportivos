@@ -1,6 +1,6 @@
 package pt.arbitros.arbnet.repository.auxiliary
 
-import pt.arbitros.arbnet.domain.Category
+import pt.arbitros.arbnet.domain.universal.Category
 
 interface CategoryRepository {
     fun createCategory(category: Category): Int

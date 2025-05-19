@@ -1,20 +1,204 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package pt.arbitros.arbnet.repository.jdbi
 
+import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
-import pt.arbitros.arbnet.domain.Users
+import pt.arbitros.arbnet.domain.users.*
 import pt.arbitros.arbnet.repository.UsersRepository
 import java.time.LocalDate
 
 class UsersRepositoryJdbi(
     private val handle: Handle,
 ) : UsersRepository {
+    override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<Users, Token>? =
+        handle
+            .createQuery(
+                """
+                select id, phone_number, address ,name ,email ,password_validation, birth_date,iban, status ,token_validation, created_at, last_used_at
+                from dbp.Users as users 
+                inner join dbp.Tokens as tokens 
+                on users.id = tokens.user_id
+                where token_validation = :validation_information
+            """,
+            ).bind("validation_information", tokenValidationInfo.validationInfo)
+            .mapTo<UserAndTokenModel>()
+            .singleOrNull()
+            ?.userAndToken
+
+    fun assignRoleToToken(
+        userId: Int,
+        tokenId: Int,
+        roleId: Int,
+    ): Boolean =
+        handle
+            .createUpdate(
+                """
+            INSERT INTO dbp.user_token_role (user_id, token_id, role_id)
+            VALUES (:user_id, :token_id, :role_id)
+            ON CONFLICT DO NOTHING
+        """,
+            ).bind("user_id", userId)
+            .bind("token_id", tokenId)
+            .bind("role_id", roleId)
+            .execute() > 0
+
+    fun getUserRolesByToken(token: String): List<String> =
+        handle
+            .createQuery(
+                """
+            SELECT r.name FROM dbp.user_token_role utr
+            JOIN dbp.tokens t ON utr.token_id = t.id
+            JOIN dbp.role r ON utr.role_id = r.id
+            WHERE t.token_validation = :token
+        """,
+            ).bind("token", token)
+            .mapTo<String>()
+            .list()
+
+    private data class UserAndTokenModel(
+        val id: Int,
+        val phoneNumber: String,
+        val address: String,
+        val name: String,
+        val email: String,
+        val passwordValidation: PasswordValidationInfo,
+        val birthDate: LocalDate,
+        val iban: String,
+        val status: String,
+        val tokenValidation: TokenValidationInfo,
+        val createdAt: Long,
+        val lastUsedAt: Long,
+    ) {
+        val status2 =
+            UserStatus.values().firstOrNull { it.status == status }
+                ?: throw IllegalArgumentException("Invalid user status: $status")
+
+        val userAndToken: Pair<Users, Token>
+            get() =
+                Pair(
+                    Users(id, phoneNumber, address, name, email, passwordValidation, birthDate, iban, status2),
+                    Token(
+                        tokenValidation,
+                        id,
+                        Instant.fromEpochSeconds(createdAt),
+                        Instant.fromEpochSeconds(lastUsedAt),
+                    ),
+                )
+    }
+
+    private data class UserAndTokenModelWithRoles(
+        val id: Int,
+        val phoneNumber: String,
+        val address: String,
+        val name: String,
+        val email: String,
+        val passwordValidation: PasswordValidationInfo,
+        val birthDate: LocalDate,
+        val iban: String,
+        val status: String,
+        val tokenValidation: TokenValidationInfo,
+        val createdAt: Long,
+        val lastUsedAt: Long,
+        val roles: List<String>,
+    ) {
+        val statusEnum =
+            UserStatus.values().firstOrNull { it.status == status }
+                ?: throw IllegalArgumentException("Invalid user status: $status")
+
+        val userAndToken: Triple<Users, Token, List<String>>
+            get() =
+                Triple(
+                    Users(id, phoneNumber, address, name, email, passwordValidation, birthDate, iban, statusEnum),
+                    Token(tokenValidation, id, Instant.fromEpochSeconds(createdAt), Instant.fromEpochSeconds(lastUsedAt)),
+                    roles,
+                )
+    }
+
+    fun createToken(token: Token): Int =
+        handle
+            .createUpdate(
+                """
+            INSERT INTO dbp.tokens(user_id, token_validation, created_at, last_used_at)
+            VALUES (:user_id, :token_validation, :created_at, :last_used_at)
+        """,
+            ).bind("user_id", token.userId)
+            .bind("token_validation", token.tokenValidationInfo.validationInfo)
+            .bind("created_at", token.createdAt.epochSeconds)
+            .bind("last_used_at", token.lastUsedAt.epochSeconds)
+            .executeAndReturnGeneratedKeys("id")
+            .mapTo<Int>()
+            .one()
+
+    override fun createToken(
+        token: Token,
+        maxTokens: Int,
+    ) {
+        val deletions =
+            handle
+                .createUpdate(
+                    """
+                    delete from dbp.Tokens
+                    where user_id = :user_id
+                        and token_validation in (
+                            select token_validation from Tokens where user_id = :user_id
+                                order by last_used_at desc offset :offset
+                        )
+                    """.trimIndent(),
+                ).bind("user_id", token.userId)
+                .bind("offset", maxTokens - 1)
+                .execute()
+
+        handle
+            .createUpdate(
+                """
+                insert into dbp.Tokens(user_id, token_validation, created_at, last_used_at)
+                values (:user_id, :token_validation, :created_at, :last_used_at)
+                """.trimIndent(),
+            ).bind("user_id", token.userId)
+            .bind("token_validation", token.tokenValidationInfo.validationInfo)
+            .bind("created_at", token.createdAt.epochSeconds)
+            .bind("last_used_at", token.lastUsedAt.epochSeconds)
+            .execute()
+    }
+
+    override fun updateTokenLastUsed(
+        token: Token,
+        now: Instant,
+    ) {
+        handle
+            .createUpdate(
+                """
+                update dbp.Tokens
+                set last_used_at = :last_used_at
+                where token_validation = :validation_information
+                """.trimIndent(),
+            ).bind("last_used_at", now.epochSeconds)
+            .bind("validation_information", token.tokenValidationInfo.validationInfo)
+            .execute()
+    }
+
+    override fun removeTokenByValidationInfo(tokenValidationInfo: TokenValidationInfo): Int =
+        handle
+            .createUpdate(
+                """
+                delete from dbp.Tokens
+                where token_validation = :validation_information
+            """,
+            ).bind("validation_information", tokenValidationInfo.validationInfo)
+            .execute()
+
+    override fun getUserByToken(token: String): Users? {
+        TODO("Not yet implemented")
+    }
+
     override fun createUser(
         name: String,
         phoneNumber: String,
         address: String,
         email: String,
-        password: String,
+        passwordValidation: PasswordValidationInfo,
         birthDate: LocalDate,
         iban: String,
     ): Int =
@@ -25,7 +209,7 @@ class UsersRepositoryJdbi(
             .bind("phone_number", phoneNumber)
             .bind("address", address)
             .bind("email", email)
-            .bind("password", password)
+            .bind("password", passwordValidation)
             .bind("birth_date", birthDate)
             .bind("iban", iban)
             .executeAndReturnGeneratedKeys()
@@ -54,7 +238,10 @@ class UsersRepositoryJdbi(
             .findFirst()
             .isPresent
 
-    override fun existsByEmailExcludingId(email: String, id: Int): Boolean =
+    override fun existsByEmailExcludingId(
+        email: String,
+        id: Int,
+    ): Boolean =
         handle
             .createQuery("SELECT 1 FROM dbp.users WHERE email = :email AND id != :id")
             .bind("email", email)
@@ -71,7 +258,10 @@ class UsersRepositoryJdbi(
             .findFirst()
             .isPresent
 
-    override fun existsByPhoneNumberExcludingId(phoneNumber: String, id: Int): Boolean =
+    override fun existsByPhoneNumberExcludingId(
+        phoneNumber: String,
+        id: Int,
+    ): Boolean =
         handle
             .createQuery("SELECT * FROM dbp.users WHERE phone_number = :phone_number and id != :id")
             .bind("phone_number", phoneNumber)
@@ -88,7 +278,10 @@ class UsersRepositoryJdbi(
             .findFirst()
             .isPresent
 
-    override fun existsByIbanExcludingId(iban: String, id: Int): Boolean =
+    override fun existsByIbanExcludingId(
+        iban: String,
+        id: Int,
+    ): Boolean =
         handle
             .createQuery("SELECT * FROM dbp.users WHERE iban = :iban and id != :id")
             .bind("iban", iban)
@@ -103,7 +296,7 @@ class UsersRepositoryJdbi(
         phoneNumber: String,
         address: String,
         email: String,
-        password: String,
+        password: PasswordValidationInfo,
         birthDate: LocalDate,
         iban: String,
     ): Boolean =
