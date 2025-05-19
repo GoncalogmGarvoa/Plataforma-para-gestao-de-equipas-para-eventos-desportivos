@@ -1,6 +1,6 @@
 package pt.arbitros.arbnet.repository.auxiliary
 
-import pt.arbitros.arbnet.domain.Equipment
+import pt.arbitros.arbnet.domain.universal.Equipment
 
 interface EquipmentRepository {
     fun createEquipment(equipment: Equipment): Int

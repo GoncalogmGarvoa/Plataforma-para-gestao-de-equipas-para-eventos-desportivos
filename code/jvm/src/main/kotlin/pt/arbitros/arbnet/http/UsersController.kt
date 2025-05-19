@@ -5,16 +5,70 @@ package pt.arbitros.arbnet.http
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import pt.arbitros.arbnet.domain.Users
+import pt.arbitros.arbnet.domain.users.AuthenticatedUser
 import pt.arbitros.arbnet.http.model.*
 import pt.arbitros.arbnet.services.*
-
-typealias userEither = Either<Int, Users>
 
 @RestController
 class UsersController(
     private val usersService: UsersService,
 ) {
+    @PostMapping(Uris.UsersUris.TOKEN) // equal to logging in
+    fun token(
+        @RequestBody input: UserCreateTokenInputModel,
+    ): ResponseEntity<*> {
+        val res = usersService.createToken(input.email, input.password)
+        return when (res) {
+            is Success ->
+                ResponseEntity.ok(UserTokenCreateOutputModel(res.value.tokenValue))
+
+            is Failure ->
+                when (res.value) {
+                    is UsersError.UserOrPasswordAreInvalid -> Problem.UserOrPasswordAreInvalid.response(HttpStatus.BAD_REQUEST)
+                    is UsersError.MissingField -> Problem.MissingField.response(HttpStatus.BAD_REQUEST)
+                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to create the token")
+                }
+        }
+    }
+
+    @PostMapping(Uris.UsersUris.LOGOUT)
+    fun logout(user: AuthenticatedUser) {
+        usersService.revokeToken(user.token) // .also { removeCookies(response) }
+    }
+
+    @GetMapping(Uris.UsersUris.GET_BY_TOKEN)
+    fun getUserByToken(
+        @RequestHeader token: String,
+    ): ResponseEntity<*> =
+        when (
+            val userInfo = usersService.getUserByToken(token)
+        ) {
+            is Success ->
+                ResponseEntity.ok(
+                    // todo roles = userInfo.second, is it important?
+                    UserOutputPassValModel(
+                        id = userInfo.value.id,
+                        phoneNumber = userInfo.value.phoneNumber,
+                        address = userInfo.value.address,
+                        name = userInfo.value.name,
+                        email = userInfo.value.email,
+                        birthDate = userInfo.value.birthDate.toString(),
+                        iban = userInfo.value.iban,
+                        passwordValidation = userInfo.value.passwordValidation,
+                        status = userInfo.value.userStatus.status,
+                    ),
+                )
+            is Failure ->
+                when (userInfo.value) {
+                    is UsersError.UserNotFound -> Problem.UserNotFound.response(HttpStatus.NOT_FOUND)
+                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to get the user")
+                }
+
+            else -> {
+                ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to get the user")
+            }
+        }
+
     @GetMapping(Uris.UsersUris.GET_BY_ID)
     fun getUserById(
         @PathVariable id: Int,

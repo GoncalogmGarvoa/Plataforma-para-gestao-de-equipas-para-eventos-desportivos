@@ -6,58 +6,36 @@ import {
 } from 'react'
 
 type ContextType = {
-    username: string | undefined,
-    setUsername: (v: string | undefined) => void
+    email: string | undefined,
+    setEmail: (v: string | undefined) => void
 }
-const UsernameInContext = createContext<ContextType>({
-    username: undefined,
-    setUsername: () => { },
+const EmailInContext = createContext<ContextType>({
+    email: undefined,
+    setEmail: () => { },
 })
 
-/*
-const getUserNameFromCookie = async () => {
-    try {
-        const response = await fetch("/api/cookies")
-        const data = await response.json()
-        console.log("Cookies: ", data)
-        if (response.ok) {
-            return data.username
-        } else {
-            return undefined
-        }
-    }
-    catch (error) {
-        console.error("Empty cookies:", error)
-        throw error
-    }
-}
- */
+
 
 // @ts-ignore
-const getUserNameFromCookie = () => document.cookie.split('; ').find(row => row.startsWith('username='))==undefined ? document.cookie.split('; ').find(row => row.startsWith('username=')) : document.cookie.split('; ').find(row => row.startsWith('username=')).split('=')[1]
+const getEmailFromCookie = (): string | undefined => {
+    const cookie = document.cookie.split('; ').find(row => row.startsWith('email='))
+    return cookie ? cookie.split('=')[1] : undefined
+}
 
 export function UserContainer({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState(getUserNameFromCookie)
-    /*
-    useEffect(() => {
-        getUserNameFromCookie().then((cookie => {
-            if (cookie != user) {
-                setUser(cookie)
-            }
-        }))
-    }, [user]);
-     */
+    const [user, setUser] = useState(getEmailFromCookie)
+
     return (
-        <UsernameInContext.Provider value={{ username: user, setUsername: setUser }}>
+        <EmailInContext.Provider value={{ email: user, setEmail: setUser }}>
             {children}
-        </UsernameInContext.Provider>
+        </EmailInContext.Provider>
     )
 }
 
-export function useCurrentUsername() {
-    return useContext(UsernameInContext).username
+export function useCurrentEmail() {
+    return useContext(EmailInContext).email
 }
 
-export function useSetUsername() {
-    return useContext(UsernameInContext).setUsername
+export function useSetEmail() {
+    return useContext(EmailInContext).setEmail
 }

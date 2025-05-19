@@ -51,6 +51,10 @@ sealed class Problem(
 
     data object UserWithoutRole : Problem(URI("$PROBLEM_URI_PATH/user-without-role"))
 
+    data object UserOrPasswordAreInvalid : Problem(URI("$PROBLEM_URI_PATH/user-or-password-are-invalid"))
+
+    data object MissingField : Problem(URI("$PROBLEM_URI_PATH/missing-field"))
+
     // Request data validation
 
     data object InvalidName : Problem(URI("$PROBLEM_URI_PATH/invalid-name"))

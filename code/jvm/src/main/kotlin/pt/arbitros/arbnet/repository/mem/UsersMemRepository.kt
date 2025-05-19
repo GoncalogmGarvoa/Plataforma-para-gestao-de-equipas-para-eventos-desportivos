@@ -1,8 +1,9 @@
-@file:Suppress("ktlint:standard:filename")
+@file:Suppress("ktlint:standard:filename", "ktlint:standard:no-wildcard-imports")
 
 package pt.arbitros.arbnet.repository.mem
 
-import pt.arbitros.arbnet.domain.Users
+import kotlinx.datetime.Instant
+import pt.arbitros.arbnet.domain.users.*
 import pt.arbitros.arbnet.repository.UsersRepository
 import java.time.LocalDate
 
@@ -10,12 +11,38 @@ class UsersRepositoryMem : UsersRepository {
     private val users = mutableListOf<Users>()
     private var nextId = 1
 
+    override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<Users, Token>? {
+        TODO("Not yet implemented")
+    }
+
+    override fun createToken(
+        token: Token,
+        maxTokens: Int,
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override fun updateTokenLastUsed(
+        token: Token,
+        now: Instant,
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override fun removeTokenByValidationInfo(tokenValidationInfo: TokenValidationInfo): Int {
+        TODO("Not yet implemented")
+    }
+
+    override fun getUserByToken(token: String): Users? {
+        TODO("Not yet implemented")
+    }
+
     override fun createUser(
         name: String,
         phoneNumber: String,
         address: String,
         email: String,
-        password: String,
+        password: PasswordValidationInfo,
         birthDate: LocalDate,
         iban: String,
     ): Int {
@@ -26,9 +53,10 @@ class UsersRepositoryMem : UsersRepository {
                 phoneNumber = phoneNumber,
                 address = address,
                 email = email,
-                password = password,
+                passwordValidation = password,
                 birthDate = birthDate,
                 iban = iban,
+                userStatus = UserStatus.ACTIVE,
                 // roles = emptyList(),
             )
         users.add(user)
@@ -49,9 +77,7 @@ class UsersRepositoryMem : UsersRepository {
         return user != null && user.id != id
     }
 
-    override fun existsByPhoneNumber(phoneNumber: String): Boolean {
-        return users.any { it.phoneNumber == phoneNumber }
-    }
+    override fun existsByPhoneNumber(phoneNumber: String): Boolean = users.any { it.phoneNumber == phoneNumber }
 
     override fun existsByPhoneNumberExcludingId(
         phoneNumber: String,
@@ -61,9 +87,7 @@ class UsersRepositoryMem : UsersRepository {
         return user != null && user.id != id
     }
 
-    override fun existsByIban(iban: String): Boolean {
-        return users.any { it.iban == iban }
-    }
+    override fun existsByIban(iban: String): Boolean = users.any { it.iban == iban }
 
     override fun existsByIbanExcludingId(
         iban: String,
@@ -79,7 +103,7 @@ class UsersRepositoryMem : UsersRepository {
         phoneNumber: String,
         address: String,
         email: String,
-        password: String,
+        password: PasswordValidationInfo,
         birthDate: LocalDate,
         iban: String,
     ): Boolean {
@@ -89,7 +113,7 @@ class UsersRepositoryMem : UsersRepository {
                 name = name,
                 phoneNumber = phoneNumber,
                 address = address,
-                password = password,
+                passwordValidation = password,
                 birthDate = birthDate,
                 iban = iban,
             )

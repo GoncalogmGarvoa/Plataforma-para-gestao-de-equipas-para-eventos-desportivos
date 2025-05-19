@@ -7,9 +7,7 @@ import pt.arbitros.arbnet.repository.*
 
 class TransactionMem(
     private val handle: Handle,
-
 ) : Transaction {
-
     override val usersRepository: UsersRepository = UsersRepositoryMem()
     override val callListRepository: CallListRepository = CallListRepositoryMem()
     override val competitionRepository: CompetitionRepository = CompetitionRepositoryMem()
@@ -19,6 +17,8 @@ class TransactionMem(
     override val functionRepository: FunctionRepository = FunctionRepositoryMem()
     override val usersRolesRepository: UsersRolesRepository = UsersRolesRepositoryMem()
     override val roleRepository: RoleRepository = RoleRepositoryMem()
+    override val reportRepository: ReportSQLRepository
+        get() = TODO("Not yet implemented")
 
     override fun rollback() {
         handle.rollback()

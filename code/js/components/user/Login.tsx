@@ -1,20 +1,20 @@
 import * as React from "react"
 import {useEffect, useState} from "react"
-import {Navigate} from "react-router-dom"
+import {Link, Navigate} from "react-router-dom"
 import {useSetUser} from "../../src/context/Authn"
-import {useSetUsername} from "../../src/context/Player"
+import {useSetEmail} from "../../src/context/Player"
 import "core-js/features/promise";
 
 
-export async function authenticate(username: string, password: string): Promise<string | undefined> {
+export async function authenticate(email: string, password: string): Promise<string | undefined> {
     const handleLogin = async () => {
         try {
-            const response = await fetch("/api/users/token", {
+            const response = await fetch("/arbnet/users/email", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ username: username, password: password }),
+                body: JSON.stringify({ email: email, password: password }),
             })
             const data = await response.json()
             if (response.ok) {
@@ -22,7 +22,7 @@ export async function authenticate(username: string, password: string): Promise<
                 expirationDate.setHours(expirationDate.getHours() + 1);
                 console.log("LOGIN TOKEN: ",data.token)
                 document.cookie = `token=${data.token}; expires=${expirationDate.toUTCString()}; path=/;`
-                document.cookie = `username=${username}; expires=${expirationDate.toUTCString()}; path=/;`
+                document.cookie = `email=${email}; expires=${expirationDate.toUTCString()}; path=/;`
                 console.log("user token: ", data.token)
                 return data.token
             } else {
@@ -40,7 +40,7 @@ export async function authenticate(username: string, password: string): Promise<
 export function Login() {
     console.log("Login")
     const [inputs, setInputs] = useState({
-        username: "",
+        email: "",
         password: "",
     })
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -48,20 +48,20 @@ export function Login() {
     const [redirect, setRedirect] = useState(false)
     const setUser = useSetUser()
     const [locationPath, setLocationPath] = useState("/me")
-    const setUsername = useSetUsername()
+    const setEmail = useSetEmail()
 
     useEffect(() => {
         if (document.cookie != "") {
             // @ts-ignore
             setUser(document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1]+"=")
             // @ts-ignore
-            setUsername(document.cookie.split('; ').find(row => row.startsWith('username=')).split('=')[1])
+            setEmail(document.cookie.split('; ').find(row => row.startsWith('email=')).split('=')[1])
             setRedirect(true)
         } else {
             setUser(undefined)
-            setUsername(undefined)
+            setEmail(undefined)
         }
-    }, [setUser, setUsername])
+    }, [setUser, setEmail])
 
 
     if(redirect) {
@@ -76,19 +76,19 @@ export function Login() {
     function handleSubmit(ev: React.FormEvent<HTMLFormElement>) {
         ev.preventDefault()
         setIsSubmitting(true)
-        const username = inputs.username
+        const email = inputs.email
         const password = inputs.password
-        authenticate(username, password)
+        authenticate(email, password)
             .then(res => {
                 setIsSubmitting(false)
                 if (res) {
                     console.log(`setUser(${res})`)
                     setUser(res)
-                    setUsername(username)
+                    setEmail(email)
                     setRedirect(true)
                     setLocationPath("/me")
                 } else {
-                    setError("Invalid username or password")
+                    setError("Invalid email or password")
                 }
             })
             .catch(error => {
@@ -96,24 +96,52 @@ export function Login() {
                 setError(error.message)
             })
     }
-
     return (
         <form onSubmit={handleSubmit}>
             <h2>Login</h2>
             <fieldset disabled={isSubmitting}>
                 <div>
-                    <label htmlFor="username">Username</label>
-                    <input id="username" type="text" name="username" value={inputs.username} onChange={handleChange} />
+                    <label htmlFor="email">Email</label>
+                    <input id="email" type="text" name="email" value={inputs.email} onChange={handleChange}/>
                 </div>
                 <div>
                     <label htmlFor="password">Password</label>
-                    <input id="password" type="password" name="password" value={inputs.password} onChange={handleChange} />
+                    <input id="password" type="password" name="password" value={inputs.password}
+                           onChange={handleChange}/>
                 </div>
                 <div>
                     <button type="submit">Login</button>
                 </div>
             </fieldset>
-            {error}
+
+            {error && <p style={{color: 'red'}}>{error}</p>}
+
+            <hr style={{margin: '1rem 0'}}/>
+
+            <p style={{textAlign: 'center'}}>
+                Don’t have an account? <Link to="/users">Create an account</Link>
+            </p>
         </form>
+
+        // <form onSubmit={handleSubmit}>
+        //     <h2>Login</h2>
+        //     <fieldset disabled={isSubmitting}>
+        //         <div>
+        //             <label htmlFor="email">Email</label>
+        //             <input id="email" type="text" name="email" value={inputs.email} onChange={handleChange} />
+        //         </div>
+        //         <div>
+        //             <label htmlFor="password">Password</label>
+        //             <input id="password" type="password" name="password" value={inputs.password} onChange={handleChange} />
+        //         </div>
+        //         <div>
+        //             <button type="submit">Login</button>
+        //         </div>
+        //     </fieldset>
+        //     {error && <p style={{ color: 'red' }}>{error}</p>}
+        //
+        //     <p>Don't have an account? <Link to="/users">Create an account</Link></p>
+        // </form>
     )
+
 }
