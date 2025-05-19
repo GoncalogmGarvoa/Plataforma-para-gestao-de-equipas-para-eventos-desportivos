@@ -85,4 +85,9 @@ sealed class Problem(
     //Generic
 
     data object InternalError : Problem(URI("$PROBLEM_URI_PATH/internal-error"))
+
+    // Equipment
+
+    data object EquipmentNotFound : Problem(URI("$PROBLEM_URI_PATH/equipment-not-found"))
+
 }

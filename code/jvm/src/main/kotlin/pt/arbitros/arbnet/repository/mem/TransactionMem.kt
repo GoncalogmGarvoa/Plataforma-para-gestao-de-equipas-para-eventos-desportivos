@@ -4,6 +4,7 @@ package pt.arbitros.arbnet.repository.mem
 
 import org.jdbi.v3.core.Handle
 import pt.arbitros.arbnet.repository.*
+import pt.arbitros.arbnet.repository.jdbi.EquipmentRepositoryJdbi
 import pt.arbitros.arbnet.repository.jdbi.ReportRepositoryJdbi
 
 class TransactionMem(
@@ -21,6 +22,8 @@ class TransactionMem(
     override val usersRolesRepository: UsersRolesRepository = UsersRolesRepositoryMem()
     override val roleRepository: RoleRepository = RoleRepositoryMem()
     override val reportRepository : ReportRepository = ReportRepositoryJdbi(handle) //todo change to mem
+    override val equipmentRepository: EquipmentRepository = EquipmentRepositoryJdbi(handle)
+
 
     override fun rollback() {
         handle.rollback()
