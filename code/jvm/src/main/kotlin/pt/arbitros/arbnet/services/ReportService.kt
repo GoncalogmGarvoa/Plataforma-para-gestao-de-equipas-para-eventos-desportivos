@@ -27,17 +27,22 @@ class ReportService(
     fun createReport(
         report: ReportCreateInputModel,
     ): Either<ReportError, ReportMongo> {
+        return transactionManager.run {
+            it.reportRepository
 
-        val reportMongo = ReportMongo(
-            id = null,
-            competitionId = report.competitionId,
-            reportType = report.reportType,
-            sealed = false
-        )
 
-        val reportCreated = reportMongoRepository.save(reportMongo)
+            val reportMongo = ReportMongo(
+                id = null,
+                competitionId = report.competitionId,
+                reportType = report.reportType,
+                sealed = false
+            )
 
-        return success(reportCreated)
+            val reportCreated = reportMongoRepository.save(reportMongo)
+
+            return@run success(reportCreated)
+        }
+
     }
 
     fun getAllReports(): Either<ReportError, List<ReportMongo>> {
