@@ -1,10 +1,11 @@
 package pt.arbitros.arbnet.repository.jdbi
 
 import org.jdbi.v3.core.Handle
-import pt.arbitros.arbnet.domain.Report
-import pt.arbitros.arbnet.repository.ReportSQLRepository
+import pt.arbitros.arbnet.domain.ReportMongo
+import pt.arbitros.arbnet.domain.ReportSQL
+import pt.arbitros.arbnet.repository.ReportRepository
 
-class ReportRepositoryJdbi(private val handle: Handle) : ReportSQLRepository{
+class ReportRepositoryJdbi(private val handle: Handle) : ReportRepository{
 
     override fun createReport(
         reportId: String,
@@ -19,19 +20,19 @@ class ReportRepositoryJdbi(private val handle: Handle) : ReportSQLRepository{
         .execute() > 0
     }
 
-    override fun getReportById(id: String): Report? {
+    override fun getReportById(id: String): ReportSQL? {
         return handle.createQuery(
             """ select id, report_type, competition_id from dbp.reports where id = :id"""
         ).bind("id", id)
-        .mapTo(Report::class.java)
+        .mapTo(ReportSQL::class.java)
         .findOne()
         .orElse(null)
     }
 
-    override fun getAllReports(): List<Report> {
+    override fun getAllReports(): List<ReportSQL> {
         return handle.createQuery(
             """ select id, report_type, competition_id from dbp.reports"""
-        ).mapTo(Report::class.java)
+        ).mapTo(ReportSQL::class.java)
         .list()
     }
 
