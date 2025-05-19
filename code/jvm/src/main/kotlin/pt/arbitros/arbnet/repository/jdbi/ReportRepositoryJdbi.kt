@@ -13,7 +13,7 @@ class ReportRepositoryJdbi(private val handle: Handle) : ReportRepository{
         competitionId: Int
     ): Boolean {
         return handle.createUpdate(
-            """ insert into dbp.reports (id, report_type, competition_id) values (:reportId, :reportType, :competitionId)"""
+            """ insert into dbp.report (id, report_type, competition_id) values (:reportId, :reportType, :competitionId)"""
         ).bind("reportId", reportId)
         .bind("reportType", reportType)
         .bind("competitionId", competitionId)
@@ -22,7 +22,7 @@ class ReportRepositoryJdbi(private val handle: Handle) : ReportRepository{
 
     override fun getReportById(id: String): ReportSQL? {
         return handle.createQuery(
-            """ select id, report_type, competition_id from dbp.reports where id = :id"""
+            """ select id, report_type, competition_id from dbp.report where id = :id"""
         ).bind("id", id)
         .mapTo(ReportSQL::class.java)
         .findOne()
@@ -31,14 +31,14 @@ class ReportRepositoryJdbi(private val handle: Handle) : ReportRepository{
 
     override fun getAllReports(): List<ReportSQL> {
         return handle.createQuery(
-            """ select id, report_type, competition_id from dbp.reports"""
+            """ select id, report_type, competition_id from dbp.report"""
         ).mapTo(ReportSQL::class.java)
         .list()
     }
 
     override fun updateReport(reportId: String, reportType: String): Boolean {
         return handle.createUpdate(
-            """ update dbp.reports set report_type = :reportType where id = :reportId"""
+            """ update dbp.report set report_type = :reportType where id = :reportId"""
         ).bind("reportId", reportId)
         .bind("reportType", reportType)
         .execute() > 0

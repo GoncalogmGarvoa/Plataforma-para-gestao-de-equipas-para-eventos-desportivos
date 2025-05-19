@@ -75,7 +75,7 @@ class ReportService(
                 ?: return@run failure(ReportError.NotFound)
 
             if (report.sealed) {
-                return@run failure(ReportError.InternalError) // Already sealed
+                return@run failure(ReportError.AlreadySealed) // Already sealed
             }
 
             val success = reportMongoRepository.seal(id) // assumes returns Boolean
@@ -83,6 +83,12 @@ class ReportService(
             if (!success) {
                 return@run failure(ReportError.InternalError)
             }
+
+            it.reportRepository.createReport(
+                id,
+                report.reportType,
+                report.competitionId
+            )
 
             val updated = reportMongoRepository.findById(id).orElse(null)
                 ?: return@run failure(ReportError.InternalError)
