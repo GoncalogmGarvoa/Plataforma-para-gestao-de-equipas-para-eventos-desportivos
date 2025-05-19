@@ -112,7 +112,7 @@ class CallListService(
                     callList,
                     it.callListRepository,
                     competitionId,
-                ) ?: return@run failure(CallListError.CallListNotFound)
+                ) ?: return@run failure(CallListError.CallListNotFound) //TODO review
 
             if (callList.participants?.isNotEmpty() == true) {
                 val participantsResult =
@@ -473,4 +473,6 @@ class CallListService(
             callListRepository.updateCallListStage(callListId, callType)
             return@run success(true)
         }
+
+
 }

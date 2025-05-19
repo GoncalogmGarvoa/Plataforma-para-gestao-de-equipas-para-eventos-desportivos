@@ -18,7 +18,7 @@ class TransactionJdbi(
     override val functionRepository: FunctionRepository = FunctionRepositoryJdbi(handle)
     override val usersRolesRepository: UsersRolesRepository = UsersRolesRepositoryJdbi(handle)
     override val roleRepository: RoleRepository = RoleRepositoryJdbi(handle)
-    override val reportRepository: ReportSQLRepository = ReportRepositoryJdbi(handle)
+    override val reportRepository: ReportRepository = ReportRepositoryJdbi(handle)
 
     override fun rollback() {
         handle.rollback()

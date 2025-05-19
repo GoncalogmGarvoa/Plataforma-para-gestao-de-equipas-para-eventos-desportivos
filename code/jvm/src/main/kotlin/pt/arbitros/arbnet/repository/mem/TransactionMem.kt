@@ -4,10 +4,13 @@ package pt.arbitros.arbnet.repository.mem
 
 import org.jdbi.v3.core.Handle
 import pt.arbitros.arbnet.repository.*
+import pt.arbitros.arbnet.repository.jdbi.ReportRepositoryJdbi
 
 class TransactionMem(
     private val handle: Handle,
+
 ) : Transaction {
+
     override val usersRepository: UsersRepository = UsersRepositoryMem()
     override val callListRepository: CallListRepository = CallListRepositoryMem()
     override val competitionRepository: CompetitionRepository = CompetitionRepositoryMem()
@@ -17,8 +20,7 @@ class TransactionMem(
     override val functionRepository: FunctionRepository = FunctionRepositoryMem()
     override val usersRolesRepository: UsersRolesRepository = UsersRolesRepositoryMem()
     override val roleRepository: RoleRepository = RoleRepositoryMem()
-    override val reportRepository: ReportSQLRepository
-        get() = TODO("Not yet implemented")
+    override val reportRepository : ReportRepository = ReportRepositoryJdbi(handle) //todo change to mem
 
     override fun rollback() {
         handle.rollback()

@@ -21,7 +21,7 @@ sealed class Problem(
             .header("Content-Type", MEDIA_TYPE)
             .body(this)
 
-    // callList
+    // CallList
     data object CallListNotFound : Problem(URI("$PROBLEM_URI_PATH/callList-not-found"))
 
     data object RoleNotFound : Problem(URI("$PROBLEM_URI_PATH/role-not-found"))
@@ -81,4 +81,8 @@ sealed class Problem(
     data object ReportNotFound : Problem(URI("$PROBLEM_URI_PATH/report-not-found"))
 
     data object ReportAlreadyExists : Problem(URI("$PROBLEM_URI_PATH/report-already-exists"))
+
+    //Generic
+
+    data object InternalError : Problem(URI("$PROBLEM_URI_PATH/internal-error"))
 }
