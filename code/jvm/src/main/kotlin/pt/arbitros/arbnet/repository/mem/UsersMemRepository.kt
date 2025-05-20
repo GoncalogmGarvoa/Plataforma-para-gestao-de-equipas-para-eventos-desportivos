@@ -42,7 +42,7 @@ class UsersRepositoryMem : UsersRepository {
         phoneNumber: String,
         address: String,
         email: String,
-        password: PasswordValidationInfo,
+        passwordValidation: PasswordValidationInfo,
         birthDate: LocalDate,
         iban: String,
     ): Int {
@@ -53,7 +53,7 @@ class UsersRepositoryMem : UsersRepository {
                 phoneNumber = phoneNumber,
                 address = address,
                 email = email,
-                passwordValidation = password,
+                passwordValidation = passwordValidation,
                 birthDate = birthDate,
                 iban = iban,
                 userStatus = UserStatus.ACTIVE,

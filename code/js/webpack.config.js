@@ -13,7 +13,7 @@ module.exports = {
         compress: false,
         proxy: [
             {
-                context: ['/api'],
+                context: ['/arbnet'],
                 target: 'http://localhost:8080',
                 // introducing an API delay to make testing easier
                 pathRewrite: async function (path, req) {

@@ -127,7 +127,7 @@ class UsersController(
                 }
         }
 
-    @PostMapping(Uris.UsersUris.CREATE_USER)
+    @PostMapping("/arbnet/users/signup")
     fun createUser(
         @RequestBody user: UserInputModel,
     ): ResponseEntity<*> =
@@ -141,7 +141,7 @@ class UsersController(
                         user.email,
                         user.password,
                         user.birthDate,
-                        user.iban,
+                        user.iban.replace(" ", ""),
                     ),
                 )
         ) {

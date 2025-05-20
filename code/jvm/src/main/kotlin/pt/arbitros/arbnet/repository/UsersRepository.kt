@@ -29,7 +29,7 @@ interface UsersRepository {
         phoneNumber: String,
         address: String,
         email: String,
-        password: PasswordValidationInfo,
+        passwordValidation: PasswordValidationInfo,
         birthDate: LocalDate,
         iban: String,
     ): Int

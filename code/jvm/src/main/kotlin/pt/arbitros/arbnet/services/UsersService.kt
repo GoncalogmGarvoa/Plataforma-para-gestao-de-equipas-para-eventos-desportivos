@@ -175,7 +175,12 @@ class UsersService(
             if (checkRepoResult is Failure) {
                 return@run failure(checkRepoResult.value)
             }
-            val passwordValidationInfo = usersDomain.createPasswordValidationInformation(user.password)
+            val passwordValidationInfo =
+                try {
+                    usersDomain.createPasswordValidationInformation(user.password)
+                } catch (e: Exception) {
+                    return@run failure(UsersError.InvalidPassword)
+                }
 
             val id =
                 usersRepository.createUser(

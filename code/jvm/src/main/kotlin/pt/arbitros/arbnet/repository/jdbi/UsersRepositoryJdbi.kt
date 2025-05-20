@@ -204,12 +204,12 @@ class UsersRepositoryJdbi(
     ): Int =
         handle
             .createUpdate(
-                """insert into dbp.users (name, phone_Number, address, email, password, birth_date, iban) values (:name, :phone_number, :address ,:email, :password, :birth_date, :iban)""",
+                """insert into dbp.users (name, phone_Number, address, email, password_validation, birth_date, iban) values (:name, :phone_number, :address ,:email, :password_validation, :birth_date, :iban)""",
             ).bind("name", name)
             .bind("phone_number", phoneNumber)
             .bind("address", address)
             .bind("email", email)
-            .bind("password", passwordValidation)
+            .bind("password_validation", passwordValidation.validationInfo)
             .bind("birth_date", birthDate)
             .bind("iban", iban)
             .executeAndReturnGeneratedKeys()
