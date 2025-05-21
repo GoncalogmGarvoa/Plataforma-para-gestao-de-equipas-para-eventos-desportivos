@@ -9,7 +9,7 @@ import "core-js/features/promise";
 export async function authenticate(email: string, password: string): Promise<string | undefined> {
     const handleLogin = async () => {
         try {
-            const response = await fetch("/arbnet/users/email", {
+            const response = await fetch("/arbnet/users/token", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

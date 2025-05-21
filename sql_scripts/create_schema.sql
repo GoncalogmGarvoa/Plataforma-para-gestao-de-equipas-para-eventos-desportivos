@@ -14,14 +14,13 @@ create table dbp.users (
 
 );
 
-
-CREATE TABLE dbp.tokens (
-                            id serial primary key,
-                            user_id int not null,
-                            token_validation text not null,
-                            created_at timestamp not null default NOW(),
-                            last_used_at timestamp,
-                            foreign key (user_id) references dbp.users(id)
+create table dbp.tokens(
+                        id serial primary key,
+                        token_validation VARCHAR(256),
+                        user_id int ,
+                        created_at bigint not null,
+                        last_used_at bigint not null,
+                        FOREIGN KEY (user_id) REFERENCES dbp.users(id),
 );
 
 create table dbp.role (
@@ -33,13 +32,12 @@ create table dbp.role (
 CREATE TABLE dbp.user_token_role (
                                      id SERIAL PRIMARY KEY,
                                      user_id INT NOT NULL,
-                                     token_id INT NOT NULL,
+                                     token_id int NOT NULL,
                                      role_id INT NOT NULL,
                                      FOREIGN KEY (user_id) REFERENCES dbp.users(id),
                                      FOREIGN KEY (token_id) REFERENCES dbp.tokens(id),
                                      FOREIGN KEY (role_id) REFERENCES dbp.role(id)
 );
-
 
 
 

@@ -1,14 +1,14 @@
 import * as React from 'react'
-
+import '../components/Components.css'
 import {createBrowserRouter, Link, Outlet, RouterProvider} from 'react-router-dom'
 import { AuthnContainer} from './context/Authn'
 import { CreateUser } from "../components/user/CreateUser"
 import { Login } from "../components/user/Login"
+import { Me } from "../components/user/Me"
 import { useCurrentUser } from "./context/Authn"
 import { RequireAuthn } from './RequireAuthn'
 import { Logout } from '../components/user/Logout'
 
-import '../components/Components.css'
 import {useCurrentEmail, UserContainer} from "./context/Player";
 
 
@@ -36,7 +36,7 @@ const router = createBrowserRouter([
                 "element": <Login />
             },
             {
-                "path": "/me",
+                "path": "/Me",
                 "element": <RequireAuthn><Me /></RequireAuthn>
             },
             {
@@ -99,15 +99,16 @@ function Home() {
     )
 }
 
-
-export function Me() {
-    const currentEmail = useCurrentEmail()
-    return (
-        <div>
-            {`Hello ${currentEmail}!`}
-        </div>
-    )
-}
+//
+// export function Me() {
+//     const currentEmail = useCurrentEmail()
+//
+//     return (
+//         <div>
+//             {`Hello ${currentEmail}!`}
+//         </div>
+//     )
+// }
 
 export function Header() {
     const currentUser = useCurrentUser()

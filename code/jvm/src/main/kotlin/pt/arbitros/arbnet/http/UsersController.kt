@@ -100,7 +100,7 @@ class UsersController(
 
     @GetMapping(Uris.UsersUris.GET_BY_EMAIL)
     fun getUserByEmail(
-        @RequestBody email: UsersEmailInput,
+        @RequestParam email: UsersEmailInput,
     ): ResponseEntity<*> =
         when (
             val userInfo = usersService.getUserByEmail(email.email)

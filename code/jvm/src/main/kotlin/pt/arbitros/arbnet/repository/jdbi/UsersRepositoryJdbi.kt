@@ -5,8 +5,11 @@ package pt.arbitros.arbnet.repository.jdbi
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.core.mapper.RowMapper
+import org.jdbi.v3.core.statement.StatementContext
 import pt.arbitros.arbnet.domain.users.*
 import pt.arbitros.arbnet.repository.UsersRepository
+import java.sql.ResultSet
 import java.time.LocalDate
 
 class UsersRepositoryJdbi(
@@ -142,7 +145,7 @@ class UsersRepositoryJdbi(
                     delete from dbp.Tokens
                     where user_id = :user_id
                         and token_validation in (
-                            select token_validation from Tokens where user_id = :user_id
+                            select token_validation from dbp.tokens where user_id = :user_id
                                 order by last_used_at desc offset :offset
                         )
                     """.trimIndent(),
@@ -153,7 +156,7 @@ class UsersRepositoryJdbi(
         handle
             .createUpdate(
                 """
-                insert into dbp.Tokens(user_id, token_validation, created_at, last_used_at)
+                insert into dbp.tokens(user_id, token_validation, created_at, last_used_at)
                 values (:user_id, :token_validation, :created_at, :last_used_at)
                 """.trimIndent(),
             ).bind("user_id", token.userId)
@@ -223,12 +226,47 @@ class UsersRepositoryJdbi(
             .mapTo<Users>()
             .singleOrNull()
 
+//    override fun getUserByEmail(email: String): Users? =
+//        handle
+//            .createQuery("""select * from dbp.users where email = :email""")
+//            .bind("email", email)
+//            .mapTo<Users>()
+//            .singleOrNull()
     override fun getUserByEmail(email: String): Users? =
         handle
             .createQuery("""select * from dbp.users where email = :email""")
             .bind("email", email)
-            .mapTo<Users>()
-            .singleOrNull()
+            .map { rs, _ ->
+                Users(
+                    id = rs.getInt("id"),
+                    phoneNumber = rs.getString("phone_number"),
+                    address = rs.getString("address"),
+                    name = rs.getString("name"),
+                    email = rs.getString("email"),
+                    passwordValidation = PasswordValidationInfo(rs.getString("password_validation")),
+                    birthDate = rs.getDate("birth_date").toLocalDate(),
+                    iban = rs.getString("iban"),
+                    userStatus = UserStatus.valueOf(rs.getString("status").uppercase()), // ou fromString()
+                )
+            }.singleOrNull()
+
+    class UsersMapper : RowMapper<Users> {
+        override fun map(
+            rs: ResultSet,
+            ctx: StatementContext?,
+        ): Users =
+            Users(
+                id = rs.getInt("id"),
+                phoneNumber = rs.getString("phone_number"),
+                address = rs.getString("address"),
+                name = rs.getString("name"),
+                email = rs.getString("email"),
+                passwordValidation = PasswordValidationInfo(rs.getString("password_validation")),
+                birthDate = rs.getDate("birth_date").toLocalDate(),
+                iban = rs.getString("iban"),
+                userStatus = UserStatus.valueOf(rs.getString("status")),
+            )
+    }
 
     override fun existsByEmail(email: String): Boolean =
         handle
