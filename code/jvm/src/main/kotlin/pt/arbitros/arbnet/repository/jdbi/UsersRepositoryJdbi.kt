@@ -119,21 +119,6 @@ class UsersRepositoryJdbi(
                 )
     }
 
-    fun createToken(token: Token): Int =
-        handle
-            .createUpdate(
-                """
-            INSERT INTO dbp.tokens(user_id, token_validation, created_at, last_used_at)
-            VALUES (:user_id, :token_validation, :created_at, :last_used_at)
-        """,
-            ).bind("user_id", token.userId)
-            .bind("token_validation", token.tokenValidationInfo.validationInfo)
-            .bind("created_at", token.createdAt.epochSeconds)
-            .bind("last_used_at", token.lastUsedAt.epochSeconds)
-            .executeAndReturnGeneratedKeys("id")
-            .mapTo<Int>()
-            .one()
-
     override fun createToken(
         token: Token,
         maxTokens: Int,
@@ -223,32 +208,30 @@ class UsersRepositoryJdbi(
         handle
             .createQuery("""select * from dbp.users where id = :id""")
             .bind("id", id)
-            .mapTo<Users>()
-            .singleOrNull()
+            .map { rs, _ ->
+                usersMap(rs)
+            }.singleOrNull()
 
-//    override fun getUserByEmail(email: String): Users? =
-//        handle
-//            .createQuery("""select * from dbp.users where email = :email""")
-//            .bind("email", email)
-//            .mapTo<Users>()
-//            .singleOrNull()
     override fun getUserByEmail(email: String): Users? =
         handle
             .createQuery("""select * from dbp.users where email = :email""")
             .bind("email", email)
             .map { rs, _ ->
-                Users(
-                    id = rs.getInt("id"),
-                    phoneNumber = rs.getString("phone_number"),
-                    address = rs.getString("address"),
-                    name = rs.getString("name"),
-                    email = rs.getString("email"),
-                    passwordValidation = PasswordValidationInfo(rs.getString("password_validation")),
-                    birthDate = rs.getDate("birth_date").toLocalDate(),
-                    iban = rs.getString("iban"),
-                    userStatus = UserStatus.valueOf(rs.getString("status").uppercase()), // ou fromString()
-                )
+                usersMap(rs)
             }.singleOrNull()
+
+    private fun usersMap(rs: ResultSet) =
+        Users(
+            id = rs.getInt("id"),
+            phoneNumber = rs.getString("phone_number"),
+            address = rs.getString("address"),
+            name = rs.getString("name"),
+            email = rs.getString("email"),
+            passwordValidation = PasswordValidationInfo(rs.getString("password_validation")),
+            birthDate = rs.getDate("birth_date").toLocalDate(),
+            iban = rs.getString("iban"),
+            userStatus = UserStatus.valueOf(rs.getString("status").uppercase()), // ou fromString()
+        )
 
     class UsersMapper : RowMapper<Users> {
         override fun map(
