@@ -1,6 +1,7 @@
 package pt.arbitros.arbnet.repository.jdbi
 
 import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.kotlin.mapTo
 import pt.arbitros.arbnet.domain.Session
 import pt.arbitros.arbnet.repository.SessionsRepository
 import java.time.LocalTime
@@ -46,4 +47,26 @@ class SessionsRepositoryJdbi(
             ).bind("matchDayId", matchDayId)
             .mapTo(Session::class.java)
             .list()
+
+    override fun getSessionById(id: Int): Session? =
+        handle
+            .createQuery(
+                """
+                    SELECT * FROM dbp.session 
+                    WHERE id = :id
+                    """.trimIndent(),
+            ).bind("id", id)
+            .mapTo<Session>()
+            .singleOrNull()
+
+    override fun finishSession(id: Int): Boolean =
+        handle
+            .createUpdate(
+                """
+                    UPDATE dbp.session 
+                    SET end_time = now() 
+                    WHERE id = :id
+                    """.trimIndent(),
+            ).bind("id", id)
+            .execute() > 0
 }

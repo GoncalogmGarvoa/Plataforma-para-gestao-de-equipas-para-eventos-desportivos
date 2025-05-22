@@ -18,4 +18,8 @@ interface SessionsRepository {
     ): Boolean
 
     fun getSessionByMatchId(id: Int): List<Session>
+
+    fun getSessionById(id: Int): Session?
+
+    fun finishSession(id: Int): Boolean
 }

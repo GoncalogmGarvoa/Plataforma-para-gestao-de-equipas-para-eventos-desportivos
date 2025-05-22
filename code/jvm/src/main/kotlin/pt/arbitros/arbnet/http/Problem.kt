@@ -92,4 +92,7 @@ sealed class Problem(
 
     data object EquipmentNotFound : Problem(URI("$PROBLEM_URI_PATH/equipment-not-found"))
 
+    //Session
+
+    data object SessionNotFound : Problem(URI("$PROBLEM_URI_PATH/session-not-found"))
 }

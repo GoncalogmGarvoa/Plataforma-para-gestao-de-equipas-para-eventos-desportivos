@@ -42,4 +42,8 @@ object Uris {
         const val GET_EQUIPMENT = "$PREFIX/equipment"
         const val SELECT_EQUIPMENT = "$PREFIX/equipment/select"
     }
+
+    object SessionUris {
+        const val FINISH_SESSION = "$PREFIX/session/finish"
+    }
 }
