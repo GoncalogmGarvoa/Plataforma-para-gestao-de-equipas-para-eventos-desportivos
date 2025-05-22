@@ -133,19 +133,7 @@ class CallListController(
             is Success -> {
                 val value = event.value
                 ResponseEntity.ok(
-                    EventOutputModel(
-                        value.competitionName,
-                        value.address,
-                        value.phoneNumber,
-                        value.email,
-                        value.association,
-                        value.location,
-                        value.userId,
-                        value.participants,
-                        value.deadline,
-                        value.callListType,
-                        value.matchDaySessions,
-                    ),
+                    value
                 )
             }
 

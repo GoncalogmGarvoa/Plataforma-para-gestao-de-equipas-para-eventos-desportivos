@@ -239,4 +239,25 @@ class UsersController(
                     else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to get the roles")
                 }
         }
+
+    @PostMapping(Uris.UsersUris.USER_CATEGORY)
+    fun updateUserCategory(
+        @RequestBody user: UserCategoryUpdateInputModel,
+    ): ResponseEntity<*> =
+        when (
+            val userCategoryUpdated =
+                usersService.updateUserCategory(
+                    user.userId,
+                    user.categoryId,
+                )
+        ) {
+            is Success -> ResponseEntity.ok(userCategoryUpdated)
+            is Failure ->
+                when (userCategoryUpdated.value) {
+                    is UsersError.UserNotFound -> Problem.UserNotFound.response(HttpStatus.NOT_FOUND)
+                    is UsersError.CategoryNotFound -> Problem.CategoryNotFound.response(HttpStatus.NOT_FOUND)
+                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to update the user category")
+                }
+        }
+
 }

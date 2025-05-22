@@ -1,11 +1,13 @@
-package pt.arbitros.arbnet.repository.auxiliary
+package pt.arbitros.arbnet.repository
 
 import pt.arbitros.arbnet.domain.universal.Category
 
 interface CategoryRepository {
     fun createCategory(category: Category): Int
 
-    fun findCategoryById(id: Int): Category?
+    fun getCategoryNameById(id: Int): String?
+
+    fun getCategoryIdByName(name: String): Int?
 
     fun getAllCategories(): List<Category>
 

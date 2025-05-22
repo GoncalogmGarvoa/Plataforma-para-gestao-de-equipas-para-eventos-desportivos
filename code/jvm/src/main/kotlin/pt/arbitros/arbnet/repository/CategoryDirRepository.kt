@@ -1,10 +1,8 @@
-package pt.arbitros.arbnet.repository.auxiliary
+package pt.arbitros.arbnet.repository
 
 import pt.arbitros.arbnet.domain.CategoryDir
 
 interface CategoryDirRepository {
-    fun assignRefereeToCategoryDir(categoryDir: CategoryDir): Boolean
-
     fun findCategoryDirEntry(
         refereeId: Int,
         categoryId: Int,
@@ -13,9 +11,9 @@ interface CategoryDirRepository {
 
     fun getCategoryDirsByReferee(refereeId: Int): List<CategoryDir>
 
-    fun getCategoryDirsByCategory(categoryId: Int): List<CategoryDir>
+    fun getCategoryIdByUserId(userId: Int): Int?
 
-    fun updateCategoryDir(categoryDir: CategoryDir): Boolean
+    fun updateUserCategory(userId: Int, categoryId: Int): Boolean
 
     fun removeCategoryDirEntry(
         refereeId: Int,

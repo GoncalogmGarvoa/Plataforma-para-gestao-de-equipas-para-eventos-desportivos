@@ -26,6 +26,8 @@ sealed class Problem(
 
     data object RoleNotFound : Problem(URI("$PROBLEM_URI_PATH/role-not-found"))
 
+    data object CategoryNotFound : Problem(URI("$PROBLEM_URI_PATH/category-not-found"))
+
     data object MatchDayNotFound : Problem(URI("$PROBLEM_URI_PATH/matchDay-not-found"))
 
     data object CompetitionNotFound : Problem(URI("$PROBLEM_URI_PATH/competition-not-found"))

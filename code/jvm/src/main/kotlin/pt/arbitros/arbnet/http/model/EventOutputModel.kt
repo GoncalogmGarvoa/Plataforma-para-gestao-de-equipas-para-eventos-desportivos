@@ -12,8 +12,18 @@ class EventOutputModel(
     val association: String,
     val location: String,
     val userId: Int,
-    val participants: List<Participant>?,
+    val participants: List<ParticipantWithCategory>?,
     val deadline: LocalDate,
     val callListType: String,
     val matchDaySessions: List<MatchDay>,
+)
+
+class ParticipantWithCategory(
+    val callListId: Int,
+    val matchDayId: Int,
+    val competitionIdMatchDay: Int,
+    val userId: Int,
+    val functionId: Int,
+    val confirmationStatus: String,
+    val category: String
 )

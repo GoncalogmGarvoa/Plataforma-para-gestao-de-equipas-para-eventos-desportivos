@@ -9,14 +9,20 @@ import pt.arbitros.arbnet.domain.users.Users
 import pt.arbitros.arbnet.http.model.CallListInputLike
 import pt.arbitros.arbnet.http.model.CallListInputModel
 import pt.arbitros.arbnet.http.model.CallListInputUpdateModel
+import pt.arbitros.arbnet.http.model.EventOutputModel
 import pt.arbitros.arbnet.http.model.FunctionsAssignmentsInput
 import pt.arbitros.arbnet.http.model.ParticipantChoice
+import pt.arbitros.arbnet.http.model.ParticipantWithCategory
 import pt.arbitros.arbnet.repository.*
 import pt.arbitros.arbnet.transactionRepo
 import java.time.LocalDate
 
 sealed class CallListError {
     data object ArbitrationCouncilNotFound : CallListError()
+
+    data object ParticipantDoesntHaveACategory : CallListError()
+
+    data object CategoryNotFound : CallListError()
 
     data object FunctionNotFound : CallListError()
 
@@ -391,7 +397,7 @@ class CallListService(
         return success(matchDays)
     }
 
-    fun getEventById(id: Int): Either<CallListError, Event> =
+    fun getEventById(id: Int): Either<CallListError, EventOutputModel> =
         transactionManager.run { tx ->
             val callListRepository = tx.callListRepository
 
@@ -413,8 +419,25 @@ class CallListService(
             val participants = (participantsResult as Success).value
             val matchDays = (matchDaysResult as Success).value
 
+            val participantsWithCategory = participants.map{
+                val categoryId = tx.categoryDirRepository.getCategoryIdByUserId(it.userId)
+                    ?: return@run failure(CallListError.ParticipantDoesntHaveACategory)
+                val category = tx.categoryRepository.getCategoryNameById(categoryId)
+                    ?: return@run failure(CallListError.CategoryNotFound)
+
+                ParticipantWithCategory(
+                    callListId = it.callListId,
+                    matchDayId = it.matchDayId,
+                    competitionIdMatchDay = it.competitionIdMatchDay,
+                    userId = it.userId,
+                    functionId = it.functionId,
+                    confirmationStatus = it.confirmationStatus,
+                    category = category,
+                )
+            }
+
             val event =
-                Event(
+                EventOutputModel(
                     competitionName = competition.name,
                     address = competition.address,
                     phoneNumber = competition.phoneNumber,
@@ -422,7 +445,7 @@ class CallListService(
                     association = competition.association,
                     location = competition.location,
                     userId = callList.userId,
-                    participants = participants,
+                    participants = participantsWithCategory,
                     deadline = callList.deadline,
                     callListType = callList.callType,
                     matchDaySessions = matchDays,
@@ -451,28 +474,27 @@ class CallListService(
         return success(Unit)
     }
 
-    fun updateCallListStage(callListId: Int): Either<CallListError, Boolean> =
-        transactionManager.run {
-            val callListRepository = it.callListRepository
+fun updateCallListStage(callListId: Int): Either<CallListError, Boolean> =
+    transactionManager.run {
+        val callListRepository = it.callListRepository
 
-            val callList =
-                callListRepository.getCallListById(callListId)
-                    ?: return@run failure(CallListError.CallListNotFound)
+        val callList =
+            callListRepository.getCallListById(callListId)
+                ?: return@run failure(CallListError.CallListNotFound)
 
-            val callType =
-                when (callList.callType) {
-                    CallListType.CALL_LIST.callType -> {
-                        CallListType.SEALED_CALL_LIST.callType
-                    }
-                    CallListType.CONFIRMATION.callType -> {
-                        CallListType.FINAL_JURY.callType
-                    }
-                    else -> return@run failure(CallListError.InvalidCallListType)
+        val callType =
+            when (callList.callType) {
+                CallListType.CALL_LIST.callType -> {
+                    CallListType.SEALED_CALL_LIST.callType
                 }
+                CallListType.CONFIRMATION.callType -> {
+                    CallListType.FINAL_JURY.callType
+                }
+                else -> return@run failure(CallListError.InvalidCallListType)
+            }
 
-            callListRepository.updateCallListStage(callListId, callType)
-            return@run success(true)
-        }
-
+        callListRepository.updateCallListStage(callListId, callType)
+        return@run success(true)
+    }
 
 }

@@ -19,6 +19,8 @@ import java.time.LocalDate
 sealed class UsersError {
     data object RoleNotFound : UsersError()
 
+    data object CategoryNotFound : UsersError()
+
     data object UserNotFound : UsersError()
 
     data object UserWithoutRole : UsersError()
@@ -290,6 +292,18 @@ class UsersService(
                     else -> return@run failure(UsersError.UserAlreadyHasRole)
                 }
 
+            return@run success(success)
+        }
+    fun updateUserCategory(userId: Int, categoryId: Int): Either<UsersError, Boolean> =
+        transactionManager.run {
+            val usersRepository = it.usersRepository
+            val categoryRepository = it.categoryRepository
+            val categoryDirRepository = it.categoryDirRepository
+
+            categoryRepository.getCategoryNameById(categoryId) ?: return@run failure(UsersError.CategoryNotFound)
+            usersRepository.getUserById(userId) ?: return@run failure(UsersError.UserNotFound)
+
+            val success: Boolean = categoryDirRepository.updateUserCategory(userId, categoryId)
             return@run success(success)
         }
 

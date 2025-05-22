@@ -25,7 +25,7 @@ INSERT INTO dbp.users_roles (user_id, role_id) VALUES
 
 -- CATEGORY
 INSERT INTO dbp.category (id, name)
-VALUES (1, 'Senior'), (2, 'Junior'), (3, 'Veteran');
+VALUES (1, 'AI'), (2, 'AN'), (3, 'AR'), (4, 'J1'), (5, 'J2'), (6, 'J3'), (7, 'C')
 
 -- CATEGORY_DIR
 INSERT INTO dbp.category_dir (user_id, start_date, end_date, category_id)

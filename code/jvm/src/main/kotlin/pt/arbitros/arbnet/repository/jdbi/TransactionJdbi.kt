@@ -4,6 +4,8 @@ package pt.arbitros.arbnet.repository.jdbi
 
 import org.jdbi.v3.core.Handle
 import pt.arbitros.arbnet.repository.*
+import pt.arbitros.arbnet.repository.CategoryDirRepository
+import pt.arbitros.arbnet.repository.CategoryRepository
 
 class TransactionJdbi(
     private val handle: Handle,
@@ -20,6 +22,8 @@ class TransactionJdbi(
     override val roleRepository: RoleRepository = RoleRepositoryJdbi(handle)
     override val reportRepository: ReportRepository = ReportRepositoryJdbi(handle)
     override val equipmentRepository: EquipmentRepository = EquipmentRepositoryJdbi(handle)
+    override val categoryRepository: CategoryRepository = CategoryRepositoryJdbi(handle)
+    override val categoryDirRepository: CategoryDirRepository = CategoryDirRepositoryJdbi(handle)
 
     override fun rollback() {
         handle.rollback()
