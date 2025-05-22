@@ -376,6 +376,8 @@ class UsersRepositoryJdbi(
           AND r.name = 'Referee'
         """,
             ).bindList("participants", participants)
-            .mapTo<Users>()
+            .map { rs, _ ->
+                usersMap(rs)
+            }
             .list()
 }

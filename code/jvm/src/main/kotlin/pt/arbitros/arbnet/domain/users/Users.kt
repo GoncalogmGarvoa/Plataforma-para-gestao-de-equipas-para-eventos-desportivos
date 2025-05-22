@@ -2,7 +2,7 @@ package pt.arbitros.arbnet.domain.users
 
 import java.time.LocalDate
 
-data class Users(
+data class  Users(
     val id: Int,
     val phoneNumber: String,
     val address: String,
