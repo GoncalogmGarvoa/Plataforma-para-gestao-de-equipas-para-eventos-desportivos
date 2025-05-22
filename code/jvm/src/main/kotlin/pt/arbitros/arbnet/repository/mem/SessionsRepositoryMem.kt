@@ -37,4 +37,12 @@ class SessionsRepositoryMem : SessionsRepository {
     override fun getSessionByMatchId(id: Int): List<Session> {
         TODO("Not yet implemented")
     }
+
+    override fun getSessionById(id: Int): Session? {
+        TODO("Not yet implemented")
+    }
+
+    override fun finishSession(id: Int): Boolean {
+        TODO("Not yet implemented")
+    }
 }
