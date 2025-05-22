@@ -522,52 +522,43 @@ fun updateCallListStage(callListId: Int): Either<CallListError, Boolean> =
             phoneNumber = competition.phoneNumber,
         )
 
-        val participantEntries = mutableListOf<ParticipantEntry>()
-        for (participant in participants) {
-            val matchDay = matchDays.find { it.id == participant.matchDayId }
-                ?: continue // Handle the case where the match day is not found
-
-            val assignments = mutableListOf<MatchAssignment>()
-            assignments.add(
-                MatchAssignment(
-                    matchDayId = matchDay.id,
-                    matchDate = matchDay.matchDate,
-                    function = participant.functionId.toString(), //todo change this to function name
-                ),
-            )
-
-            val participantEntry =
-                ParticipantEntry(
-                    userId = participant.userId,
-                    name = participant.category,
-                    category = participant.category,
-                    assignments = assignments,
+        val matchDayEntries = matchDays.map { matchDay ->
+            val sessionEntries = matchDay.sessions.map { session ->
+                SessionInfo(
+                    sessionId = session.id,
+                    startTime = session.startTime
                 )
-            participantEntries.add(participantEntry)
+            }
+
+            val participantEntries = participants
+                .filter { it.matchDayId == matchDay.id }
+                .map { participant ->
+                    ParticipantWithFunction(
+                        userId = participant.userId,
+                        category = participant.category,
+                        function = participant.functionId.toString() //TODO: change to function name
+                    )
+                }
+
+            MatchDayEntry(
+                matchDayId = matchDay.id,
+                matchDate = matchDay.matchDate,
+                sessions = sessionEntries,
+                participants = participantEntries
+            )
         }
 
         val sealedCallList = callListMongoRepository.findByIntegerId(callList.id)
 
-        return if (sealedCallList != null) {
-            CallListDocument(
-                _id = sealedCallList._id,
-                sqlId = callList.id,
-                deadline = callList.deadline,
-                callType = callList.callType,
-                userId = callList.userId,
-                competition = competitionInfo,
-                participants = participantEntries,
-            )
-        } else {
-            CallListDocument(
-                sqlId = callList.id,
-                deadline = callList.deadline,
-                callType = callList.callType,
-                userId = callList.userId,
-                competition = competitionInfo,
-                participants = participantEntries,
-            )
-        }
+        return CallListDocument(
+            _id = sealedCallList?._id,
+            sqlId = callList.id,
+            deadline = callList.deadline,
+            callType = callList.callType,
+            userId = callList.userId,
+            competition = competitionInfo,
+            matchDays = matchDayEntries
+        )
 
     }
 
