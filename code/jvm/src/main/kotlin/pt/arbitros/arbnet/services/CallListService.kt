@@ -10,7 +10,6 @@ import pt.arbitros.arbnet.http.model.CallListInputLike
 import pt.arbitros.arbnet.http.model.CallListInputModel
 import pt.arbitros.arbnet.http.model.CallListInputUpdateModel
 import pt.arbitros.arbnet.http.model.EventOutputModel
-import pt.arbitros.arbnet.http.model.FunctionsAssignmentsInput
 import pt.arbitros.arbnet.http.model.ParticipantChoice
 import pt.arbitros.arbnet.http.model.ParticipantWithCategory
 import pt.arbitros.arbnet.repository.*
@@ -54,6 +53,7 @@ sealed class CallListError {
 @Component
 class CallListService(
     @Qualifier(transactionRepo) private val transactionManager: TransactionManager,
+    private val callListMongoRepository: CallListMongoRepository,
     private val utilsDomain: UtilsDomain,
     private val callListDomain: CallListDomain,
     // private val clock: Clock
@@ -306,37 +306,6 @@ class CallListService(
         return success(Unit)
     }
 
-    // Not in use for now
-    fun assignFunction(functionAssignmentsInfo: List<FunctionsAssignmentsInput>): Either<CallListError, Boolean> =
-        transactionManager.run {
-            val functionRepository = it.functionRepository
-            val participantRepository = it.participantRepository
-            val matchDayRepository = it.matchDayRepository
-
-            functionAssignmentsInfo.forEach { functionAssignment ->
-
-                val functionId =
-                    functionRepository.getFunctionIdByName(functionAssignment.function)
-                        ?: return@run failure(CallListError.FunctionNotFound)
-                functionAssignment.assignments.forEach { assignment ->
-                    // Check if the participant exists
-                    participantRepository.getParticipantById(assignment.participantId)
-                        ?: return@run failure(CallListError.ParticipantNotFound)
-
-                    // Check if the match day exists
-                    matchDayRepository.getMatchDayById(assignment.matchDayId)
-                        ?: return@run failure(CallListError.MatchDayNotFound)
-
-                    participantRepository.updateParticipantRole(
-                        assignment.participantId,
-                        functionId,
-                        assignment.matchDayId,
-                    )
-                }
-            }
-            return@run success(true) // todo check
-        }
-
     fun updateParticipantConfirmationStatus(
         days: List<Int>,
         participantId: Int,
@@ -475,8 +444,8 @@ class CallListService(
     }
 
 fun updateCallListStage(callListId: Int): Either<CallListError, Boolean> =
-    transactionManager.run {
-        val callListRepository = it.callListRepository
+    transactionManager.run { tx ->
+        val callListRepository = tx.callListRepository
 
         val callList =
             callListRepository.getCallListById(callListId)
@@ -494,7 +463,118 @@ fun updateCallListStage(callListId: Int): Either<CallListError, Boolean> =
             }
 
         callListRepository.updateCallListStage(callListId, callType)
+
+
+        //TODO code below is repeated from above put all in one function
+        val callListContent = callListRepository.getCallListById(callListId)!!
+
+        val competitionInfo = tx.competitionRepository.getCompetitionById(callListContent.competitionId)
+            ?: return@run failure(CallListError.CompetitionNotFound)
+
+        val participants = tx.participantRepository.getParticipantsByCallList(callListId)
+
+        val participantsWithCategory = participants.map{
+            val categoryId = tx.categoryDirRepository.getCategoryIdByUserId(it.userId)
+                ?: return@run failure(CallListError.ParticipantDoesntHaveACategory)
+            val category = tx.categoryRepository.getCategoryNameById(categoryId)
+                ?: return@run failure(CallListError.CategoryNotFound)
+
+            ParticipantWithCategory(
+                callListId = it.callListId,
+                matchDayId = it.matchDayId,
+                competitionIdMatchDay = it.competitionIdMatchDay,
+                userId = it.userId,
+                functionId = it.functionId,
+                confirmationStatus = it.confirmationStatus,
+                category = category,
+            )
+        }
+
+        val matchDays = tx.matchDayRepository.getMatchDaysByCompetition(callListContent.competitionId)
+
+        val callListMongo = populateCallListMongo(
+            competition = competitionInfo,
+            callList = callListContent,
+            matchDays = matchDays,
+            participants = participantsWithCategory,
+        )
+
+        callListMongoRepository.save(callListMongo)
+
         return@run success(true)
+    }
+
+
+    fun populateCallListMongo(
+        competition: Competition,
+        callList: CallList,
+        matchDays: List<MatchDay>,
+        participants: List<ParticipantWithCategory>,
+    ): CallListDocument {
+
+        val competitionInfo = CompetitionInfo(
+            competitionNumber = competition.competitionNumber,
+            name = competition.name,
+            location = competition.location,
+            address = competition.address,
+            association = competition.association,
+            email = competition.email,
+            phoneNumber = competition.phoneNumber,
+        )
+
+        val participantEntries = mutableListOf<ParticipantEntry>()
+        for (participant in participants) {
+            val matchDay = matchDays.find { it.id == participant.matchDayId }
+                ?: continue // Handle the case where the match day is not found
+
+            val assignments = mutableListOf<MatchAssignment>()
+            assignments.add(
+                MatchAssignment(
+                    matchDayId = matchDay.id,
+                    matchDate = matchDay.matchDate,
+                    function = participant.functionId.toString(), //todo change this to function name
+                ),
+            )
+
+            val participantEntry =
+                ParticipantEntry(
+                    userId = participant.userId,
+                    name = participant.category,
+                    category = participant.category,
+                    assignments = assignments,
+                )
+            participantEntries.add(participantEntry)
+        }
+
+        val sealedCallList = callListMongoRepository.findByIntegerId(callList.id)
+
+        return if (sealedCallList != null) {
+            CallListDocument(
+                _id = sealedCallList._id,
+                sqlId = callList.id,
+                deadline = callList.deadline,
+                callType = callList.callType,
+                userId = callList.userId,
+                competition = competitionInfo,
+                participants = participantEntries,
+            )
+        } else {
+            CallListDocument(
+                sqlId = callList.id,
+                deadline = callList.deadline,
+                callType = callList.callType,
+                userId = callList.userId,
+                competition = competitionInfo,
+                participants = participantEntries,
+            )
+        }
+
+    }
+
+    fun getSealedCallList(callListId: String): Either<CallListError, CallListDocument> {
+        val result = callListMongoRepository.findById(callListId)
+        return if (result.isPresent) success(result.get())
+        else failure(CallListError.CallListNotFound)
     }
 
 }

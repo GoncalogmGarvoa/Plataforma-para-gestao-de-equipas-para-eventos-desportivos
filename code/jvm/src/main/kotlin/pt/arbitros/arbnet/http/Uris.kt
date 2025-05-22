@@ -27,6 +27,7 @@ object Uris {
         const val UPDATE_CALLLISTSTAGE = "$PREFIX/callList/updateCallList"
         const val GET_CALLLIST = "$PREFIX/callList/get/{id}"
         const val UPDATE_CALLLIST = "$PREFIX/callList/update"
+        const val GET_SEALED_CALLLIST = "$PREFIX/callList/sealed/{id}"
     }
 
     object ReportUris {

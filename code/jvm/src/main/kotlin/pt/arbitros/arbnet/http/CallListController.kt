@@ -55,29 +55,6 @@ class CallListController(
                 }
         }
 
-    // Not in use for now
-    @PutMapping(Uris.CallListUris.ASSIGN_ROLES)
-    fun assignRoles(
-        @RequestBody roleAssignmentsInfo: List<FunctionsAssignmentsInput>,
-    ): ResponseEntity<*> {
-        val result =
-            callListService.assignFunction(
-                roleAssignmentsInfo,
-            )
-        return when (result) {
-            is Success -> ResponseEntity.ok("Role successfully assigned")
-            is Failure -> {
-                val error = result.value
-                when (error) {
-                    is CallListError.FunctionNotFound -> Problem.RoleNotFound.response(HttpStatus.NOT_FOUND)
-                    is CallListError.MatchDayNotFound -> Problem.MatchDayNotFound.response(HttpStatus.NOT_FOUND)
-                    is CallListError.ParticipantNotFound -> Problem.ParticipantNotFound.response(HttpStatus.NOT_FOUND)
-                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to assign the role")
-                }
-            }
-        }
-    }
-
     @PutMapping(Uris.CallListUris.UPDATE_PARTICIPANT_CONFIRMATION_STATUS)
     fun updateParticipantConfirmationStatus(
         @RequestBody participantUpdate: ParticipantUpdateInput,
@@ -167,6 +144,25 @@ class CallListController(
                     is CallListError.MatchDayNotFound -> Problem.MatchDayNotFound.response(HttpStatus.NOT_FOUND)
                     is CallListError.ParticipantNotFound -> Problem.ParticipantNotFound.response(HttpStatus.NOT_FOUND)
                     else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to create the user")
+                }
+        }
+
+    @GetMapping(Uris.CallListUris.GET_SEALED_CALLLIST)
+    fun getSealedCallList(
+        @PathVariable id: String,
+    ): ResponseEntity<*> =
+        when (val sealedCallList = callListService.getSealedCallList(id)) {
+            is Success -> {
+                val value = sealedCallList.value
+                ResponseEntity.ok(
+                    value
+                )
+            }
+
+            is Failure ->
+                when (sealedCallList.value) {
+                    is CallListError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
+                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(sealedCallList.value)
                 }
         }
 }

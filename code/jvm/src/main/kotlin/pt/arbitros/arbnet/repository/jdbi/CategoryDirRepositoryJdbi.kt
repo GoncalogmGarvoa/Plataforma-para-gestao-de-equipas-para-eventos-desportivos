@@ -22,6 +22,8 @@ class CategoryDirRepositoryJdbi(
         TODO("Not yet implemented")
     }
 
+
+    // TODO - turn into bash query
     override fun getCategoryIdByUserId(userId: Int): Int? =
         handle
             .createQuery("""
