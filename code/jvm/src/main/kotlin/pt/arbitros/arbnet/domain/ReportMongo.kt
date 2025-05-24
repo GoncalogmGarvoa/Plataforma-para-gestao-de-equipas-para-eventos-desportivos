@@ -20,7 +20,6 @@ data class ReportMongo(
                 id = input.id, // pode ser null (criação) ou presente (update)
                 reportType = input.reportType,
                 competitionId = input.competitionId,
-                sealed = input.sealed,
                 coverSheet = input.coverSheet,
                 register = input.register,
                 refereeEvaluations = input.refereeEvaluations
@@ -35,7 +34,6 @@ data class CoverSheet(
     val sportsSeason: String,
     val year: Int,
     val month: Int,
-    val reportName: String,
     val authorName: String,
     val location: String,
     val numRounds: Int,

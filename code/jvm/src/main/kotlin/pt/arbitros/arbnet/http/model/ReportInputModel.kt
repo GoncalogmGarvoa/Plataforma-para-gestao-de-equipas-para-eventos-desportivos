@@ -8,7 +8,6 @@ data class ReportInputModel(
     val id: String? = null,                        // Opcional: usado em updates
     val reportType: String,
     val competitionId: Int,
-    val sealed: Boolean = false,
     val coverSheet: CoverSheet,
     val register: ReportRegister,
     val refereeEvaluations: List<RefereeEvaluation>
