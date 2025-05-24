@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import pt.arbitros.arbnet.http.model.ReportCreateInputModel
 import pt.arbitros.arbnet.http.model.ReportUpdateInputModel
 import pt.arbitros.arbnet.repository.ReportMongoRepository
 import pt.arbitros.arbnet.services.Failure

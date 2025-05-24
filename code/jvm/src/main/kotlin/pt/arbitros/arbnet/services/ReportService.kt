@@ -4,8 +4,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.ReportMongo
 import pt.arbitros.arbnet.domain.UtilsDomain
-import pt.arbitros.arbnet.http.model.ReportCreateInputModel
-import pt.arbitros.arbnet.http.model.ReportUpdateInputModel
+import pt.arbitros.arbnet.http.model.ReportInputModel
 import pt.arbitros.arbnet.repository.ReportMongoRepository
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.transactionRepo
@@ -26,7 +25,7 @@ class ReportService(
 ) {
 
     fun createReport(
-        report: ReportCreateInputModel,
+        report: ReportInputModel,
     ): Either<ReportError, ReportMongo> {
         return transactionManager.run {
 
@@ -34,12 +33,7 @@ class ReportService(
                 return@run failure(ReportError.InvalidCompetitionId)
             }
 
-            val reportMongo = ReportMongo(
-                id = null,
-                competitionId = report.competitionId,
-                reportType = report.reportType,
-                sealed = false
-            )
+            val reportMongo = ReportMongo.fromInputModel(report)
 
             val reportCreated = reportMongoRepository.save(reportMongo)
 
@@ -57,8 +51,12 @@ class ReportService(
         else failure(ReportError.NotFound)
     }
 
-    fun updateReport(report: ReportUpdateInputModel): Either<ReportError, ReportMongo> {
+    fun updateReport(report: ReportInputModel): Either<ReportError, ReportMongo> {
         return transactionManager.run {
+            if (report.id == null) {
+                return@run failure(ReportError.NotFound)
+            }
+
             if (it.competitionRepository.getCompetitionById(report.competitionId) == null) {
                 return@run failure(ReportError.InvalidCompetitionId)
             }
@@ -70,11 +68,7 @@ class ReportService(
                 return@run failure(ReportError.AlreadySealed)
             }
 
-            val reportMongo = ReportMongo(
-                id = report.id,
-                competitionId = report.competitionId,
-                reportType = report.reportType
-            )
+            val reportMongo = ReportMongo.fromInputModel(report)
 
             val updatedReport = reportMongoRepository.save(reportMongo)
             return@run success(updatedReport)
