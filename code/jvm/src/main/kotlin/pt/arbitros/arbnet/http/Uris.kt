@@ -44,6 +44,7 @@ object Uris {
     }
 
     object SessionUris {
-        const val FINISH_SESSION = "$PREFIX/session/finish"
+        const val FINISH_SESSION = "$PREFIX/session/finish/{id}"
+        const val UPDATE_SESSION_REFEREES = "$PREFIX/session/updateReferees"
     }
 }

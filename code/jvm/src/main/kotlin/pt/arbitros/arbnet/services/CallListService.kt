@@ -152,9 +152,12 @@ class CallListService(
             )
         if (validateResult is Failure) return validateResult
 
-        if (callList.userId != null && !usersRepository.userHasCouncilRole(callList.userId!!)) {
-            return failure(CallListError.ArbitrationCouncilNotFound)
-        }
+        usersRepository.getUserById(callList.userId)
+            ?: return failure(CallListError.ArbitrationCouncilNotFound)
+
+         if(usersRepository.userHasCouncilRole(callList.userId))
+             return failure(CallListError.ArbitrationCouncilNotFound)
+
 
         val participants = callList.participants
         if (participants.isNullOrEmpty()) {

@@ -15,6 +15,6 @@ class CallListInputUpdateModel (
     override val participants: List<ParticipantChoice>?,
     val deadline: LocalDate,
     override val callListType: String,
-    override val userId: Int?,
+    override val userId: Int,
     val matchDaySessions: List<MatchDaySessionsInput>
 ) : CallListInputLike

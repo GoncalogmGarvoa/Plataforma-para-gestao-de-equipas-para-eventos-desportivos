@@ -4,6 +4,7 @@ package pt.arbitros.arbnet.repository.mem
 
 import org.jdbi.v3.core.Handle
 import pt.arbitros.arbnet.repository.*
+import pt.arbitros.arbnet.repository.auxiliary.SessionRefereesRepository
 import pt.arbitros.arbnet.repository.jdbi.CategoryDirRepositoryJdbi
 import pt.arbitros.arbnet.repository.jdbi.CategoryRepositoryJdbi
 import pt.arbitros.arbnet.repository.jdbi.EquipmentRepositoryJdbi
@@ -27,6 +28,7 @@ class TransactionMem(
     override val equipmentRepository: EquipmentRepository = EquipmentRepositoryMem()
     override val categoryRepository: CategoryRepository = CategoryRepositoryMem()
     override val categoryDirRepository: CategoryDirRepository = CategoryDirRepositoryMem()
+    override val sessionRefereesRepository: SessionRefereesRepository = SessionRefereesRepositoryMem()
 
 
     override fun rollback() {

@@ -8,6 +8,6 @@ interface CallListInputLike {
     val association: String
     val location: String
     val callListType: String
-    val userId: Int?
+    val userId: Int
     val participants: List<ParticipantChoice>?
 }

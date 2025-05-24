@@ -2,6 +2,7 @@ package pt.arbitros.arbnet.repository
 
 import pt.arbitros.arbnet.repository.CategoryDirRepository
 import pt.arbitros.arbnet.repository.CategoryRepository
+import pt.arbitros.arbnet.repository.auxiliary.SessionRefereesRepository
 
 interface Transaction {
     val usersRolesRepository: UsersRolesRepository
@@ -18,6 +19,7 @@ interface Transaction {
     val equipmentRepository: EquipmentRepository
     val categoryRepository: CategoryRepository
     val categoryDirRepository: CategoryDirRepository
+    val sessionRefereesRepository: SessionRefereesRepository
 
     fun rollback()
 }

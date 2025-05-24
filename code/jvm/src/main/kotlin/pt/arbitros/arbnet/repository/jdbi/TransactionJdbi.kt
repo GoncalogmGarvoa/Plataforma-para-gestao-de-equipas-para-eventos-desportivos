@@ -6,6 +6,7 @@ import org.jdbi.v3.core.Handle
 import pt.arbitros.arbnet.repository.*
 import pt.arbitros.arbnet.repository.CategoryDirRepository
 import pt.arbitros.arbnet.repository.CategoryRepository
+import pt.arbitros.arbnet.repository.auxiliary.SessionRefereesRepository
 
 class TransactionJdbi(
     private val handle: Handle,
@@ -24,6 +25,7 @@ class TransactionJdbi(
     override val equipmentRepository: EquipmentRepository = EquipmentRepositoryJdbi(handle)
     override val categoryRepository: CategoryRepository = CategoryRepositoryJdbi(handle)
     override val categoryDirRepository: CategoryDirRepository = CategoryDirRepositoryJdbi(handle)
+    override val sessionRefereesRepository: SessionRefereesRepository = SessionRefereesRepositoryJdbi(handle)
 
     override fun rollback() {
         handle.rollback()
