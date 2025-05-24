@@ -454,6 +454,13 @@ fun updateCallListStage(callListId: Int): Either<CallListError, Boolean> =
             callListRepository.getCallListById(callListId)
                 ?: return@run failure(CallListError.CallListNotFound)
 
+        val participants = tx.participantRepository.getParticipantsByCallList(callListId)
+
+        if (participants.isEmpty()) {
+            return@run failure(CallListError.ParticipantNotFound)
+        }
+
+
         val callType =
             when (callList.callType) {
                 CallListType.CALL_LIST.callType -> {
@@ -467,14 +474,11 @@ fun updateCallListStage(callListId: Int): Either<CallListError, Boolean> =
 
         callListRepository.updateCallListStage(callListId, callType)
 
-
         //TODO code below is repeated from above put all in one function
         val callListContent = callListRepository.getCallListById(callListId)!!
 
         val competitionInfo = tx.competitionRepository.getCompetitionById(callListContent.competitionId)
             ?: return@run failure(CallListError.CompetitionNotFound)
-
-        val participants = tx.participantRepository.getParticipantsByCallList(callListId)
 
         val participantsWithCategory = participants.map{
             val categoryId = tx.categoryDirRepository.getCategoryIdByUserId(it.userId)
