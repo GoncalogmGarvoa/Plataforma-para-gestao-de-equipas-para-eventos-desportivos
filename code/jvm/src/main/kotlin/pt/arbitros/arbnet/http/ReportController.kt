@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import pt.arbitros.arbnet.http.model.ReportUpdateInputModel
+import pt.arbitros.arbnet.http.model.ReportInputModel
 import pt.arbitros.arbnet.repository.ReportMongoRepository
 import pt.arbitros.arbnet.services.Failure
 import pt.arbitros.arbnet.services.ReportError
@@ -22,7 +22,7 @@ class ReportController(private val reportService : ReportService, private val re
     //TODO check errors they are not being handled,so i can test the controller
 
     @PostMapping(Uris.ReportUris.CREATE_REPORT)
-    fun createReport(@RequestBody report: ReportCreateInputModel): ResponseEntity<*> =
+    fun createReport(@RequestBody report: ReportInputModel): ResponseEntity<*> =
         when (val result = reportService.createReport(report)) {
             is Success -> ResponseEntity.ok(result.value)
             is Failure ->
@@ -57,7 +57,7 @@ class ReportController(private val reportService : ReportService, private val re
         }
 
     @PutMapping(Uris.ReportUris.UPDATE_REPORT)
-    fun updateReport(@RequestBody report: ReportUpdateInputModel): ResponseEntity<*> =
+    fun updateReport(@RequestBody report: ReportInputModel): ResponseEntity<*> =
         when (val result = reportService.updateReport(report)) {
             is Success -> ResponseEntity.ok(result.value)
             is Failure ->
