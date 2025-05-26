@@ -58,7 +58,6 @@ sealed class Problem(
     data object MissingField : Problem(URI("$PROBLEM_URI_PATH/missing-field"))
 
     // Request data validation
-
     data object InvalidName : Problem(URI("$PROBLEM_URI_PATH/invalid-name"))
 
     data object InvalidAddress : Problem(URI("$PROBLEM_URI_PATH/invalid-address"))
@@ -85,14 +84,13 @@ sealed class Problem(
     data object ReportAlreadyExists : Problem(URI("$PROBLEM_URI_PATH/report-already-exists"))
 
     //Generic
-
     data object InternalError : Problem(URI("$PROBLEM_URI_PATH/internal-error"))
 
     // Equipment
-
     data object EquipmentNotFound : Problem(URI("$PROBLEM_URI_PATH/equipment-not-found"))
 
     //Session
-
     data object SessionNotFound : Problem(URI("$PROBLEM_URI_PATH/session-not-found"))
+
+    data object PositionNotFound : Problem(URI("$PROBLEM_URI_PATH/position-not-found"))
 }

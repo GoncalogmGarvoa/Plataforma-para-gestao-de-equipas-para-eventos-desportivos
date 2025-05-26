@@ -26,6 +26,7 @@ class SessionController (
             is Success -> ResponseEntity.ok(result.value)
             is Failure -> when (result.value) {
                 is SessionError.SessionNotFound -> Problem.SessionNotFound.response(HttpStatus.NOT_FOUND)
+                else -> "failed to finish the session"
             }
         }
    }
@@ -38,6 +39,8 @@ class SessionController (
             is Success -> ResponseEntity.ok(result.value)
             is Failure -> when (result.value) {
                 is SessionError.SessionNotFound -> Problem.SessionNotFound.response(HttpStatus.NOT_FOUND)
+                is SessionError.PositionNotFound -> Problem.PositionNotFound.response(HttpStatus.NOT_FOUND)
+                is SessionError.UserNotFound -> Problem.UserNotFound.response(HttpStatus.NOT_FOUND)
             }
         }
 

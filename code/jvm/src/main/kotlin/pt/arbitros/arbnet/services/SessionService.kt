@@ -11,6 +11,10 @@ import pt.arbitros.arbnet.transactionRepo
 
 sealed class SessionError {
     data object SessionNotFound : SessionError()
+
+    data object UserNotFound : SessionError()
+
+    data object PositionNotFound : SessionError()
 }
 
 @Component
@@ -41,6 +45,13 @@ class SessionService(
             val sessionRefereesFull = sessionReferees.map{ sessionReferee ->
                 val session = it.sessionsRepository.getSessionById(sessionReferee.sessionId)
                     ?: return@run failure(SessionError.SessionNotFound)
+
+                it.usersRepository.getUserById(sessionReferee.userId)
+                    ?: return@run failure(SessionError.UserNotFound)
+
+                it.positionRepository.getPositionById(sessionReferee.positionId)
+                    ?: return@run failure(SessionError.PositionNotFound)
+
                 SessionReferee(
                     session.id,
                     sessionReferee.positionId,

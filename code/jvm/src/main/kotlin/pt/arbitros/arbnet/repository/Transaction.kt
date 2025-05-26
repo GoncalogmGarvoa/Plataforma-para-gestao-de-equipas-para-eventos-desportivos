@@ -20,6 +20,7 @@ interface Transaction {
     val categoryRepository: CategoryRepository
     val categoryDirRepository: CategoryDirRepository
     val sessionRefereesRepository: SessionRefereesRepository
+    val positionRepository: PositionRepository
 
     fun rollback()
 }
