@@ -29,7 +29,7 @@ class TransactionMem(
     override val categoryRepository: CategoryRepository = CategoryRepositoryMem()
     override val categoryDirRepository: CategoryDirRepository = CategoryDirRepositoryMem()
     override val sessionRefereesRepository: SessionRefereesRepository = SessionRefereesRepositoryMem()
-
+    override val positionRepository: PositionRepository = PositionRepositoryMem()
 
     override fun rollback() {
         handle.rollback()
