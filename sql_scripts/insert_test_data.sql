@@ -1,5 +1,5 @@
 -- USERS
-INSERT INTO dbp.users (name, phone_number, address, email, password, birth_date, iban)
+INSERT INTO dbp.users (name, phone_number, address, email, password_validation, birth_date, iban)
 VALUES
     ('João Silva', '932326731', 'Street A, 123', 'joao@example.com', '1234', '1985-05-10', 'PT50000201231234567890154'),
     ('Maria Souza', '932326732', 'Street B, 456', 'maria@example.com', 'abcd', '1990-03-22', 'PT50000201231234567890155'),
@@ -11,27 +11,35 @@ VALUES
     ('Laura Pinto', '932326738', 'Street H, 505', 'laura@example.com', 'pass6', '1993-11-23', 'PT50000201231234567890161');
 
 -- USERS_ROLES
-INSERT INTO dbp.role (id, name) VALUES (1, 'admin'), (2, 'Arbitration_Council'), (3, 'Referee'), (4, 'player'), (5, 'manager'), (6, 'coach'), (7, 'captain');
+INSERT INTO dbp.role (id, name) VALUES (1, 'Admin'), (2, 'Arbitration_Council'), (3, 'Referee');
 
 INSERT INTO dbp.users_roles (user_id, role_id) VALUES
-                                                   (1, 3), (1, 4),
-                                                   (2, 1), (2, 5),
-                                                   (3, 3), (3, 6),
-                                                   (4, 3), (4, 1),
-                                                   (5, 1), (5, 3),
-                                                   (6, 4), (6, 7),
-                                                   (7, 3), (7, 4),
-                                                   (8, 5), (8, 1);
+                                                   (1, 2), (1, 3),
+                                                   (2, 1), (2, 3),
+                                                   (3, 2), (3, 3),
+                                                   (4, 2), (4, 3),
+                                                   (5, 2), (5, 3),
+                                                   (6, 1), (6, 3),
+                                                   (7, 2), (7, 3),
+                                                   (8, 2), (8, 3);
+
+INSERT INTO dbp.tokens (token_validation, user_id, created_at, last_used_at)
+VALUES
+    ('token-abc123', 1, 1748096441, 1748100041),
+    ('token-def456', 2, 1748096441, 1748103641),
+    ('token-ghi789', 3, 1748096441, 1748100041),
+    ('token-jkl012', 4, 1748096441, 1748100041);
 
 -- CATEGORY
 INSERT INTO dbp.category (id, name)
-VALUES (1, 'AI'), (2, 'AN'), (3, 'AR'), (4, 'J1'), (5, 'J2'), (6, 'J3'), (7, 'C')
+VALUES (1, 'AI'), (2, 'AN'), (3, 'AR'), (4, 'J1'), (5, 'J2'), (6, 'J3'), (7, 'C');
 
 -- CATEGORY_DIR
 INSERT INTO dbp.category_dir (user_id, start_date, end_date, category_id)
 VALUES
     (1,'2023-01-01', null, 1),
-    (3,'2023-03-01', '2024-01-01', 2);
+    (3,'2023-03-01', null, 2),
+    (4,'2023-01-01', null, 1);
 
 -- COMPETITION
 INSERT INTO dbp.competition (competition_number, name, address, email, phone_number, location, association)

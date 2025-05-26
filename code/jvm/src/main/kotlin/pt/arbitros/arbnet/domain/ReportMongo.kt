@@ -17,7 +17,7 @@ data class ReportMongo(
     companion object {
         fun fromInputModel(input: ReportInputModel): ReportMongo {
             return ReportMongo(
-                id = input.id, // pode ser null (criação) ou presente (update)
+                id = input.id, // pode ser null (criação) ou presente (‘update’)
                 reportType = input.reportType,
                 competitionId = input.competitionId,
                 coverSheet = input.coverSheet,

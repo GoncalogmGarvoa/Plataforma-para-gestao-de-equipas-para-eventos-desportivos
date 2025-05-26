@@ -20,7 +20,7 @@ create table dbp.tokens(
                         user_id int ,
                         created_at bigint not null,
                         last_used_at bigint not null,
-                        FOREIGN KEY (user_id) REFERENCES dbp.users(id),
+                        FOREIGN KEY (user_id) REFERENCES dbp.users(id)
 );
 
 create table dbp.role (
