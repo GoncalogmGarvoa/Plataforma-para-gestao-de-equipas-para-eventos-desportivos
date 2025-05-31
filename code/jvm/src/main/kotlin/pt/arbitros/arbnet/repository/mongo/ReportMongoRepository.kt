@@ -17,8 +17,8 @@ class CustomMongoReportFunctionsImpl (
     private val mongoTemplate: MongoTemplate
 ) : CustomMongoReportFunctions {
 
-    override fun seal(reportId: String): Boolean {
-        val query = Query(Criteria.where("_id").`is`(reportId))
+    override fun seal(id: String): Boolean {
+        val query = Query(Criteria.where("_id").`is`(id))
         val update = Update().set("sealed", true)
         val result = mongoTemplate.updateFirst(query, update, ReportMongo::class.java)
         return result.modifiedCount > 0
