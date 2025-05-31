@@ -1,6 +1,5 @@
 package pt.arbitros.arbnet.http
 
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 
 private const val MEDIA_TYPE = "application/problem+json"
@@ -20,7 +19,7 @@ data class Problem(
             detail = error.detail
         )
 
-        fun fromApiError(error: ApiError) = Problem.from(error).toResponse()
+        fun fromApiErrorToProblemResponse(error: ApiError) = from(error).toResponse()
     }
 
     fun toResponse(): ResponseEntity<Any> =

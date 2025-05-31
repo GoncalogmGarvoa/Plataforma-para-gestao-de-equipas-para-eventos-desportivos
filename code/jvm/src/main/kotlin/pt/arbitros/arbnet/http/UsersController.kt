@@ -20,7 +20,7 @@ class UsersController(
         val res = usersService.createToken(input.email, input.password)
         return when (res) {
             is Success -> ResponseEntity.ok(UserTokenCreateOutputModel(res.value.tokenValue))
-            is Failure -> Problem.fromApiError(res.value)
+            is Failure -> Problem.fromApiErrorToProblemResponse(res.value)
         }
     }
 
@@ -34,24 +34,24 @@ class UsersController(
         @RequestHeader token: String,
     ): ResponseEntity<*> =
         when (
-            val userInfo = usersService.getUserByToken(token)
+            val result = usersService.getUserByToken(token)
         ) {
             is Success ->
                 ResponseEntity.ok(
                     // todo roles = userInfo.second, is it important?
                     UserOutputPassValModel(
-                        id = userInfo.value.id,
-                        phoneNumber = userInfo.value.phoneNumber,
-                        address = userInfo.value.address,
-                        name = userInfo.value.name,
-                        email = userInfo.value.email,
-                        birthDate = userInfo.value.birthDate.toString(),
-                        iban = userInfo.value.iban,
-                        passwordValidation = userInfo.value.passwordValidation,
-                        status = userInfo.value.userStatus.status,
+                        id = result.value.id,
+                        phoneNumber = result.value.phoneNumber,
+                        address = result.value.address,
+                        name = result.value.name,
+                        email = result.value.email,
+                        birthDate = result.value.birthDate.toString(),
+                        iban = result.value.iban,
+                        passwordValidation = result.value.passwordValidation,
+                        status = result.value.userStatus.status,
                     ),
                 )
-            is Failure -> Problem.fromApiError(userInfo.value)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
     @GetMapping(Uris.UsersUris.GET_BY_ID)
@@ -59,28 +59,24 @@ class UsersController(
         @PathVariable id: Int,
     ): ResponseEntity<*> =
         when (
-            val userInfo = usersService.getUserById(id)
+            val result = usersService.getUserById(id)
         ) {
             is Success ->
                 ResponseEntity.ok(
                     UserOutputModel(
-                        id = userInfo.value.first.id,
-                        phoneNumber = userInfo.value.first.phoneNumber,
-                        address = userInfo.value.first.address,
-                        name = userInfo.value.first.name,
-                        email = userInfo.value.first.email,
+                        id = result.value.first.id,
+                        phoneNumber = result.value.first.phoneNumber,
+                        address = result.value.first.address,
+                        name = result.value.first.name,
+                        email = result.value.first.email,
                         birthDate =
-                            userInfo.value.first.birthDate
+                            result.value.first.birthDate
                                 .toString(),
-                        iban = userInfo.value.first.iban,
-                        roles = userInfo.value.second,
+                        iban = result.value.first.iban,
+                        roles = result.value.second,
                     ),
                 )
-            is Failure ->
-                when (userInfo.value) {
-                    is UsersError.UserNotFound -> Problem.UserNotFound.response(HttpStatus.NOT_FOUND)
-                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to get the user")
-                }
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
     @GetMapping(Uris.UsersUris.GET_BY_EMAIL)
@@ -88,28 +84,24 @@ class UsersController(
         @RequestParam email: UsersEmailInput,
     ): ResponseEntity<*> =
         when (
-            val userInfo = usersService.getUserByEmail(email.email)
+            val result = usersService.getUserByEmail(email.email)
         ) {
             is Success ->
                 ResponseEntity.ok(
                     UserOutputModel(
-                        id = userInfo.value.first.id,
-                        phoneNumber = userInfo.value.first.phoneNumber,
-                        address = userInfo.value.first.address,
-                        name = userInfo.value.first.name,
-                        email = userInfo.value.first.email,
+                        id = result.value.first.id,
+                        phoneNumber = result.value.first.phoneNumber,
+                        address = result.value.first.address,
+                        name = result.value.first.name,
+                        email = result.value.first.email,
                         birthDate =
-                            userInfo.value.first.birthDate
+                            result.value.first.birthDate
                                 .toString(),
-                        iban = userInfo.value.first.iban,
-                        roles = userInfo.value.second,
+                        iban = result.value.first.iban,
+                        roles = result.value.second,
                     ),
                 )
-            is Failure ->
-                when (userInfo.value) {
-                    is UsersError.EmailNotFound -> Problem.EmailNotFound.response(HttpStatus.NOT_FOUND)
-                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to get the user")
-                }
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
     @PostMapping("/arbnet/users/signup")
@@ -117,7 +109,7 @@ class UsersController(
         @RequestBody user: UserInputModel,
     ): ResponseEntity<*> =
         when (
-            val userCreated =
+            val result =
                 usersService.createUser(
                     UserInputModel(
                         user.name,
@@ -130,23 +122,8 @@ class UsersController(
                     ),
                 )
         ) {
-            is Success -> ResponseEntity.ok(userCreated)
-            is Failure ->
-                when (userCreated.value) {
-                    is UsersError.NeededFullName -> Problem.NeededFullName.response(HttpStatus.BAD_REQUEST)
-                    is UsersError.InvalidName -> Problem.InvalidName.response(HttpStatus.BAD_REQUEST)
-                    is UsersError.InvalidPhoneNumber -> Problem.InvalidPhoneNumber.response(HttpStatus.BAD_REQUEST)
-                    is UsersError.InvalidAddress -> Problem.InvalidAddress.response(HttpStatus.BAD_REQUEST)
-                    is UsersError.InvalidEmail -> Problem.InvalidEmail.response(HttpStatus.BAD_REQUEST)
-                    is UsersError.InvalidPassword -> Problem.InvalidPassword.response(HttpStatus.BAD_REQUEST)
-                    is UsersError.InvalidBirthDate -> Problem.InvalidBirthDate.response(HttpStatus.BAD_REQUEST)
-                    is UsersError.InvalidIban -> Problem.InvalidIban.response(HttpStatus.BAD_REQUEST)
-
-                    is UsersError.EmailAlreadyUsed -> Problem.EmailAlreadyUsed.response(HttpStatus.CONFLICT)
-                    is UsersError.PhoneNumberAlreadyUsed -> Problem.PhoneNumberAlreadyUsed.response(HttpStatus.CONFLICT)
-                    is UsersError.IbanAlreadyUsed -> Problem.IbanAlreadyUsed.response(HttpStatus.CONFLICT)
-                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to create the user")
-                }
+            is Success -> ResponseEntity.ok(result)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
     // TODO: needs to check with token if its the same user being changed
@@ -155,7 +132,7 @@ class UsersController(
         @RequestBody user: UserUpdateInputModel,
     ): ResponseEntity<*> =
         when (
-            val userUpdated =
+            val result =
                 usersService.updateUser(
                     UserUpdateInputModel(
                         user.id,
@@ -169,23 +146,8 @@ class UsersController(
                     ),
                 )
         ) {
-            is Success -> ResponseEntity.ok(userUpdated)
-            is Failure ->
-                when (userUpdated.value) {
-                    is UsersError.InvalidName -> Problem.InvalidName.response(HttpStatus.BAD_REQUEST)
-                    is UsersError.InvalidPhoneNumber -> Problem.InvalidPhoneNumber.response(HttpStatus.BAD_REQUEST)
-                    is UsersError.InvalidAddress -> Problem.InvalidAddress.response(HttpStatus.BAD_REQUEST)
-                    is UsersError.InvalidEmail -> Problem.InvalidEmail.response(HttpStatus.BAD_REQUEST)
-                    is UsersError.InvalidPassword -> Problem.InvalidPassword.response(HttpStatus.BAD_REQUEST)
-                    is UsersError.InvalidBirthDate -> Problem.InvalidBirthDate.response(HttpStatus.BAD_REQUEST)
-                    is UsersError.InvalidIban -> Problem.InvalidIban.response(HttpStatus.BAD_REQUEST)
-
-                    is UsersError.UserNotFound -> Problem.UserNotFound.response(HttpStatus.NOT_FOUND)
-                    is UsersError.EmailAlreadyUsed -> Problem.EmailAlreadyUsed.response(HttpStatus.CONFLICT)
-                    is UsersError.PhoneNumberAlreadyUsed -> Problem.PhoneNumberAlreadyUsed.response(HttpStatus.CONFLICT)
-                    is UsersError.IbanAlreadyUsed -> Problem.IbanAlreadyUsed.response(HttpStatus.CONFLICT)
-                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to update the user")
-                }
+            is Success -> ResponseEntity.ok(result)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
     @PutMapping(Uris.UsersUris.USER_ROLES)
@@ -202,27 +164,16 @@ class UsersController(
                 )
         ) {
             is Success -> ResponseEntity.ok(userRolesUpdated)
-            is Failure ->
-                when (userRolesUpdated.value) {
-                    is UsersError.RoleNotFound -> Problem.RoleNotFound.response(HttpStatus.NOT_FOUND)
-                    is UsersError.UserNotFound -> Problem.UserNotFound.response(HttpStatus.NOT_FOUND)
-                    is UsersError.UserWithoutRole -> Problem.UserWithoutRole.response(HttpStatus.BAD_REQUEST)
-                    is UsersError.UserAlreadyHasRole -> Problem.UserAlreadyHasRole.response(HttpStatus.CONFLICT)
-                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to update the roles")
-                }
+            is Failure -> Problem.fromApiErrorToProblemResponse(userRolesUpdated.value)
         }
 
     @GetMapping(Uris.UsersUris.USER_ROLES)
     fun getAllRoles(): ResponseEntity<*> =
         when (
-            val roles = usersService.getAllRoles()
+            val result = usersService.getAllRoles()
         ) {
-            is Success -> ResponseEntity.ok(roles)
-            is Failure ->
-                when (roles.value) {
-                    is UsersError.RoleNotFound -> Problem.RoleNotFound.response(HttpStatus.NOT_FOUND)
-                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to get the roles")
-                }
+            is Success -> ResponseEntity.ok(result)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
     @PostMapping(Uris.UsersUris.USER_CATEGORY)
@@ -230,19 +181,14 @@ class UsersController(
         @RequestBody user: UserCategoryUpdateInputModel,
     ): ResponseEntity<*> =
         when (
-            val userCategoryUpdated =
+            val result =
                 usersService.updateUserCategory(
                     user.userId,
                     user.categoryId,
                 )
         ) {
-            is Success -> ResponseEntity.ok(userCategoryUpdated)
-            is Failure ->
-                when (userCategoryUpdated.value) {
-                    is UsersError.UserNotFound -> Problem.UserNotFound.response(HttpStatus.NOT_FOUND)
-                    is UsersError.CategoryNotFound -> Problem.CategoryNotFound.response(HttpStatus.NOT_FOUND)
-                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to update the user category")
-                }
+            is Success -> ResponseEntity.ok(result)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
 }
