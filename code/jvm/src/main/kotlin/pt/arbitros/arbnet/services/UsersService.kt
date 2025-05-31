@@ -11,6 +11,7 @@ import pt.arbitros.arbnet.domain.users.User
 import pt.arbitros.arbnet.domain.users.UsersDomain
 import pt.arbitros.arbnet.domain.users.UsersUtils
 import pt.arbitros.arbnet.http.ApiError
+import pt.arbitros.arbnet.http.invalidFieldError
 import pt.arbitros.arbnet.http.model.UserInputModel
 import pt.arbitros.arbnet.http.model.UserUpdateInputModel
 import pt.arbitros.arbnet.repository.TransactionManager
@@ -324,15 +325,10 @@ class UsersService(
             return@run success(roles)
         }
 
-    fun inUseError (field : String): ApiError =
+    private fun inUseError (field : String): ApiError =
         ApiError.InvalidField(
             "$field in use",
             "The $field is already in use by another user. Please choose a different one.",
         )
 
-    fun invalidFieldError(field: String): ApiError =
-        ApiError.InvalidField(
-            "Invalid $field",
-            "The provided $field is invalid. Please check the format and try again.",
-        )
 }

@@ -2,11 +2,9 @@ package pt.arbitros.arbnet.services
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
-import pt.arbitros.arbnet.domain.Competition
 import pt.arbitros.arbnet.domain.UtilsDomain
 import pt.arbitros.arbnet.domain.universal.Equipment
 import pt.arbitros.arbnet.http.model.EquipmentSelectModel
-import pt.arbitros.arbnet.repository.ReportMongoRepository
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.transactionRepo
 

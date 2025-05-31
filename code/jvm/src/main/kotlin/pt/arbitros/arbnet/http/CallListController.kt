@@ -13,10 +13,8 @@ import org.springframework.web.bind.annotation.RestController
 import pt.arbitros.arbnet.http.model.*
 import pt.arbitros.arbnet.http.model.CallListInputModel
 import pt.arbitros.arbnet.http.model.CallListInputUpdateModel
-import pt.arbitros.arbnet.http.model.EventOutputModel
-import pt.arbitros.arbnet.http.model.FunctionsAssignmentsInput
 import pt.arbitros.arbnet.http.model.ParticipantUpdateInput
-import pt.arbitros.arbnet.services.CallListError
+import pt.arbitros.arbnet.services.ApiError
 import pt.arbitros.arbnet.services.CallListService
 import pt.arbitros.arbnet.services.Failure
 import pt.arbitros.arbnet.services.Success
@@ -38,15 +36,15 @@ class CallListController(
             is Success -> ResponseEntity.ok(callList)
             is Failure ->
                 when (callList.value) {
-                    is CallListError.InvalidCompetitionName -> Problem.InvalidCompetitionName.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidAddress -> Problem.InvalidAddress.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidPhoneNumber -> Problem.InvalidPhoneNumber.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidEmail -> Problem.InvalidEmail.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidAssociation -> Problem.InvalidAssociation.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidLocation -> Problem.InvalidLocation.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.MatchDayNotFound -> Problem.MatchDayNotFound.response(HttpStatus.NOT_FOUND)
-                    is CallListError.ParticipantNotFound -> Problem.ParticipantNotFound.response(HttpStatus.NOT_FOUND)
-                    is CallListError.ArbitrationCouncilNotFound ->
+                    is ApiError.InvalidCompetitionName -> Problem.InvalidCompetitionName.response(HttpStatus.BAD_REQUEST)
+                    is ApiError.InvalidAddress -> Problem.InvalidAddress.response(HttpStatus.BAD_REQUEST)
+                    is ApiError.InvalidPhoneNumber -> Problem.InvalidPhoneNumber.response(HttpStatus.BAD_REQUEST)
+                    is ApiError.InvalidEmail -> Problem.InvalidEmail.response(HttpStatus.BAD_REQUEST)
+                    is ApiError.InvalidAssociation -> Problem.InvalidAssociation.response(HttpStatus.BAD_REQUEST)
+                    is ApiError.InvalidLocation -> Problem.InvalidLocation.response(HttpStatus.BAD_REQUEST)
+                    is ApiError.MatchDayNotFound -> Problem.MatchDayNotFound.response(HttpStatus.NOT_FOUND)
+                    is ApiError.ParticipantNotFound -> Problem.ParticipantNotFound.response(HttpStatus.NOT_FOUND)
+                    is ApiError.ArbitrationCouncilNotFound ->
                         Problem.ArbitrationCouncilNotFound.response(
                             HttpStatus.NOT_FOUND,
                         )
@@ -70,8 +68,8 @@ class CallListController(
             is Failure -> {
                 val error = result.value
                 when (error) {
-                    is CallListError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
-                    is CallListError.ParticipantNotFound -> Problem.ParticipantNotFound.response(HttpStatus.NOT_FOUND)
+                    is ApiError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
+                    is ApiError.ParticipantNotFound -> Problem.ParticipantNotFound.response(HttpStatus.NOT_FOUND)
                     else ->
                         ResponseEntity
                             .status(HttpStatus.BAD_REQUEST)
@@ -92,7 +90,7 @@ class CallListController(
             is Failure -> {
                 val error = result.value
                 when (error) {
-                    is CallListError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
+                    is ApiError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
                     else ->
                         ResponseEntity
                             .status(HttpStatus.BAD_REQUEST)
@@ -116,7 +114,7 @@ class CallListController(
 
             is Failure ->
                 when (event.value) {
-                    is CallListError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
+                    is ApiError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
                     else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(event.value)
                 }
         }
@@ -134,15 +132,15 @@ class CallListController(
             is Success -> ResponseEntity.ok(callList)
             is Failure ->
                 when (callList.value) {
-                    is CallListError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
-                    is CallListError.InvalidCompetitionName -> Problem.InvalidCompetitionName.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidAddress -> Problem.InvalidAddress.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidPhoneNumber -> Problem.InvalidPhoneNumber.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidEmail -> Problem.InvalidEmail.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidAssociation -> Problem.InvalidAssociation.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidLocation -> Problem.InvalidLocation.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.MatchDayNotFound -> Problem.MatchDayNotFound.response(HttpStatus.NOT_FOUND)
-                    is CallListError.ParticipantNotFound -> Problem.ParticipantNotFound.response(HttpStatus.NOT_FOUND)
+                    is ApiError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
+                    is ApiError.InvalidCompetitionName -> Problem.InvalidCompetitionName.response(HttpStatus.BAD_REQUEST)
+                    is ApiError.InvalidAddress -> Problem.InvalidAddress.response(HttpStatus.BAD_REQUEST)
+                    is ApiError.InvalidPhoneNumber -> Problem.InvalidPhoneNumber.response(HttpStatus.BAD_REQUEST)
+                    is ApiError.InvalidEmail -> Problem.InvalidEmail.response(HttpStatus.BAD_REQUEST)
+                    is ApiError.InvalidAssociation -> Problem.InvalidAssociation.response(HttpStatus.BAD_REQUEST)
+                    is ApiError.InvalidLocation -> Problem.InvalidLocation.response(HttpStatus.BAD_REQUEST)
+                    is ApiError.MatchDayNotFound -> Problem.MatchDayNotFound.response(HttpStatus.NOT_FOUND)
+                    is ApiError.ParticipantNotFound -> Problem.ParticipantNotFound.response(HttpStatus.NOT_FOUND)
                     else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to create the user")
                 }
         }
@@ -161,7 +159,7 @@ class CallListController(
 
             is Failure ->
                 when (sealedCallList.value) {
-                    is CallListError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
+                    is ApiError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
                     else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(sealedCallList.value)
                 }
         }

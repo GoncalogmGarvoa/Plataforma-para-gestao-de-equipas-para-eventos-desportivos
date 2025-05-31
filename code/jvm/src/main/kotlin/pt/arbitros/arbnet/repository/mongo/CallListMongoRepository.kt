@@ -1,13 +1,10 @@
-package pt.arbitros.arbnet.repository
+package pt.arbitros.arbnet.repository.mongo
 
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
-import org.springframework.data.mongodb.core.query.Update
 import org.springframework.data.mongodb.repository.MongoRepository
-import pt.arbitros.arbnet.domain.CallList
 import pt.arbitros.arbnet.domain.CallListDocument
-import pt.arbitros.arbnet.domain.ReportMongo
 
 interface CustomMongoCallListFunctions {
     fun findByIntegerId(id: Int): CallListDocument?

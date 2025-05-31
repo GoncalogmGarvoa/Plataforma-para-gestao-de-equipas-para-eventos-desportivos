@@ -14,7 +14,6 @@ sealed class ApiError(
     val status: Int,
     val detail: String
 ) {
-    //fun toProblem(): Problem = Problem(typeUri, status, detail)
 
     data class AlreadyExists(
         val customTitle: String = "Conflict",
@@ -85,9 +84,11 @@ sealed class ApiError(
         customDetail
     )
 
-
-
 }
 
-
+fun invalidFieldError(field: String): ApiError =
+    ApiError.InvalidField(
+        "Invalid $field",
+        "The provided $field is invalid. Please check the format and try again.",
+    )
 

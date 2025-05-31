@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.repository
+package pt.arbitros.arbnet.repository.mongo
 
 import org.springframework.data.mongodb.repository.MongoRepository
 import pt.arbitros.arbnet.domain.ReportMongo

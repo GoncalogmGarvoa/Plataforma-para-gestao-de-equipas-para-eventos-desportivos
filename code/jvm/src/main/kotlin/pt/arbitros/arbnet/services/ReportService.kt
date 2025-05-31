@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.ReportMongo
 import pt.arbitros.arbnet.domain.UtilsDomain
 import pt.arbitros.arbnet.http.model.ReportInputModel
-import pt.arbitros.arbnet.repository.ReportMongoRepository
+import pt.arbitros.arbnet.repository.mongo.ReportMongoRepository
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.transactionRepo
 
