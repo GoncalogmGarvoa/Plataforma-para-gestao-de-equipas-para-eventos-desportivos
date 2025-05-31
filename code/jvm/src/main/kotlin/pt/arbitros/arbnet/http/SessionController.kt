@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import pt.arbitros.arbnet.http.model.SessionRefereeInputModel
 import pt.arbitros.arbnet.services.Failure
-import pt.arbitros.arbnet.services.SessionError
 import pt.arbitros.arbnet.services.SessionService
 import pt.arbitros.arbnet.services.Success
 
@@ -19,15 +18,12 @@ class SessionController (
 ) {
     @PutMapping(Uris.SessionUris.FINISH_SESSION)
    fun finishSession(
-       @PathVariable sessionId: Int
+       @PathVariable id: Int
        ) {
-        val result = sessionService.finishSession(sessionId)
+        val result = sessionService.finishSession(id)
         when (result) {
             is Success -> ResponseEntity.ok(result.value)
-            is Failure -> when (result.value) {
-                is SessionError.SessionNotFound -> Problem.SessionNotFound.response(HttpStatus.NOT_FOUND)
-                else -> "failed to finish the session"
-            }
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
    }
 
@@ -37,11 +33,7 @@ class SessionController (
     ): ResponseEntity<*> =
         when (val result = sessionService.updateSessionReferees(sessionReferees)) {
             is Success -> ResponseEntity.ok(result.value)
-            is Failure -> when (result.value) {
-                is SessionError.SessionNotFound -> Problem.SessionNotFound.response(HttpStatus.NOT_FOUND)
-                is SessionError.PositionNotFound -> Problem.PositionNotFound.response(HttpStatus.NOT_FOUND)
-                is SessionError.UserNotFound -> Problem.UserNotFound.response(HttpStatus.NOT_FOUND)
-            }
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
 }

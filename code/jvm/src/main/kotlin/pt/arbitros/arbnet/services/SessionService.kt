@@ -5,17 +5,10 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.SessionReferee
 import pt.arbitros.arbnet.domain.UtilsDomain
+import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.http.model.SessionRefereeInputModel
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.transactionRepo
-
-sealed class SessionError {
-    data object SessionNotFound : SessionError()
-
-    data object UserNotFound : SessionError()
-
-    data object PositionNotFound : SessionError()
-}
 
 @Component
 class SessionService(
@@ -25,16 +18,19 @@ class SessionService(
 
     fun finishSession(
         sessionId: Int,
-    ): Either<SessionError, Boolean> =
+    ): Either<ApiError, Boolean> =
         transactionManager.run {
             it.sessionsRepository.getSessionById(sessionId)
-                ?: return@run failure(SessionError.SessionNotFound)
+                ?: return@run failure(ApiError.NotFound(
+                    "Session not found",
+                    "No session found with the provided ID"
+                ))
             val done = it.sessionsRepository.finishSession(sessionId)
             success(done)
         }
 
     fun updateSessionReferees(sessionReferees: List<SessionRefereeInputModel>)
-    : Either<SessionError, Boolean> =
+    : Either<ApiError, Boolean> =
         transactionManager.run {
 
             val userIds = sessionReferees.map{
@@ -44,13 +40,22 @@ class SessionService(
 
             val sessionRefereesFull = sessionReferees.map{ sessionReferee ->
                 val session = it.sessionsRepository.getSessionById(sessionReferee.sessionId)
-                    ?: return@run failure(SessionError.SessionNotFound)
+                    ?: return@run failure(ApiError.NotFound(
+                        "Session not found",
+                        "No session found with the provided ID"
+                    ))
 
                 it.usersRepository.getUserById(sessionReferee.userId)
-                    ?: return@run failure(SessionError.UserNotFound)
+                    ?: return@run failure(ApiError.NotFound(
+                        "User not found",
+                        "No user found with the provided ID"
+                    ))
 
                 it.positionRepository.getPositionById(sessionReferee.positionId)
-                    ?: return@run failure(SessionError.PositionNotFound)
+                    ?: return@run failure(ApiError.NotFound(
+                        "Position not found",
+                        "No position found with the provided ID"
+                    ))
 
                 SessionReferee(
                     session.id,

@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController
 import pt.arbitros.arbnet.http.model.ReportInputModel
 import pt.arbitros.arbnet.repository.mongo.ReportMongoRepository
 import pt.arbitros.arbnet.services.Failure
-import pt.arbitros.arbnet.services.ReportError
 import pt.arbitros.arbnet.services.ReportService
 import pt.arbitros.arbnet.services.Success
 
@@ -25,12 +24,7 @@ class ReportController(private val reportService : ReportService, private val re
     fun createReport(@RequestBody report: ReportInputModel): ResponseEntity<*> =
         when (val result = reportService.createReport(report)) {
             is Success -> ResponseEntity.ok(result.value)
-            is Failure ->
-                when (result.value) {
-                    is ReportError.AlreadyExists -> Problem.ReportAlreadyExists.response(HttpStatus.BAD_REQUEST)
-                    is ReportError.NotFound -> Problem.ReportNotFound.response(HttpStatus.NOT_FOUND)
-                    else -> Problem.InternalError.response(HttpStatus.INTERNAL_SERVER_ERROR)
-                }
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
 
@@ -38,44 +32,27 @@ class ReportController(private val reportService : ReportService, private val re
     fun getAllReports(): ResponseEntity<*> =
         when (val result = reportService.getAllReports()) {
             is Success -> ResponseEntity.ok(result.value)
-            is Failure -> when (result.value) {
-                is ReportError.AlreadyExists -> Problem.ReportAlreadyExists.response(HttpStatus.BAD_REQUEST)
-                is ReportError.NotFound -> Problem.ReportNotFound.response(HttpStatus.NOT_FOUND)
-                else -> Problem.InternalError.response(HttpStatus.INTERNAL_SERVER_ERROR)
-            }
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
     @GetMapping(Uris.ReportUris.GET_REPORT_BY_ID)
     fun getReportById(@PathVariable id: String): ResponseEntity<*> =
         when (val result = reportService.getReportById(id)) {
             is Success -> ResponseEntity.ok(result.value)
-            is Failure ->  when (result.value) {
-                is ReportError.AlreadyExists -> Problem.ReportAlreadyExists.response(HttpStatus.BAD_REQUEST)
-                is ReportError.NotFound -> Problem.ReportNotFound.response(HttpStatus.NOT_FOUND)
-                else -> Problem.InternalError.response(HttpStatus.INTERNAL_SERVER_ERROR)
-            }
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
     @PutMapping(Uris.ReportUris.UPDATE_REPORT)
     fun updateReport(@RequestBody report: ReportInputModel): ResponseEntity<*> =
         when (val result = reportService.updateReport(report)) {
             is Success -> ResponseEntity.ok(result.value)
-            is Failure ->
-                when (result.value) {
-                    is ReportError.AlreadyExists -> Problem.ReportAlreadyExists.response(HttpStatus.BAD_REQUEST)
-                    is ReportError.NotFound -> Problem.ReportNotFound.response(HttpStatus.NOT_FOUND)
-                    else -> Problem.InternalError.response(HttpStatus.INTERNAL_SERVER_ERROR)
-                }
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
     @PutMapping(Uris.ReportUris.SEAL_REPORT)
     fun sealReport(@PathVariable id: String): ResponseEntity<*> =
         when (val result = reportService.sealReport(id)) {
             is Success -> ResponseEntity.ok(result)
-            is Failure ->  when (result.value) {
-                is ReportError.AlreadyExists -> Problem.ReportAlreadyExists.response(HttpStatus.BAD_REQUEST)
-                is ReportError.NotFound -> Problem.ReportNotFound.response(HttpStatus.NOT_FOUND)
-                else -> Problem.InternalError.response(HttpStatus.INTERNAL_SERVER_ERROR)
-            }
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 }

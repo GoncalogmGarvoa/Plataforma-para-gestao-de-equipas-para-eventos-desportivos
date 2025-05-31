@@ -4,18 +4,11 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.ReportMongo
 import pt.arbitros.arbnet.domain.UtilsDomain
+import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.http.model.ReportInputModel
 import pt.arbitros.arbnet.repository.mongo.ReportMongoRepository
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.transactionRepo
-
-sealed class ReportError {
-    data object NotFound : ReportError()
-    data object AlreadyExists : ReportError()
-    data object AlreadySealed : ReportError()
-    data object InternalError : ReportError()
-    data object InvalidCompetitionId : ReportError()
-}
 
 @Component
 class ReportService(
@@ -26,11 +19,14 @@ class ReportService(
 
     fun createReport(
         report: ReportInputModel,
-    ): Either<ReportError, ReportMongo> {
+    ): Either<ApiError, ReportMongo> {
         return transactionManager.run {
 
             if (it.competitionRepository.getCompetitionById(report.competitionId) == null) {
-                return@run failure(ReportError.InvalidCompetitionId)
+                return@run failure(ApiError.InvalidField(
+                    "Invalid competition ID",
+                    "The provided competition ID does not exist or is invalid."
+                ))
             }
 
             val reportMongo = ReportMongo.fromInputModel(report)
@@ -41,31 +37,46 @@ class ReportService(
         }
     }
 
-    fun getAllReports(): Either<ReportError, List<ReportMongo>> {
+    fun getAllReports(): Either<ApiError, List<ReportMongo>> {
         return success(reportMongoRepository.findAll())
     }
 
-    fun getReportById(id: String): Either<ReportError, ReportMongo?> {
+    fun getReportById(id: String): Either<ApiError, ReportMongo?> {
         val result = reportMongoRepository.findById(id)
         return if (result.isPresent) success(result.get())
-        else failure(ReportError.NotFound)
+        else failure(ApiError.NotFound(
+            "Report not found",
+            "No report found with the provided ID."
+        ))
     }
 
-    fun updateReport(report: ReportInputModel): Either<ReportError, ReportMongo> {
+    fun updateReport(report: ReportInputModel): Either<ApiError, ReportMongo> {
         return transactionManager.run {
             if (report.id == null) {
-                return@run failure(ReportError.NotFound)
+                return@run failure(ApiError.NotFound(
+                    "Report ID is required",
+                    "The report ID must be provided to update a report."
+                ))
             }
 
             if (it.competitionRepository.getCompetitionById(report.competitionId) == null) {
-                return@run failure(ReportError.InvalidCompetitionId)
+                return@run failure(ApiError.InvalidField(
+                    "Invalid competition ID",
+                    "The provided competition ID does not exist or is invalid."
+                ))
             }
 
             val existingReport = reportMongoRepository.findById(report.id).orElse(null)
-                ?: return@run failure(ReportError.NotFound)
+                ?: return@run failure(ApiError.NotFound(
+                    "Report not found",
+                    "No report found with the provided ID."
+                ))
 
             if (existingReport.sealed) {
-                return@run failure(ReportError.AlreadySealed)
+                return@run failure(ApiError.InvalidField(
+                    "Report is sealed",
+                    "Cannot update a sealed report."
+                ))
             }
 
             val reportMongo = ReportMongo.fromInputModel(report)
@@ -75,19 +86,28 @@ class ReportService(
         }
     }
 
-    fun sealReport(id: String): Either<ReportError, ReportMongo> {
+    fun sealReport(id: String): Either<ApiError, ReportMongo> {
         return transactionManager.run {
             val report = reportMongoRepository.findById(id).orElse(null)
-                ?: return@run failure(ReportError.NotFound)
+                ?: return@run failure(ApiError.NotFound(
+                    "Report not found",
+                    "No report found with the provided ID."
+                ))
 
             if (report.sealed) {
-                return@run failure(ReportError.AlreadySealed) // Already sealed
+                return@run failure(ApiError.InvalidField(
+                    "Report already sealed",
+                    "The report with ID $id is already sealed."
+                ))
             }
 
             val success = reportMongoRepository.seal(id) // assumes returns Boolean
 
             if (!success) {
-                return@run failure(ReportError.InternalError)
+                return@run failure(ApiError.InternalServerError(
+                    "Failed to seal report",
+                    "An error occurred while trying to seal the report with ID $id."
+                ))
             }
 
             it.reportRepository.createReport(
@@ -97,7 +117,10 @@ class ReportService(
             )
 
             val updated = reportMongoRepository.findById(id).orElse(null)
-                ?: return@run failure(ReportError.InternalError)
+                ?: return@run failure(ApiError.InternalServerError(
+                    "Failed to create report representative",
+                    "An internal error occurred while trying to create the report representative for the sealed report with ID $id."
+                ))
 
             success(updated)
         }
