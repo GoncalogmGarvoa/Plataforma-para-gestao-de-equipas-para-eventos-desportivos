@@ -19,15 +19,8 @@ class UsersController(
     ): ResponseEntity<*> {
         val res = usersService.createToken(input.email, input.password)
         return when (res) {
-            is Success ->
-                ResponseEntity.ok(UserTokenCreateOutputModel(res.value.tokenValue))
-
-            is Failure ->
-                when (res.value) {
-                    is UsersError.UserOrPasswordAreInvalid -> Problem.UserOrPasswordAreInvalid.response(HttpStatus.BAD_REQUEST)
-                    is UsersError.MissingField -> Problem.MissingField.response(HttpStatus.BAD_REQUEST)
-                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to create the token")
-                }
+            is Success -> ResponseEntity.ok(UserTokenCreateOutputModel(res.value.tokenValue))
+            is Failure -> Problem.fromApiError(res.value)
         }
     }
 
@@ -58,15 +51,7 @@ class UsersController(
                         status = userInfo.value.userStatus.status,
                     ),
                 )
-            is Failure ->
-                when (userInfo.value) {
-                    is UsersError.UserNotFound -> Problem.UserNotFound.response(HttpStatus.NOT_FOUND)
-                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to get the user")
-                }
-
-            else -> {
-                ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to get the user")
-            }
+            is Failure -> Problem.fromApiError(userInfo.value)
         }
 
     @GetMapping(Uris.UsersUris.GET_BY_ID)
