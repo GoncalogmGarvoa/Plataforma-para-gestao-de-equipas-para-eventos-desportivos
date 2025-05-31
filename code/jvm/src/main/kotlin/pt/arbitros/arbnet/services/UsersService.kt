@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.UtilsDomain
 import pt.arbitros.arbnet.domain.universal.Role
 import pt.arbitros.arbnet.domain.users.Token
-import pt.arbitros.arbnet.domain.users.Users
+import pt.arbitros.arbnet.domain.users.User
 import pt.arbitros.arbnet.domain.users.UsersDomain
 import pt.arbitros.arbnet.domain.users.UsersUtils
 import pt.arbitros.arbnet.http.ApiError
@@ -49,7 +49,7 @@ class UsersService(
                 return@run failure(ApiError.MissingField("Email and password are required", "Either email or password is missing or both"))
             }
             val usersRepository = it.usersRepository
-            val user: Users = usersRepository.getUserByEmail(email) ?:
+            val user: User = usersRepository.getUserByEmail(email) ?:
             return@run failure(ApiError.NotFound("User not found", "No user found with the provided email"))
 
             if (!usersDomain.validatePassword(password, user.passwordValidation)) {
@@ -82,7 +82,7 @@ class UsersService(
         }
     }
 
-    fun getUserByToken(token: String): Either<ApiError, Users> {
+    fun getUserByToken(token: String): Either<ApiError, User> {
         if (!usersDomain.canBeToken(token)) {
             return failure(ApiError.InvalidField(
                 "Invalid token",
@@ -105,7 +105,7 @@ class UsersService(
         }
     }
 
-    fun getUserById(id: Int): Either<ApiError, Pair<Users, List<String>>> =
+    fun getUserById(id: Int): Either<ApiError, Pair<User, List<String>>> =
         transactionManager.run {
             val usersRepository = it.usersRepository
             val usersRolesRepository = it.usersRolesRepository
@@ -116,7 +116,7 @@ class UsersService(
             return@run success(user to roles)
         }
 
-    fun getUserByEmail(email: String): Either<ApiError, Pair<Users, List<String>>> =
+    fun getUserByEmail(email: String): Either<ApiError, Pair<User, List<String>>> =
         transactionManager.run {
             val usersRepository = it.usersRepository
             val usersRolesRepository = it.usersRolesRepository

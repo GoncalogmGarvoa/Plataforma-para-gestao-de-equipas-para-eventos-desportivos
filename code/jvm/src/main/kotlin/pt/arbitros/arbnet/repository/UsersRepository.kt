@@ -4,11 +4,11 @@ import kotlinx.datetime.Instant
 import pt.arbitros.arbnet.domain.users.PasswordValidationInfo
 import pt.arbitros.arbnet.domain.users.Token
 import pt.arbitros.arbnet.domain.users.TokenValidationInfo
-import pt.arbitros.arbnet.domain.users.Users
+import pt.arbitros.arbnet.domain.users.User
 import java.time.LocalDate
 
 interface UsersRepository {
-    fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<Users, Token>?
+    fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>?
 
     fun createToken(
         token: Token,
@@ -22,7 +22,7 @@ interface UsersRepository {
 
     fun removeTokenByValidationInfo(tokenValidationInfo: TokenValidationInfo): Int
 
-    fun getUserByToken(token: String): Users?
+    fun getUserByToken(token: String): User?
 
     fun createUser(
         name: String,
@@ -34,9 +34,9 @@ interface UsersRepository {
         iban: String,
     ): Int
 
-    fun getUserById(id: Int): Users?
+    fun getUserById(id: Int): User?
 
-    fun getUserByEmail(email: String): Users?
+    fun getUserByEmail(email: String): User?
 
     fun existsByEmail(email: String): Boolean
 
@@ -79,5 +79,5 @@ interface UsersRepository {
 
     fun userHasCouncilRole(userId: Int): Boolean
 
-    fun getUsersAndCheckIfReferee(participants: List<Int>): List<Users>
+    fun getUsersAndCheckIfReferee(participants: List<Int>): List<User>
 }

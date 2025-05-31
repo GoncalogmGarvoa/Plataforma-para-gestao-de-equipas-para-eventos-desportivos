@@ -8,10 +8,10 @@ import pt.arbitros.arbnet.repository.UsersRepository
 import java.time.LocalDate
 
 class UsersRepositoryMem : UsersRepository {
-    private val users = mutableListOf<Users>()
+    private val users = mutableListOf<User>()
     private var nextId = 1
 
-    override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<Users, Token>? {
+    override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>? {
         TODO("Not yet implemented")
     }
 
@@ -33,7 +33,7 @@ class UsersRepositoryMem : UsersRepository {
         TODO("Not yet implemented")
     }
 
-    override fun getUserByToken(token: String): Users? {
+    override fun getUserByToken(token: String): User? {
         TODO("Not yet implemented")
     }
 
@@ -47,7 +47,7 @@ class UsersRepositoryMem : UsersRepository {
         iban: String,
     ): Int {
         val user =
-            Users(
+            User(
                 id = nextId++,
                 name = name,
                 phoneNumber = phoneNumber,
@@ -63,9 +63,9 @@ class UsersRepositoryMem : UsersRepository {
         return user.id
     }
 
-    override fun getUserById(id: Int): Users? = users.find { it.id == id }
+    override fun getUserById(id: Int): User? = users.find { it.id == id }
 
-    override fun getUserByEmail(email: String): Users? = users.find { it.email == email }
+    override fun getUserByEmail(email: String): User? = users.find { it.email == email }
 
     override fun existsByEmail(email: String): Boolean = users.any { it.email == email }
 
@@ -139,7 +139,7 @@ class UsersRepositoryMem : UsersRepository {
         TODO("Not yet implemented")
     }
 
-    override fun getUsersAndCheckIfReferee(participants: List<Int>): List<Users> {
+    override fun getUsersAndCheckIfReferee(participants: List<Int>): List<User> {
         TODO("Not yet implemented")
     }
 }

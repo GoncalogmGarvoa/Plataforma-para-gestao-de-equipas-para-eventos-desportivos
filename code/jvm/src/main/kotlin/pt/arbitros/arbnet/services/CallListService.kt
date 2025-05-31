@@ -5,7 +5,7 @@ package pt.arbitros.arbnet.services
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.*
-import pt.arbitros.arbnet.domain.users.Users
+import pt.arbitros.arbnet.domain.users.User
 import pt.arbitros.arbnet.http.model.CallListInputLike
 import pt.arbitros.arbnet.http.model.CallListInputModel
 import pt.arbitros.arbnet.http.model.CallListInputUpdateModel
@@ -139,7 +139,7 @@ class CallListService(
     private fun validateAndCheckUsers(
         callList: CallListInputLike,
         usersRepository: UsersRepository,
-    ): Either<CallListError, List<Users>>? {
+    ): Either<CallListError, List<User>>? {
         val validateResult =
             validateCallList(
                 callList.competitionName,
@@ -161,7 +161,7 @@ class CallListService(
 
         val participants = callList.participants
         if (participants.isNullOrEmpty()) {
-            return success(emptyList<Users>())
+            return success(emptyList<User>())
         }
 
         val participantIds = participants.map { it.userId }
