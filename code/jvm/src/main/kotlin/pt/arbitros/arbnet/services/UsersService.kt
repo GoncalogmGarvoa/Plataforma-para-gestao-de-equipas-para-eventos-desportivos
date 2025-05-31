@@ -7,54 +7,16 @@ import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.UtilsDomain
 import pt.arbitros.arbnet.domain.universal.Role
 import pt.arbitros.arbnet.domain.users.Token
-import pt.arbitros.arbnet.domain.users.Users
+import pt.arbitros.arbnet.domain.users.User
 import pt.arbitros.arbnet.domain.users.UsersDomain
 import pt.arbitros.arbnet.domain.users.UsersUtils
+import pt.arbitros.arbnet.http.ApiError
+import pt.arbitros.arbnet.http.invalidFieldError
 import pt.arbitros.arbnet.http.model.UserInputModel
 import pt.arbitros.arbnet.http.model.UserUpdateInputModel
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.transactionRepo
 import java.time.LocalDate
-
-sealed class UsersError {
-    data object RoleNotFound : UsersError()
-
-    data object CategoryNotFound : UsersError()
-
-    data object UserNotFound : UsersError()
-
-    data object UserWithoutRole : UsersError()
-
-    data object UserAlreadyHasRole : UsersError()
-
-    data object EmailAlreadyUsed : UsersError()
-
-    data object PhoneNumberAlreadyUsed : UsersError()
-
-    data object IbanAlreadyUsed : UsersError()
-
-    data object EmailNotFound : UsersError()
-
-    data object InvalidName : UsersError()
-
-    data object InvalidAddress : UsersError()
-
-    data object InvalidPassword : UsersError()
-
-    data object InvalidBirthDate : UsersError()
-
-    data object InvalidIban : UsersError()
-
-    data object InvalidPhoneNumber : UsersError()
-
-    data object InvalidEmail : UsersError()
-
-    data object NeededFullName : UsersError()
-
-    data object MissingField : UsersError() // todo
-
-    data object UserOrPasswordAreInvalid : UsersError() // todo
-}
 
 sealed class TokenCreationError {
     data object UserOrPasswordAreInvalid : TokenCreationError() // todo
@@ -73,22 +35,28 @@ class UsersService(
     private val utilsDomain: UtilsDomain,
     private val clock: Clock,
 ) {
+    private val userNotFoundId = ApiError.NotFound(
+        "User not found",
+        "No user found with the provided ID",
+    )
+
+
     fun createToken(
         email: String,
         password: String,
-    ): Either<UsersError, TokenExternalInfo> =
+    ): Either<ApiError, TokenExternalInfo> =
         transactionManager.run {
             if (email.isBlank() || password.isBlank()) {
-                return@run failure(UsersError.MissingField)
+                return@run failure(ApiError.MissingField("Email and password are required", "Either email or password is missing or both"))
             }
             val usersRepository = it.usersRepository
-            val user: Users = usersRepository.getUserByEmail(email) ?: return@run failure(UsersError.EmailNotFound)
+            val user: User = usersRepository.getUserByEmail(email) ?:
+            return@run failure(ApiError.NotFound("User not found", "No user found with the provided email"))
 
             if (!usersDomain.validatePassword(password, user.passwordValidation)) {
-                if (!usersDomain.validatePassword(password, user.passwordValidation)) {
-                    return@run failure(UsersError.UserOrPasswordAreInvalid)
-                }
+                return@run failure(ApiError.InvalidField("Invalid password", "The provided password does not match the user's password"))
             }
+
             val tokenValue = usersDomain.generateTokenValue()
             val now = clock.now()
             val newToken =
@@ -107,7 +75,7 @@ class UsersService(
             )
         }
 
-    fun revokeToken(token: String): Either<UsersError, Boolean> {
+    fun revokeToken(token: String): Either<ApiError, Boolean> {
         val tokenValidationInfo = usersDomain.createTokenValidationInformation(token)
         return transactionManager.run {
             it.usersRepository.removeTokenByValidationInfo(tokenValidationInfo)
@@ -115,9 +83,12 @@ class UsersService(
         }
     }
 
-    fun getUserByToken(token: String): Either<UsersError, Users>? {
+    fun getUserByToken(token: String): Either<ApiError, User> {
         if (!usersDomain.canBeToken(token)) {
-            return null
+            return failure(ApiError.InvalidField(
+                "Invalid token",
+                "The provided token is not valid or does not match the expected format.",
+            ))
         }
         return transactionManager.run {
             val usersRepository = it.usersRepository
@@ -127,34 +98,40 @@ class UsersService(
                 usersRepository.updateTokenLastUsed(userAndToken.second, clock.now())
                 return@run success(userAndToken.first)
             } else {
-                return@run failure(UsersError.UserNotFound)
+                return@run failure(ApiError.NotFound(
+                    "User not found",
+                    "No user found with the provided token or the token is expired",
+                ))
             }
         }
     }
 
-    fun getUserById(id: Int): Either<UsersError, Pair<Users, List<String>>> =
+    fun getUserById(id: Int): Either<ApiError, Pair<User, List<String>>> =
         transactionManager.run {
             val usersRepository = it.usersRepository
             val usersRolesRepository = it.usersRolesRepository
             val rolesRepository = it.roleRepository
-            val user = usersRepository.getUserById(id) ?: return@run failure(UsersError.UserNotFound)
+            val user = usersRepository.getUserById(id) ?: return@run failure(userNotFoundId)
             val rolesId = usersRolesRepository.getUserRolesId(id)
             val roles = rolesId.mapNotNull { elem -> rolesRepository.getRoleName(elem) }
             return@run success(user to roles)
         }
 
-    fun getUserByEmail(email: String): Either<UsersError, Pair<Users, List<String>>> =
+    fun getUserByEmail(email: String): Either<ApiError, Pair<User, List<String>>> =
         transactionManager.run {
             val usersRepository = it.usersRepository
             val usersRolesRepository = it.usersRolesRepository
             val rolesRepository = it.roleRepository
-            val user = usersRepository.getUserByEmail(email) ?: return@run failure(UsersError.EmailNotFound)
+            val user = usersRepository.getUserByEmail(email) ?: return@run failure(ApiError.NotFound(
+                "User not found",
+                "No user found with the provided email",
+            ))
             val rolesId = usersRolesRepository.getUserRolesId(user.id)
             val roles = rolesId.mapNotNull { elem -> rolesRepository.getRoleName(elem) }
             return@run success(user to roles)
         }
 
-    fun createUser(user: UserInputModel): Either<UsersError, Int> =
+    fun createUser(user: UserInputModel): Either<ApiError, Int> =
         transactionManager.run {
             val usersRepository = it.usersRepository
 
@@ -164,7 +141,6 @@ class UsersService(
                     user.phoneNumber,
                     user.address,
                     user.email,
-                    user.password,
                     user.birthDate,
                     user.iban,
                 )
@@ -181,7 +157,11 @@ class UsersService(
                 try {
                     usersDomain.createPasswordValidationInformation(user.password)
                 } catch (e: Exception) {
-                    return@run failure(UsersError.InvalidPassword)
+                    return@run failure(ApiError.InvalidField(
+                        "Invalid password",
+                        "The provided password is incorrect",
+                    )
+                    )
                 }
 
             val id =
@@ -197,9 +177,11 @@ class UsersService(
             return@run success(id)
         }
 
-    fun updateUser(user: UserUpdateInputModel): Either<UsersError, Boolean> =
+    fun updateUser(user: UserUpdateInputModel): Either<ApiError, Boolean> =
         transactionManager.run {
             val usersRepository = it.usersRepository
+
+            //TODO validate new password if provided
 
             val validateResult =
                 validateUser(
@@ -207,7 +189,6 @@ class UsersService(
                     user.phoneNumber,
                     user.address,
                     user.email,
-                    user.password,
                     user.birthDate,
                     user.iban,
                 )
@@ -216,7 +197,7 @@ class UsersService(
                 return@run validateResult
             }
 
-            usersRepository.getUserById(user.id) ?: return@run failure(UsersError.UserNotFound)
+            usersRepository.getUserById(user.id) ?: return@run failure(userNotFoundId)
             val passwordValidationInfo = usersDomain.createPasswordValidationInformation(user.password)
 
             checkIfExistsInRepo(user.email, user.iban, user.phoneNumber, user.id)
@@ -234,10 +215,10 @@ class UsersService(
             return@run success(updated)
         }
 
-    fun deleteUser(id: Int): Either<UsersError, Boolean> =
+    fun deleteUser(id: Int): Either<ApiError, Boolean> =
         transactionManager.run {
             val usersRepository = it.usersRepository
-            usersRepository.getUserById(id) ?: return@run failure(UsersError.UserNotFound)
+            usersRepository.getUserById(id) ?: return@run failure(userNotFoundId)
             val deleted = usersRepository.deleteUser(id)
             return@run success(deleted)
         }
@@ -247,23 +228,17 @@ class UsersService(
         iban: String,
         phoneNumber: String,
         excludeUserId: Int? = null,
-    ): Either<UsersError, Boolean> =
+    ): Either<ApiError, Boolean> =
         transactionManager.run {
             val usersRepository = it.usersRepository
             if (excludeUserId == null) {
-                if (usersRepository.existsByEmail(email)) return@run failure(UsersError.EmailAlreadyUsed)
-                if (usersRepository.existsByPhoneNumber(phoneNumber)) return@run failure(UsersError.PhoneNumberAlreadyUsed)
-                if (usersRepository.existsByIban(iban)) return@run failure(UsersError.IbanAlreadyUsed)
+                if (usersRepository.existsByEmail(email)) return@run failure(inUseError("email"))
+                if (usersRepository.existsByPhoneNumber(phoneNumber)) return@run failure(inUseError("phone number"))
+                if (usersRepository.existsByIban(iban)) return@run failure(inUseError("IBAN"))
             } else {
-                if (usersRepository.existsByEmailExcludingId(email, excludeUserId)) return@run failure(UsersError.EmailAlreadyUsed)
-                if (usersRepository.existsByPhoneNumberExcludingId(
-                        phoneNumber,
-                        excludeUserId,
-                    )
-                ) {
-                    return@run failure(UsersError.PhoneNumberAlreadyUsed)
-                }
-                if (usersRepository.existsByIbanExcludingId(iban, excludeUserId)) return@run failure(UsersError.IbanAlreadyUsed)
+                if (usersRepository.existsByEmailExcludingId(email, excludeUserId)) return@run failure( inUseError("email"))
+                if (usersRepository.existsByPhoneNumberExcludingId(phoneNumber, excludeUserId)) { return@run failure(inUseError("phone number")) }
+                if (usersRepository.existsByIbanExcludingId(iban, excludeUserId)) return@run failure(inUseError("IBAN"))
             }
 
             return@run success(true)
@@ -273,35 +248,44 @@ class UsersService(
         userId: Int,
         roleId: Int,
         addOrRemove: Boolean,
-    ): Either<UsersError, Boolean> =
+    ): Either<ApiError, Boolean> =
         // Boolean =
         transactionManager.run {
             val usersRepository = it.usersRepository
             val roleRepository = it.roleRepository
             val usersRolesRepository = it.usersRolesRepository
 
-            roleRepository.getRoleName(roleId) ?: return@run failure(UsersError.RoleNotFound)
-            usersRepository.getUserById(userId) ?: return@run failure(UsersError.UserNotFound)
+            roleRepository.getRoleName(roleId) ?: return@run failure(ApiError.NotFound("Role not found", "The provided role does not exist"))
+            usersRepository.getUserById(userId) ?: return@run failure(ApiError.NotFound("User not found", "The provided user does not exist"))
 
             val hasRole = usersRolesRepository.userHasRole(userId, roleId)
             val success: Boolean =
                 when {
                     addOrRemove && !hasRole -> usersRolesRepository.addRoleToUser(userId, roleId)
                     !addOrRemove && hasRole -> usersRolesRepository.removeRoleFromUser(userId, roleId)
-                    !hasRole -> return@run failure(UsersError.UserWithoutRole)
-                    else -> return@run failure(UsersError.UserAlreadyHasRole)
+                    !hasRole -> return@run failure(ApiError.InvalidField(
+                        "User does not have the role",
+                        "The user does not have the specified role to remove",
+                    ))
+                    else -> return@run failure(ApiError.InvalidField(
+                        "User already has the role",
+                        "The user already has the specified role to add",
+                    ))
                 }
 
             return@run success(success)
         }
-    fun updateUserCategory(userId: Int, categoryId: Int): Either<UsersError, Boolean> =
+    fun updateUserCategory(userId: Int, categoryId: Int): Either<ApiError, Boolean> =
         transactionManager.run {
             val usersRepository = it.usersRepository
             val categoryRepository = it.categoryRepository
             val categoryDirRepository = it.categoryDirRepository
 
-            categoryRepository.getCategoryNameById(categoryId) ?: return@run failure(UsersError.CategoryNotFound)
-            usersRepository.getUserById(userId) ?: return@run failure(UsersError.UserNotFound)
+            categoryRepository.getCategoryNameById(categoryId) ?: return@run failure(ApiError.NotFound(
+                "Category not found",
+                "The provided category does not exist",
+            ))
+            usersRepository.getUserById(userId) ?: return@run failure(userNotFoundId)
 
             val success: Boolean = categoryDirRepository.updateUserCategory(userId, categoryId)
             return@run success(success)
@@ -312,28 +296,39 @@ class UsersService(
         phoneNumber: String,
         address: String,
         email: String,
-        password: String,
         birthDate: String,
         iban: String,
-    ): Either<UsersError, Unit> {
-        if (!name.contains(" ")) return failure(UsersError.NeededFullName)
-        if (!utilsDomain.validName(name)) return failure(UsersError.InvalidName)
-        if (!utilsDomain.validPhoneNumber(phoneNumber)) return failure(UsersError.InvalidPhoneNumber)
-        if (!utilsDomain.validAddress(address)) return failure(UsersError.InvalidAddress)
-        if (!utilsDomain.validEmail(email)) return failure(UsersError.InvalidEmail)
-        // if (!usersDomain.validPassword(password)) return failure(UsersError.InvalidPassword)
-        if (!usersUtils.validBirthDate(birthDate)) return failure(UsersError.InvalidBirthDate)
-        if (!usersUtils.validatePortugueseIban(iban)) return failure(UsersError.InvalidIban)
+    ): Either<ApiError, Unit> {
+        if (!name.contains(" ")) return failure(ApiError.InvalidField(
+            "Name must contain at least a first and last name",
+            "The provided name does not contain a space between first and last name.",
+        ))
+        if (!utilsDomain.validName(name)) return failure(invalidFieldError("name"))
+        if (!utilsDomain.validPhoneNumber(phoneNumber)) return failure(invalidFieldError("phone number"))
+        if (!utilsDomain.validAddress(address)) return failure(invalidFieldError("address"))
+        if (!utilsDomain.validEmail(email)) return failure(invalidFieldError("email"))
+        if (!usersUtils.validBirthDate(birthDate)) return failure(invalidFieldError("birth date"))
+        if (!usersUtils.validatePortugueseIban(iban)) return failure(invalidFieldError("IBAN"))
 
         return success(Unit)
     }
 
     // TODO check if it makes sense to create a separate service for this
-    fun getAllRoles(): Either<UsersError, List<Role>> =
+    fun getAllRoles(): Either<ApiError, List<Role>> =
         transactionManager.run {
             val roleRepository = it.roleRepository
             val roles = roleRepository.getAllRoles()
-            if (roles.isEmpty()) return@run failure(UsersError.RoleNotFound) // TODO check if this is the right error
+            if (roles.isEmpty()) return@run failure(ApiError.NotFound(
+                "No roles found",
+                "There are no roles available in the system.",
+            )) // TODO check if this is the right error
             return@run success(roles)
         }
+
+    private fun inUseError (field : String): ApiError =
+        ApiError.InvalidField(
+            "$field in use",
+            "The $field is already in use by another user. Please choose a different one.",
+        )
+
 }

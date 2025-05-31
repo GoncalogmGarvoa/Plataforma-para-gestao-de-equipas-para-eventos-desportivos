@@ -15,7 +15,7 @@ import java.time.LocalDate
 class UsersRepositoryJdbi(
     private val handle: Handle,
 ) : UsersRepository {
-    override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<Users, Token>? =
+    override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>? =
         handle
             .createQuery(
                 """
@@ -78,10 +78,10 @@ class UsersRepositoryJdbi(
             UserStatus.values().firstOrNull { it.status == status }
                 ?: throw IllegalArgumentException("Invalid user status: $status")
 
-        val userAndToken: Pair<Users, Token>
+        val userAndToken: Pair<User, Token>
             get() =
                 Pair(
-                    Users(id, phoneNumber, address, name, email, passwordValidation, birthDate, iban, status2),
+                    User(id, phoneNumber, address, name, email, passwordValidation, birthDate, iban, status2),
                     Token(
                         tokenValidation,
                         id,
@@ -110,10 +110,10 @@ class UsersRepositoryJdbi(
             UserStatus.values().firstOrNull { it.status == status }
                 ?: throw IllegalArgumentException("Invalid user status: $status")
 
-        val userAndToken: Triple<Users, Token, List<String>>
+        val userAndToken: Triple<User, Token, List<String>>
             get() =
                 Triple(
-                    Users(id, phoneNumber, address, name, email, passwordValidation, birthDate, iban, statusEnum),
+                    User(id, phoneNumber, address, name, email, passwordValidation, birthDate, iban, statusEnum),
                     Token(tokenValidation, id, Instant.fromEpochSeconds(createdAt), Instant.fromEpochSeconds(lastUsedAt)),
                     roles,
                 )
@@ -177,7 +177,7 @@ class UsersRepositoryJdbi(
             ).bind("validation_information", tokenValidationInfo.validationInfo)
             .execute()
 
-    override fun getUserByToken(token: String): Users? {
+    override fun getUserByToken(token: String): User? {
         TODO("Not yet implemented")
     }
 
@@ -204,7 +204,7 @@ class UsersRepositoryJdbi(
             .mapTo<Int>()
             .one()
 
-    override fun getUserById(id: Int): Users? =
+    override fun getUserById(id: Int): User? =
         handle
             .createQuery("""select * from dbp.users where id = :id""")
             .bind("id", id)
@@ -212,7 +212,7 @@ class UsersRepositoryJdbi(
                 usersMap(rs)
             }.singleOrNull()
 
-    override fun getUserByEmail(email: String): Users? =
+    override fun getUserByEmail(email: String): User? =
         handle
             .createQuery("""select * from dbp.users where email = :email""")
             .bind("email", email)
@@ -221,7 +221,7 @@ class UsersRepositoryJdbi(
             }.singleOrNull()
 
     private fun usersMap(rs: ResultSet) =
-        Users(
+        User(
             id = rs.getInt("id"),
             phoneNumber = rs.getString("phone_number"),
             address = rs.getString("address"),
@@ -233,12 +233,12 @@ class UsersRepositoryJdbi(
             userStatus = UserStatus.valueOf(rs.getString("status").uppercase()), // ou fromString()
         )
 
-    class UsersMapper : RowMapper<Users> {
+    class UsersMapper : RowMapper<User> {
         override fun map(
             rs: ResultSet,
             ctx: StatementContext?,
-        ): Users =
-            Users(
+        ): User =
+            User(
                 id = rs.getInt("id"),
                 phoneNumber = rs.getString("phone_number"),
                 address = rs.getString("address"),
@@ -365,7 +365,7 @@ class UsersRepositoryJdbi(
             .isPresent
 
     // todo check
-    override fun getUsersAndCheckIfReferee(participants: List<Int>): List<Users> =
+    override fun getUsersAndCheckIfReferee(participants: List<Int>): List<User> =
         handle
             .createQuery(
                 """

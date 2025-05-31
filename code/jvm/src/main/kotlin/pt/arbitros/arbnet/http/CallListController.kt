@@ -2,7 +2,6 @@
 
 package pt.arbitros.arbnet.http
 
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -13,10 +12,7 @@ import org.springframework.web.bind.annotation.RestController
 import pt.arbitros.arbnet.http.model.*
 import pt.arbitros.arbnet.http.model.CallListInputModel
 import pt.arbitros.arbnet.http.model.CallListInputUpdateModel
-import pt.arbitros.arbnet.http.model.EventOutputModel
-import pt.arbitros.arbnet.http.model.FunctionsAssignmentsInput
 import pt.arbitros.arbnet.http.model.ParticipantUpdateInput
-import pt.arbitros.arbnet.services.CallListError
 import pt.arbitros.arbnet.services.CallListService
 import pt.arbitros.arbnet.services.Failure
 import pt.arbitros.arbnet.services.Success
@@ -30,29 +26,11 @@ class CallListController(
         @RequestBody callList: CallListInputModel,
     ): ResponseEntity<*> =
         when (
-            val callList =
-                callListService.createEvent(
-                    callList,
-                )
+            val result =
+                callListService.createEvent(callList)
         ) {
-            is Success -> ResponseEntity.ok(callList)
-            is Failure ->
-                when (callList.value) {
-                    is CallListError.InvalidCompetitionName -> Problem.InvalidCompetitionName.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidAddress -> Problem.InvalidAddress.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidPhoneNumber -> Problem.InvalidPhoneNumber.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidEmail -> Problem.InvalidEmail.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidAssociation -> Problem.InvalidAssociation.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidLocation -> Problem.InvalidLocation.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.MatchDayNotFound -> Problem.MatchDayNotFound.response(HttpStatus.NOT_FOUND)
-                    is CallListError.ParticipantNotFound -> Problem.ParticipantNotFound.response(HttpStatus.NOT_FOUND)
-                    is CallListError.ArbitrationCouncilNotFound ->
-                        Problem.ArbitrationCouncilNotFound.response(
-                            HttpStatus.NOT_FOUND,
-                        )
-
-                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to create the user")
-                }
+            is Success -> ResponseEntity.ok(result)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
     @PutMapping(Uris.CallListUris.UPDATE_PARTICIPANT_CONFIRMATION_STATUS)
@@ -67,17 +45,7 @@ class CallListController(
             )
         return when (result) {
             is Success -> ResponseEntity.ok("confirmation status changed")
-            is Failure -> {
-                val error = result.value
-                when (error) {
-                    is CallListError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
-                    is CallListError.ParticipantNotFound -> Problem.ParticipantNotFound.response(HttpStatus.NOT_FOUND)
-                    else ->
-                        ResponseEntity
-                            .status(HttpStatus.BAD_REQUEST)
-                            .body("Failed to change the confirmation status")
-                }
-            }
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
     }
 
@@ -89,16 +57,7 @@ class CallListController(
             callListService.updateCallListStage(callListId.id)
         return when (result) {
             is Success -> ResponseEntity.ok(result.value)
-            is Failure -> {
-                val error = result.value
-                when (error) {
-                    is CallListError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
-                    else ->
-                        ResponseEntity
-                            .status(HttpStatus.BAD_REQUEST)
-                            .body("Failed to change the Stage of callList")
-                }
-            }
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
     }
 
@@ -106,19 +65,12 @@ class CallListController(
     fun getCallList(
         @PathVariable id: Int,
     ): ResponseEntity<*> =
-        when (val event = callListService.getEventById(id)) {
+        when (val result = callListService.getEventById(id)) {
             is Success -> {
-                val value = event.value
-                ResponseEntity.ok(
-                    value
-                )
+                val value = result.value
+                ResponseEntity.ok(value)
             }
-
-            is Failure ->
-                when (event.value) {
-                    is CallListError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
-                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(event.value)
-                }
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
     @PutMapping(Uris.CallListUris.UPDATE_CALLLIST)
@@ -126,43 +78,21 @@ class CallListController(
         @RequestBody callList: CallListInputUpdateModel,
     ): ResponseEntity<*> =
         when (
-            val callList =
-                callListService.updateEvent(
-                    callList,
-                )
+            val result = callListService.updateEvent(callList)
         ) {
-            is Success -> ResponseEntity.ok(callList)
-            is Failure ->
-                when (callList.value) {
-                    is CallListError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
-                    is CallListError.InvalidCompetitionName -> Problem.InvalidCompetitionName.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidAddress -> Problem.InvalidAddress.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidPhoneNumber -> Problem.InvalidPhoneNumber.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidEmail -> Problem.InvalidEmail.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidAssociation -> Problem.InvalidAssociation.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.InvalidLocation -> Problem.InvalidLocation.response(HttpStatus.BAD_REQUEST)
-                    is CallListError.MatchDayNotFound -> Problem.MatchDayNotFound.response(HttpStatus.NOT_FOUND)
-                    is CallListError.ParticipantNotFound -> Problem.ParticipantNotFound.response(HttpStatus.NOT_FOUND)
-                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body("failed to create the user")
-                }
+            is Success -> ResponseEntity.ok(result)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
     @GetMapping(Uris.CallListUris.GET_SEALED_CALLLIST)
     fun getSealedCallList(
         @PathVariable id: String,
     ): ResponseEntity<*> =
-        when (val sealedCallList = callListService.getSealedCallList(id)) {
+        when (val result = callListService.getSealedCallList(id)) {
             is Success -> {
-                val value = sealedCallList.value
-                ResponseEntity.ok(
-                    value
-                )
+                val value = result.value
+                ResponseEntity.ok(value)
             }
-
-            is Failure ->
-                when (sealedCallList.value) {
-                    is CallListError.CallListNotFound -> Problem.CallListNotFound.response(HttpStatus.NOT_FOUND)
-                    else -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(sealedCallList.value)
-                }
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 }

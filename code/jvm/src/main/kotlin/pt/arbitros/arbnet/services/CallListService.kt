@@ -5,7 +5,9 @@ package pt.arbitros.arbnet.services
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.*
-import pt.arbitros.arbnet.domain.users.Users
+import pt.arbitros.arbnet.domain.users.User
+import pt.arbitros.arbnet.http.ApiError
+import pt.arbitros.arbnet.http.invalidFieldError
 import pt.arbitros.arbnet.http.model.CallListInputLike
 import pt.arbitros.arbnet.http.model.CallListInputModel
 import pt.arbitros.arbnet.http.model.CallListInputUpdateModel
@@ -13,42 +15,9 @@ import pt.arbitros.arbnet.http.model.EventOutputModel
 import pt.arbitros.arbnet.http.model.ParticipantChoice
 import pt.arbitros.arbnet.http.model.ParticipantWithCategory
 import pt.arbitros.arbnet.repository.*
+import pt.arbitros.arbnet.repository.mongo.CallListMongoRepository
 import pt.arbitros.arbnet.transactionRepo
 import java.time.LocalDate
-
-sealed class CallListError {
-    data object ArbitrationCouncilNotFound : CallListError()
-
-    data object ParticipantDoesntHaveACategory : CallListError()
-
-    data object CategoryNotFound : CallListError()
-
-    data object FunctionNotFound : CallListError()
-
-    data object ParticipantNotFound : CallListError()
-
-    data object CallListNotFound : CallListError()
-
-    data object MatchDayNotFound : CallListError()
-
-    data object CompetitionNotFound : CallListError()
-
-    data object SessionNotFound : CallListError() // todo
-
-    data object InvalidCompetitionName : CallListError()
-
-    data object InvalidAddress : CallListError()
-
-    data object InvalidPhoneNumber : CallListError()
-
-    data object InvalidEmail : CallListError()
-
-    data object InvalidAssociation : CallListError()
-
-    data object InvalidLocation : CallListError()
-
-    data object InvalidCallListType : CallListError() // todo
-}
 
 @Component
 class CallListService(
@@ -60,7 +29,7 @@ class CallListService(
 ) {
 
     // todo Event > callList + competition
-    fun createEvent(callList: CallListInputModel): Either<CallListError, Int> =
+    fun createEvent(callList: CallListInputModel): Either<ApiError, Int> =
         transactionManager.run {
             val result = validateAndCheckUsers(callList, it.usersRepository)
             if (result is Failure) return@run result
@@ -78,7 +47,7 @@ class CallListService(
                     callList,
                     it.callListRepository,
                     competitionId,
-                ) ?: return@run failure(CallListError.CallListNotFound) // todo verify
+                )
 
             if (callList.participants?.isNotEmpty() == true) {
                 val participantsResult =
@@ -96,11 +65,13 @@ class CallListService(
             success(callListId)
         }
 
-    fun updateEvent(callList: CallListInputUpdateModel): Either<CallListError, Int> =
+    fun updateEvent(callList: CallListInputUpdateModel): Either<ApiError, Int> =
         transactionManager.run {
             // check if callList with id exists
             it.callListRepository.getCallListById(callList.callListId)
-                ?: return@run failure(CallListError.CallListNotFound)
+                ?: return@run failure(ApiError.NotFound(
+                    "CallList with id ${callList.callListId} not found"
+                ))
 
             val result = validateAndCheckUsers(callList, it.usersRepository)
             if (result is Failure) return@run result
@@ -118,7 +89,7 @@ class CallListService(
                     callList,
                     it.callListRepository,
                     competitionId,
-                ) ?: return@run failure(CallListError.CallListNotFound) //TODO review
+                )
 
             if (callList.participants?.isNotEmpty() == true) {
                 val participantsResult =
@@ -139,7 +110,7 @@ class CallListService(
     private fun validateAndCheckUsers(
         callList: CallListInputLike,
         usersRepository: UsersRepository,
-    ): Either<CallListError, List<Users>>? {
+    ): Either<ApiError, List<User>>? {
         val validateResult =
             validateCallList(
                 callList.competitionName,
@@ -153,22 +124,31 @@ class CallListService(
         if (validateResult is Failure) return validateResult
 
         usersRepository.getUserById(callList.userId)
-            ?: return failure(CallListError.ArbitrationCouncilNotFound)
+            ?: return failure(ApiError.NotFound(
+                "User not found",
+                "No user found with the provided ID",
+            ))
 
-         if(usersRepository.userHasCouncilRole(callList.userId))
-             return failure(CallListError.ArbitrationCouncilNotFound)
+         if(!usersRepository.userHasCouncilRole(callList.userId))
+             return failure(ApiError.InvalidField(
+                "User does not have the required role",
+                "The user must have a council role to create or update a call list"
+             ))
 
 
         val participants = callList.participants
         if (participants.isNullOrEmpty()) {
-            return success(emptyList<Users>())
+            return success(emptyList<User>())
         }
 
         val participantIds = participants.map { it.userId }
         val foundReferees = usersRepository.getUsersAndCheckIfReferee(participantIds)
 
         if (foundReferees.size != participants.size) {
-            return failure(CallListError.ParticipantNotFound)
+            return failure(ApiError.InvalidField(
+                "Invalid participants",
+                "Some participants are not referees or do not exist in the system",
+            ))
         }
         return success(foundReferees)
     }
@@ -276,7 +256,7 @@ class CallListService(
         competitionId: Int,
         functionRepository: FunctionRepository,
         participantRepository: ParticipantRepository,
-    ): Either<CallListError, Unit> {
+    ): Either<ApiError, Unit> {
         val participantsToInsert = mutableListOf<Participant>()
 
         if (participants != null) {
@@ -286,11 +266,17 @@ class CallListService(
 
                     val funcId =
                         functionRepository.getFunctionIdByName(funcName)
-                            ?: return failure(CallListError.FunctionNotFound)
+                            ?: return failure(ApiError.NotFound(
+                                "Function not found",
+                                "No function found with the name '$funcName'",
+                            ))
 
                     val mdId =
                         matchDayMap[day]
-                            ?: return failure(CallListError.MatchDayNotFound)
+                            ?: return failure(ApiError.NotFound(
+                                "Match day not found",
+                                "No match day found for the date '$day'",
+                            ))
 
                     participantsToInsert +=
                         Participant(
@@ -313,18 +299,24 @@ class CallListService(
         days: List<Int>,
         participantId: Int,
         callListId: Int,
-    ): Either<CallListError, Boolean> =
+    ): Either<ApiError, Boolean> =
         transactionManager.run {
             val participantRepository = it.participantRepository
             val callListRepository = it.callListRepository
 
             // Check if the participant exists
             participantRepository.getParticipantById(participantId)
-                ?: return@run failure(CallListError.ParticipantNotFound)
+                ?: return@run failure(ApiError.NotFound(
+                    "Participant not found",
+                    "No participant found with the ID $participantId"
+                ))
 
             // Check if the call list exists
             callListRepository.getCallListById(callListId)
-                ?: return@run failure(CallListError.CallListNotFound)
+                ?: return@run failure(ApiError.NotFound(
+                    "Call list not found",
+                    "No call list found with the ID $callListId"
+                ))
 
             participantRepository.updateParticipantConfirmationStatus(days, participantId, callListId)
             if (participantRepository.isCallListDone(callListId)) {
@@ -336,7 +328,7 @@ class CallListService(
     fun getParticipantsByCallList(
         tx: Transaction,
         callList: CallList,
-    ): Either<CallListError, List<Participant>> {
+    ): Either<ApiError, List<Participant>> {
         val participantRepository = tx.participantRepository
 
         val participants = participantRepository.getParticipantsByCallList(callList.id)
@@ -346,36 +338,42 @@ class CallListService(
     fun getCompetitionById(
         tx: Transaction,
         competitionId: Int,
-    ): Either<CallListError, Competition> {
+    ): Either<ApiError, Competition> {
         val competitionRepository = tx.competitionRepository
 
         val competition =
             competitionRepository.getCompetitionById(competitionId)
-                ?: return failure(CallListError.CompetitionNotFound)
+                ?: return failure(ApiError.NotFound(
+                    "Competition not found",
+                    "No competition found with the ID $competitionId"
+                ))
 
         return success(competition)
     }
 
+    //TODO this does not need to return an Either, it can return a List<MatchDay>, the list can be empty
     fun getMatchDaysByCompetitionId(
         tx: Transaction,
         competitionId: Int,
-    ): Either<CallListError, List<MatchDay>> {
+    ): Either<ApiError, List<MatchDay>> {
         val matchDayRepository = tx.matchDayRepository
 
         val matchDays =
             matchDayRepository.getMatchDaysByCompetition(competitionId)
-                ?: return failure(CallListError.MatchDayNotFound)
 
         return success(matchDays)
     }
 
-    fun getEventById(id: Int): Either<CallListError, EventOutputModel> =
+    fun getEventById(id: Int): Either<ApiError, EventOutputModel> =
         transactionManager.run { tx ->
             val callListRepository = tx.callListRepository
 
             val callList =
                 callListRepository.getCallListById(id)
-                    ?: return@run failure(CallListError.CallListNotFound)
+                    ?: return@run failure(ApiError.InvalidField(
+                        "CallList not found",
+                        "No call list found with the ID $id",
+                    ))
 
             val competitionResult = getCompetitionById(tx, callList.competitionId)
             val participantsResult = getParticipantsByCallList(tx, callList)
@@ -393,9 +391,15 @@ class CallListService(
 
             val participantsWithCategory = participants.map{
                 val categoryId = tx.categoryDirRepository.getCategoryIdByUserId(it.userId)
-                    ?: return@run failure(CallListError.ParticipantDoesntHaveACategory)
+                    ?: return@run failure(ApiError.InvalidField(
+                        "Participant does not have a category",
+                        "User with ID ${it.userId} does not have a category assigned",
+                    ))
                 val category = tx.categoryRepository.getCategoryNameById(categoryId)
-                    ?: return@run failure(CallListError.CategoryNotFound)
+                    ?: return@run failure(ApiError.InvalidField(
+                        "Category not found",
+                        "No category found with ID $categoryId",
+                    ))
 
                 ParticipantWithCategory(
                     callListId = it.callListId,
@@ -434,32 +438,37 @@ class CallListService(
         association: String,
         location: String,
         callType: String,
-    ): Either<CallListError, Unit> {
-        if (!callListDomain.validCallListType(callType)) return failure(CallListError.InvalidCallListType)
-        if (!utilsDomain.validName(competitionName)) return failure(CallListError.InvalidCompetitionName)
-        if (!utilsDomain.validAddress(address)) return failure(CallListError.InvalidAddress)
-        if (!utilsDomain.validPhoneNumber(phoneNumber)) return failure(CallListError.InvalidPhoneNumber)
-        if (!utilsDomain.validEmail(email)) return failure(CallListError.InvalidEmail)
-        if (!utilsDomain.validName(association)) return failure(CallListError.InvalidAssociation)
-        if (!utilsDomain.validName(location)) return failure(CallListError.InvalidLocation)
+    ): Either<ApiError, Unit> {
+        if (!callListDomain.validCallListType(callType)) return failure(invalidFieldError("callType"))
+        if (!utilsDomain.validName(competitionName)) return failure(invalidFieldError("competitionName"))
+        if (!utilsDomain.validAddress(address)) return failure(invalidFieldError("address"))
+        if (!utilsDomain.validPhoneNumber(phoneNumber)) return failure(invalidFieldError("phoneNumber"))
+        if (!utilsDomain.validEmail(email)) return failure(invalidFieldError("email"))
+        if (!utilsDomain.validName(association)) return failure(invalidFieldError("association"))
+        if (!utilsDomain.validName(location)) return failure(invalidFieldError("location"))
 
         return success(Unit)
     }
 
-fun updateCallListStage(callListId: Int): Either<CallListError, Boolean> =
+fun updateCallListStage(callListId: Int): Either<ApiError, Boolean> =
     transactionManager.run { tx ->
         val callListRepository = tx.callListRepository
 
         val callList =
             callListRepository.getCallListById(callListId)
-                ?: return@run failure(CallListError.CallListNotFound)
+                ?: return@run failure(ApiError.NotFound(
+                    "CallList not found",
+                    "No call list found with the ID $callListId",
+                ))
 
         val participants = tx.participantRepository.getParticipantsByCallList(callListId)
 
         if (participants.isEmpty()) {
-            return@run failure(CallListError.ParticipantNotFound)
+            return@run failure(ApiError.InvalidField(
+                "No participants found",
+                "In order to seal the call list, there must be at least one participant.",
+            ))
         }
-
 
         val callType =
             when (callList.callType) {
@@ -469,7 +478,10 @@ fun updateCallListStage(callListId: Int): Either<CallListError, Boolean> =
                 CallListType.CONFIRMATION.callType -> {
                     CallListType.FINAL_JURY.callType
                 }
-                else -> return@run failure(CallListError.InvalidCallListType)
+                else -> return@run failure(ApiError.InvalidField(
+                    "Invalid call list type",
+                    "Call list must either be in 'CALL_LIST' or 'CONFIRMATION' to update the stage.",
+                ))
             }
 
         callListRepository.updateCallListStage(callListId, callType)
@@ -478,13 +490,22 @@ fun updateCallListStage(callListId: Int): Either<CallListError, Boolean> =
         val callListContent = callListRepository.getCallListById(callListId)!!
 
         val competitionInfo = tx.competitionRepository.getCompetitionById(callListContent.competitionId)
-            ?: return@run failure(CallListError.CompetitionNotFound)
+            ?: return@run failure(ApiError.NotFound(
+                "Competition not found",
+                "No competition found with the ID ${callListContent.competitionId}",
+            ))
 
         val participantsWithCategory = participants.map{
             val categoryId = tx.categoryDirRepository.getCategoryIdByUserId(it.userId)
-                ?: return@run failure(CallListError.ParticipantDoesntHaveACategory)
+                ?: return@run failure(ApiError.InvalidField(
+                    "Participant does not have a category",
+                    "User with ID ${it.userId} does not have a category assigned",
+                ))
             val category = tx.categoryRepository.getCategoryNameById(categoryId)
-                ?: return@run failure(CallListError.CategoryNotFound)
+                ?: return@run failure(ApiError.InvalidField(
+                    "Category not found",
+                    "No category found with ID $categoryId",
+                ))
 
             ParticipantWithCategory(
                 callListId = it.callListId,
@@ -569,10 +590,14 @@ fun updateCallListStage(callListId: Int): Either<CallListError, Boolean> =
 
     }
 
-    fun getSealedCallList(callListId: String): Either<CallListError, CallListDocument> {
+    fun getSealedCallList(callListId: String): Either<ApiError, CallListDocument> {
         val result = callListMongoRepository.findById(callListId)
         return if (result.isPresent) success(result.get())
-        else failure(CallListError.CallListNotFound)
+        else failure(ApiError.NotFound(
+            "CallList not found",
+            "No call list found with the ID $callListId",
+        )
+        )
     }
 
 }

@@ -26,7 +26,7 @@ class RequestTokenProcessor(
 //                parts[1],
 //            )
 //        }
-        val result = usersService.getUserByToken(parts[1]) ?: return null
+        val result = usersService.getUserByToken(parts[1]) ?: return null //TODO check tomas
 
         return when (result) {
             is Failure -> null

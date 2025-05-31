@@ -12,7 +12,7 @@ import pt.arbitros.arbnet.services.EquipmentError
 import pt.arbitros.arbnet.services.EquipmentService
 import pt.arbitros.arbnet.services.Failure
 import pt.arbitros.arbnet.services.Success
-
+/*
 @RestController
 class EquipmentController(
     private val equipmentService: EquipmentService,
@@ -42,4 +42,4 @@ class EquipmentController(
                     else -> Problem.InternalError.response(HttpStatus.INTERNAL_SERVER_ERROR)
                 }
         }
-}
+}*/
