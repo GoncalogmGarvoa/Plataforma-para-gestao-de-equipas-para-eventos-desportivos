@@ -8,9 +8,7 @@ import pt.arbitros.arbnet.domain.*
 import pt.arbitros.arbnet.domain.users.User
 import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.http.invalidFieldError
-import pt.arbitros.arbnet.http.model.CallListInputLike
 import pt.arbitros.arbnet.http.model.CallListInputModel
-import pt.arbitros.arbnet.http.model.CallListInputUpdateModel
 import pt.arbitros.arbnet.http.model.EventOutputModel
 import pt.arbitros.arbnet.http.model.ParticipantChoice
 import pt.arbitros.arbnet.http.model.ParticipantWithCategory
@@ -49,7 +47,7 @@ class CallListService(
                     competitionId,
                 )
 
-            if (callList.participants?.isNotEmpty() == true) {
+            if (callList.participants.isNotEmpty()) {
                 val participantsResult =
                     createParticipantsOnly(
                         callList.participants,
@@ -65,9 +63,16 @@ class CallListService(
             success(callListId)
         }
 
-    fun updateEvent(callList: CallListInputUpdateModel): Either<ApiError, Int> =
+    fun updateEvent(callList: CallListInputModel): Either<ApiError, Int> =
         transactionManager.run {
             // check if callList with id exists
+            if (callList.callListId == null) {
+                return@run failure(ApiError.InvalidField(
+                    "CallList ID is required",
+                    "CallList ID must be provided for updating an existing call list",
+                ))
+            }
+
             it.callListRepository.getCallListById(callList.callListId)
                 ?: return@run failure(ApiError.NotFound(
                     "CallList with id ${callList.callListId} not found"
@@ -84,14 +89,13 @@ class CallListService(
                     it.sessionsRepository,
                 )
 
-            val callListId =
-                updateCallListOnly(
+            val callListId = updateCallListOnly(
                     callList,
                     it.callListRepository,
                     competitionId,
                 )
 
-            if (callList.participants?.isNotEmpty() == true) {
+            if (callList.participants.isNotEmpty()) {
                 val participantsResult =
                     createParticipantsOnly(
                         callList.participants,
@@ -109,7 +113,7 @@ class CallListService(
 
 
     private fun validateAndCheckUsers(
-        callList: CallListInputLike,
+        callList: CallListInputModel,
         usersRepository: UsersRepository,
     ): Either<ApiError, List<User>>? {
         val validateResult =
@@ -138,8 +142,8 @@ class CallListService(
 
 
         val participants = callList.participants
-        if (participants.isNullOrEmpty()) {
-            return success(emptyList<User>())
+        if (participants.isEmpty()) {
+            return success(emptyList())
         }
 
         val participantIds = participants.map { it.userId }
@@ -188,14 +192,14 @@ class CallListService(
     }
 
     fun updateCompetitionAndSessions(
-        callList: CallListInputUpdateModel,
+        callList: CallListInputModel,
         competitionRepository: CompetitionRepository,
         matchDayRepository: MatchDayRepository,
         sessionsRepository: SessionsRepository,
     ): Pair<Int, Map<LocalDate, Int>> {
         val competitionId =
             competitionRepository.updateCompetition(
-                callList.callListId,
+                callList.callListId!!,  // This function is only called when callList.callListId is not null
                 callList.competitionName,
                 callList.address,
                 callList.phoneNumber,
@@ -239,12 +243,12 @@ class CallListService(
         )
 
     fun updateCallListOnly(
-        callList: CallListInputUpdateModel,
+        callList: CallListInputModel,
         callListRepository: CallListRepository,
         competitionId: Int,
     ): Int =
         callListRepository.updateCallList(
-            callList.callListId,
+            callList.callListId!!,
             callList.deadline,
             callList.callListType,
             competitionId,
@@ -597,7 +601,7 @@ fun updateCallListStage(callListId: Int): Either<ApiError, Boolean> =
         else failure(ApiError.NotFound(
             "CallList not found",
             "No call list found with the ID $callListId",
-        )
+            )
         )
     }
 
