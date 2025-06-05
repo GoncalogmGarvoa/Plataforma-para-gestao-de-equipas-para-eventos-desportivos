@@ -16,7 +16,7 @@ class CallListInputModel(
     val deadline: LocalDate,
     val callListType: String,
     val matchDaySessions: List<MatchDaySessionsInput>,
-    val equipments : List<String>,
+    val equipmentIds : List<Int>,
 )
 
 data class ParticipantChoice(

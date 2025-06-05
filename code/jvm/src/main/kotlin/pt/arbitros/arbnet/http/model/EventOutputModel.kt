@@ -16,6 +16,7 @@ class EventOutputModel(
     val deadline: LocalDate,
     val callListType: String,
     val matchDaySessions: List<MatchDay>,
+    val equipments: List<EquipmentOutputModel>,
 )
 
 class ParticipantWithCategory(
@@ -26,4 +27,9 @@ class ParticipantWithCategory(
     val functionId: Int,
     val confirmationStatus: String,
     val category: String
+)
+
+class EquipmentOutputModel(
+    val id: Int,
+    val name: String,
 )

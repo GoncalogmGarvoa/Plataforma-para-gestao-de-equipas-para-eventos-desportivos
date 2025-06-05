@@ -9,6 +9,7 @@ import pt.arbitros.arbnet.domain.users.User
 import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.http.invalidFieldError
 import pt.arbitros.arbnet.http.model.CallListInputModel
+import pt.arbitros.arbnet.http.model.EquipmentOutputModel
 import pt.arbitros.arbnet.http.model.EventOutputModel
 import pt.arbitros.arbnet.http.model.ParticipantChoice
 import pt.arbitros.arbnet.http.model.ParticipantWithCategory
@@ -23,17 +24,23 @@ class CallListService(
     private val callListMongoRepository: CallListMongoRepository,
     private val utilsDomain: UtilsDomain,
     private val callListDomain: CallListDomain,
+    private val callListUtils : CallListServiceUtils
     // private val clock: Clock
 ) {
 
     // todo Event > callList + competition
     fun createEvent(callList: CallListInputModel): Either<ApiError, Int> =
         transactionManager.run {
-            val result = validateAndCheckUsers(callList, it.usersRepository)
+            val result = callListUtils.validateAndCheckUsers(
+                callList,
+                it.usersRepository,
+                callListDomain,
+                utilsDomain,
+            )
             if (result is Failure) return@run result
 
             val (competitionId, matchDayMap) =
-                createCompetitionAndSessions(
+                callListUtils.createCompetitionAndSessions(
                     callList,
                     it.competitionRepository,
                     it.matchDayRepository,
@@ -41,7 +48,7 @@ class CallListService(
                 )
 
             val callListId =
-                createCallListOnly(
+                callListUtils.createCallListOnly(
                     callList,
                     it.callListRepository,
                     competitionId,
@@ -49,7 +56,7 @@ class CallListService(
 
             if (callList.participants.isNotEmpty()) {
                 val participantsResult =
-                    createParticipantsOnly(
+                    callListUtils.createParticipantsOnly(
                         callList.participants,
                         matchDayMap,
                         callListId,
@@ -58,6 +65,11 @@ class CallListService(
                         it.participantRepository,
                     )
                 if (participantsResult is Failure) return@run participantsResult
+            }
+
+            if (callList.equipmentIds.isNotEmpty()) {
+                it.equipmentRepository.verifyEquipmentId(callList.equipmentIds)
+                it.equipmentRepository.selectEquipment(competitionId, callList.equipmentIds)
             }
 
             success(callListId)
@@ -78,18 +90,23 @@ class CallListService(
                     "CallList with id ${callList.callListId} not found"
                 ))
 
-            val result = validateAndCheckUsers(callList, it.usersRepository)
+            val result = callListUtils.validateAndCheckUsers(
+                callList,
+                it.usersRepository,
+                callListDomain,
+                utilsDomain,
+            )
             if (result is Failure) return@run result
 
             val (competitionId, matchDayMap) =
-                updateCompetitionAndSessions(
+                callListUtils.updateCompetitionAndSessions(
                     callList,
                     it.competitionRepository,
                     it.matchDayRepository,
                     it.sessionsRepository,
                 )
 
-            val callListId = updateCallListOnly(
+            val callListId = callListUtils.updateCallListOnly(
                     callList,
                     it.callListRepository,
                     competitionId,
@@ -97,7 +114,7 @@ class CallListService(
 
             if (callList.participants.isNotEmpty()) {
                 val participantsResult =
-                    createParticipantsOnly(
+                    callListUtils.createParticipantsOnly(
                         callList.participants,
                         matchDayMap,
                         callListId,
@@ -108,197 +125,14 @@ class CallListService(
                 if (participantsResult is Failure) return@run participantsResult
             }
 
+            if (callList.equipmentIds.isNotEmpty()) {
+                it.equipmentRepository.verifyEquipmentId(callList.equipmentIds)
+                it.equipmentRepository.selectEquipment(competitionId, callList.equipmentIds)
+            }
+
             success(callListId)
         }
 
-
-    private fun validateAndCheckUsers(
-        callList: CallListInputModel,
-        usersRepository: UsersRepository,
-    ): Either<ApiError, List<User>>? {
-        val validateResult =
-            validateCallList(
-                callList.competitionName,
-                callList.address,
-                callList.phoneNumber,
-                callList.email,
-                callList.association,
-                callList.location,
-                callList.callListType,
-            )
-        if (validateResult is Failure) return validateResult
-
-        usersRepository.getUserById(callList.userId)
-            ?: return failure(ApiError.NotFound(
-                "User not found",
-                "No user found with the provided ID",
-            ))
-
-         if(!usersRepository.userHasCouncilRole(callList.userId))
-             return failure(ApiError.InvalidField(
-                "User does not have the required role",
-                "The user must have a council role to create or update a call list"
-             ))
-
-
-        val participants = callList.participants
-        if (participants.isEmpty()) {
-            return success(emptyList())
-        }
-
-        val participantIds = participants.map { it.userId }
-        val foundReferees = usersRepository.getUsersAndCheckIfReferee(participantIds)
-
-        if (foundReferees.size != participants.size) {
-            return failure(ApiError.InvalidField(
-                "Invalid participants",
-                "Some participants are not referees or do not exist in the system",
-            ))
-        }
-        return success(foundReferees)
-    }
-
-    private fun createCompetitionAndSessions(
-        callList: CallListInputModel,
-        competitionRepository: CompetitionRepository,
-        matchDayRepository: MatchDayRepository,
-        sessionsRepository: SessionsRepository,
-    ): Pair<Int, Map<LocalDate, Int>> {
-        val competitionId =
-            competitionRepository.createCompetition(
-                callList.competitionName,
-                callList.address,
-                callList.phoneNumber,
-                callList.email,
-                callList.association,
-                callList.location,
-            )
-
-        val matchDayMap =
-            callList
-                .matchDaySessions
-                .associate { md ->
-                    md.matchDay to matchDayRepository.createMatchDay(competitionId, md.matchDay)
-                }
-
-        callList.matchDaySessions.forEach { md ->
-            val mdId = matchDayMap[md.matchDay]!!
-            md.sessions.forEach { tm ->
-                sessionsRepository.createSession(competitionId, mdId, tm)
-            }
-        }
-
-        return competitionId to matchDayMap
-    }
-
-    fun updateCompetitionAndSessions(
-        callList: CallListInputModel,
-        competitionRepository: CompetitionRepository,
-        matchDayRepository: MatchDayRepository,
-        sessionsRepository: SessionsRepository,
-    ): Pair<Int, Map<LocalDate, Int>> {
-        val competitionId =
-            competitionRepository.updateCompetition(
-                callList.callListId!!,  // This function is only called when callList.callListId is not null
-                callList.competitionName,
-                callList.address,
-                callList.phoneNumber,
-                callList.email,
-                callList.association,
-                callList.location,
-            )
-
-        val matchDayMap =
-            callList
-                .matchDaySessions
-                .associate { md ->
-                    val matchDayId =
-                        matchDayRepository.getMatchDayId(competitionId, md.matchDay)
-                            ?: throw IllegalArgumentException("Match day not found") // TODO ERROR HANDLING
-                    md.matchDay to matchDayRepository.updateMatchDay(matchDayId, competitionId, md.matchDay)
-                }
-
-        callList.matchDaySessions.forEach { md ->
-            val mdId = matchDayMap[md.matchDay]!!
-            md.sessions.forEach { tm ->
-                val sessions = sessionsRepository.getSessionByMatchId(mdId)
-                sessions.forEach {
-                    sessionsRepository.updateSession(it.id, competitionId, mdId, tm)
-                }
-            }
-        }
-        return competitionId to matchDayMap
-    }
-
-    private fun createCallListOnly(
-        callList: CallListInputModel,
-        callListRepository: CallListRepository,
-        competitionId: Int,
-    ): Int =
-        callListRepository.createCallList(
-            callList.deadline,
-            callList.userId,
-            competitionId,
-            callList.callListType,
-        )
-
-    fun updateCallListOnly(
-        callList: CallListInputModel,
-        callListRepository: CallListRepository,
-        competitionId: Int,
-    ): Int =
-        callListRepository.updateCallList(
-            callList.callListId!!,
-            callList.deadline,
-            callList.callListType,
-            competitionId,
-        )
-
-    private fun createParticipantsOnly(
-        participants: List<ParticipantChoice>?,
-        matchDayMap: Map<LocalDate, Int>,
-        callListId: Int,
-        competitionId: Int,
-        functionRepository: FunctionRepository,
-        participantRepository: ParticipantRepository,
-    ): Either<ApiError, Unit> {
-        val participantsToInsert = mutableListOf<Participant>()
-
-        if (participants != null) {
-            for (p in participants) {
-                for ((day, funcName) in p.participantAndRole) {
-                    if (funcName.isBlank()) continue
-
-                    val funcId =
-                        functionRepository.getFunctionIdByName(funcName)
-                            ?: return failure(ApiError.NotFound(
-                                "Function not found",
-                                "No function found with the name '$funcName'",
-                            ))
-
-                    val mdId =
-                        matchDayMap[day]
-                            ?: return failure(ApiError.NotFound(
-                                "Match day not found",
-                                "No match day found for the date '$day'",
-                            ))
-
-                    participantsToInsert +=
-                        Participant(
-                            callListId = callListId,
-                            matchDayId = mdId,
-                            competitionIdMatchDay = competitionId,
-                            userId = p.userId,
-                            functionId = funcId,
-                            confirmationStatus = ConfirmationStatus.WAITING.value,
-                        )
-                }
-            }
-            participantRepository.batchAddParticipants(participantsToInsert)
-        }
-
-        return success(Unit)
-    }
 
     fun updateParticipantConfirmationStatus(
         days: List<Int>,
@@ -330,45 +164,6 @@ class CallListService(
             return@run success(true)
         }
 
-    fun getParticipantsByCallList(
-        tx: Transaction,
-        callList: CallList,
-    ): Either<ApiError, List<Participant>> {
-        val participantRepository = tx.participantRepository
-
-        val participants = participantRepository.getParticipantsByCallList(callList.id)
-        return success(participants)
-    }
-
-    fun getCompetitionById(
-        tx: Transaction,
-        competitionId: Int,
-    ): Either<ApiError, Competition> {
-        val competitionRepository = tx.competitionRepository
-
-        val competition =
-            competitionRepository.getCompetitionById(competitionId)
-                ?: return failure(ApiError.NotFound(
-                    "Competition not found",
-                    "No competition found with the ID $competitionId"
-                ))
-
-        return success(competition)
-    }
-
-    //TODO this does not need to return an Either, it can return a List<MatchDay>, the list can be empty
-    fun getMatchDaysByCompetitionId(
-        tx: Transaction,
-        competitionId: Int,
-    ): Either<ApiError, List<MatchDay>> {
-        val matchDayRepository = tx.matchDayRepository
-
-        val matchDays =
-            matchDayRepository.getMatchDaysByCompetition(competitionId)
-
-        return success(matchDays)
-    }
-
     fun getEventById(id: Int): Either<ApiError, EventOutputModel> =
         transactionManager.run { tx ->
             val callListRepository = tx.callListRepository
@@ -380,9 +175,9 @@ class CallListService(
                         "No call list found with the ID $id",
                     ))
 
-            val competitionResult = getCompetitionById(tx, callList.competitionId)
-            val participantsResult = getParticipantsByCallList(tx, callList)
-            val matchDaysResult = getMatchDaysByCompetitionId(tx, callList.competitionId)
+            val competitionResult = callListUtils.getCompetitionById(tx, callList.competitionId)
+            val participantsResult = callListUtils.getParticipantsByCallList(tx, callList)
+            val matchDaysResult = callListUtils.getMatchDaysByCompetitionId(tx, callList.competitionId)
 
             when {
                 competitionResult is Failure -> return@run failure(competitionResult.value)
@@ -417,6 +212,9 @@ class CallListService(
                 )
             }
 
+            val equipments = tx.equipmentRepository.getEquipmentByCompetitionId(callList.competitionId)
+                .map { equipment -> EquipmentOutputModel(id = equipment.id, name = equipment.name,)}
+
             val event =
                 EventOutputModel(
                     competitionName = competition.name,
@@ -430,30 +228,11 @@ class CallListService(
                     deadline = callList.deadline,
                     callListType = callList.callType,
                     matchDaySessions = matchDays,
+                    equipments = equipments,
                 )
 
             return@run success(event)
         }
-
-    private fun validateCallList(
-        competitionName: String,
-        address: String,
-        phoneNumber: String,
-        email: String,
-        association: String,
-        location: String,
-        callType: String,
-    ): Either<ApiError, Unit> {
-        if (!callListDomain.validCallListType(callType)) return failure(invalidFieldError("callType"))
-        if (!utilsDomain.validName(competitionName)) return failure(invalidFieldError("competitionName"))
-        if (!utilsDomain.validAddress(address)) return failure(invalidFieldError("address"))
-        if (!utilsDomain.validPhoneNumber(phoneNumber)) return failure(invalidFieldError("phoneNumber"))
-        if (!utilsDomain.validEmail(email)) return failure(invalidFieldError("email"))
-        if (!utilsDomain.validName(association)) return failure(invalidFieldError("association"))
-        if (!utilsDomain.validName(location)) return failure(invalidFieldError("location"))
-
-        return success(Unit)
-    }
 
 fun updateCallListStage(callListId: Int): Either<ApiError, Boolean> =
     transactionManager.run { tx ->

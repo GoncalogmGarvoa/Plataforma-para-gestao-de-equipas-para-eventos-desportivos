@@ -46,4 +46,17 @@ class EquipmentRepositoryJdbi(
         return count == equipmentsId.size
     }
 
+    override fun getEquipmentByCompetitionId(competitionId: Int): List<Equipment> {
+        val sql = """
+        select * from dbp.equipment e
+        join dbp.competition_equipment ce on e.id = ce.equipment_id
+        where ce.competition_id = :competitionId
+        """
+
+        return handle.createQuery(sql)
+            .bind("competitionId", competitionId)
+            .mapTo(Equipment::class.java)
+            .list()
+    }
+
 }
