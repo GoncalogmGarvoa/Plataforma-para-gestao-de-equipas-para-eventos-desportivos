@@ -22,4 +22,8 @@ class EquipmentRepositoryMem: EquipmentRepository {
     override fun getEquipmentByCompetitionId(competitionId: Int): List<Equipment> {
         TODO("Not yet implemented")
     }
+
+    override fun deleteEquipmentByCompetitionId(competitionId: Int): Boolean {
+        TODO("Not yet implemented")
+    }
 }

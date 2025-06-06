@@ -24,7 +24,8 @@ class CallListService(
     private val callListMongoRepository: CallListMongoRepository,
     private val utilsDomain: UtilsDomain,
     private val callListDomain: CallListDomain,
-    private val callListUtils : CallListServiceUtils
+    private val callListUtils: CallListServiceUtils,
+    private val callListServiceUtils: CallListServiceUtils
     // private val clock: Clock
 ) {
 
@@ -127,8 +128,14 @@ class CallListService(
                 if (participantsResult is Failure) return@run participantsResult
             }
 
+            //TODO send this to callListServiceUtils and add more validation
             if (callList.equipmentIds.isNotEmpty()) {
-                it.equipmentRepository.verifyEquipmentId(callList.equipmentIds)
+                if (!it.equipmentRepository.verifyEquipmentId(callList.equipmentIds))
+                    return@run failure(ApiError.InvalidField(
+                        "Invalid equipment IDs",
+                        "One or more equipment IDs provided do not exist in the database",
+                    ))
+                it.equipmentRepository.deleteEquipmentByCompetitionId(competitionId)
                 it.equipmentRepository.selectEquipment(competitionId, callList.equipmentIds)
             }
 

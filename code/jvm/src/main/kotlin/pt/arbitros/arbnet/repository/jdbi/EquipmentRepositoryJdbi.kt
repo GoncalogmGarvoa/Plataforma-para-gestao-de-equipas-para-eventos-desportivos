@@ -59,4 +59,15 @@ class EquipmentRepositoryJdbi(
             .list()
     }
 
+    override fun deleteEquipmentByCompetitionId(competitionId: Int): Boolean {
+        val sql = """
+        delete from dbp.competition_equipment
+        where competition_id = :competitionId
+        """
+
+        return handle.createUpdate(sql)
+            .bind("competitionId", competitionId)
+            .execute() > 0
+    }
+
 }
