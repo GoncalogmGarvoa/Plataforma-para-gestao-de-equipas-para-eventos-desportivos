@@ -6,36 +6,36 @@ import {useSetEmail} from "../../src/context/Player"
 import "core-js/features/promise";
 
 
-export async function authenticate(email: string, password: string): Promise<string | undefined> {
-    const handleLogin = async () => {
-        try {
-            const response = await fetch("/arbnet/users/token", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email: email, password: password }),
-            })
-            const data = await response.json()
-            if (response.ok) {
-                const expirationDate = new Date();
-                expirationDate.setHours(expirationDate.getHours() + 1);
-                console.log("LOGIN TOKEN: ",data.token)
-                document.cookie = `token=${data.token}; expires=${expirationDate.toUTCString()}; path=/;`
-                document.cookie = `email=${email}; expires=${expirationDate.toUTCString()}; path=/;`
-                console.log("user token: ", data.token)
-                return data.token
-            } else {
-                return undefined
-            }
+
+export async function authenticate(email: string, password: string): Promise<string | { error: string }> {
+    try {
+        const response = await fetch("/arbnet/users/token", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email, password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            const expirationDate = new Date();
+            expirationDate.setHours(expirationDate.getHours() + 1);
+            document.cookie = `token=${data.token}; expires=${expirationDate.toUTCString()}; path=/;`;
+            document.cookie = `email=${email}; expires=${expirationDate.toUTCString()}; path=/;`;
+            return data.token;
+        } else {
+            return { error: data.title || "Erro ao autenticar." };
         }
-        catch (error) {
-            console.error("Error logging in:", error)
-            throw error
-        }
+    } catch (error: any) {
+        console.error("Network/login error:", error);
+        return { error: "Network/login error." };
     }
-    return await handleLogin()
 }
+
+
+
 
 export function Login() {
     console.log("Login")
@@ -74,27 +74,29 @@ export function Login() {
         setError(undefined)
     }
     function handleSubmit(ev: React.FormEvent<HTMLFormElement>) {
-        ev.preventDefault()
-        setIsSubmitting(true)
-        const email = inputs.email
-        const password = inputs.password
+        ev.preventDefault();
+        setIsSubmitting(true);
+        const { email, password } = inputs;
+
         authenticate(email, password)
-            .then(res => {
-                setIsSubmitting(false)
-                if (res) {
-                    console.log(`setUser(${res})`)
-                    setUser(res)
-                    setEmail(email)
-                    setRedirect(true)
-                    setLocationPath("/me")
+            .then((res) => {
+                setIsSubmitting(false);
+
+                if (typeof res === "string") {
+                    // login com sucesso
+                    setUser(res);
+                    setEmail(email);
+                    setRedirect(true);
+                    setLocationPath("/me");
                 } else {
-                    setError("Invalid email or password")
+                    // erro retornado com mensagem
+                    setError(res.error || "Login failed. Please try again.");
                 }
             })
-            .catch(error => {
-                setIsSubmitting(false)
-                setError(error.message)
-            })
+            .catch((error) => {
+                setIsSubmitting(false);
+                setError("Unexpected error. Please try again.");
+            });
     }
     return (
         <div>
@@ -110,12 +112,23 @@ export function Login() {
                     <input type="password" name="password" value={inputs.password} onChange={handleChange}/>
                 </label>
                 <br/>
-                <button type="submit">Login</button>
+                <button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Logging in..." : "Login"}
+                </button>
             </form>
-            <p style={{textAlign: 'center'}}>
+
+            {error && (
+                <p style={{ color: "red", textAlign: "center", marginTop: "1rem" }}>
+                    {error}
+                </p>
+            )}
+
+            <p style={{ textAlign: 'center' }}>
                 Don’t have an account? <Link to="/users">Create an account</Link>
             </p>
         </div>
+    )
+
 
         // <form onSubmit={handleSubmit}>
         //     <h2>Login</h2>
@@ -162,6 +175,6 @@ export function Login() {
         //
         //     <p>Don't have an account? <Link to="/users">Create an account</Link></p>
         // </form>
-    )
+
 
 }

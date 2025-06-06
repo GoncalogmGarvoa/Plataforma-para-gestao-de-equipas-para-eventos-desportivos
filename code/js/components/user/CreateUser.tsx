@@ -41,28 +41,29 @@
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify(inputs),
-                    })
+                    });
 
-                    const data = await response.json()
-                    setIsSubmitting(false)
+                    const data = await response.json();
+                    setIsSubmitting(false);
 
                     if (response.ok) {
-                        setRedirect(true)
+                        setRedirect(true);
                     } else {
-                        setError(data.error || "Error creating user.")
+                        setError(data.title || "Error creating User.");
                     }
                 } catch (error: any) {
-                    setIsSubmitting(false)
-                    setError(error.message)
-                    console.error("Error creating user:", error)
+                    setIsSubmitting(false);
+                    setError(error.message);
+                    console.error("Error creating User:", error);
                 }
-            }
+            };
+
 
             handleCreateUser()
         }
 
         return (
-            <form onSubmit={handleSubmit}>
+            <form     className="form-container" onSubmit={handleSubmit}>
                 <h2>Create User</h2>
                 <fieldset disabled={isSubmitting}>
                     <div><label>Name<input type="text" name="name" value={inputs.name} onChange={handleChange} /></label></div>

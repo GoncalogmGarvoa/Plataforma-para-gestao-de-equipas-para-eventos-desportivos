@@ -17,19 +17,24 @@ export function Me() {
         roles: string[]
     }>(null)
 
+    const [error, setError] = useState<string | undefined>(undefined)
+
     useEffect(() => {
         const fetchUser = async () => {
             try {
                 const response = await fetch(`/arbnet/users/email?email=${encodeURIComponent(email!)}`)
 
+                const data = await response.json()
+
                 if (!response.ok) {
-                    throw new Error("User not Found.")
+                    setError(data.title || "Error getting user.")
+                    return
                 }
 
-                const data = await response.json()
                 setUser(data)
-            } catch (error) {
-                console.error("User Not Found:", error)
+            } catch (error: any) {
+                console.error("Error getting user:", error)
+                setError(error.message)
             }
         }
 
@@ -38,6 +43,7 @@ export function Me() {
         }
     }, [email])
 
+    if (error) return <p style={{ color: "red" }}>Erro: {error}</p>
     if (!user) return <p>Loading User Info...</p>
 
     return (
@@ -55,3 +61,4 @@ export function Me() {
         </div>
     )
 }
+

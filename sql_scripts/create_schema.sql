@@ -39,9 +39,6 @@ CREATE TABLE dbp.user_token_role (
                                      FOREIGN KEY (role_id) REFERENCES dbp.role(id)
 );
 
-
-
-
 create table dbp.users_roles (
                                 user_id int,
                                 role_id int,
@@ -49,7 +46,6 @@ create table dbp.users_roles (
                                 foreign key (user_id) references dbp.users(id),
                                 foreign key (role_id) references dbp.role(id)
 );
-
 
 create table dbp.category (
                               id serial primary key,
