@@ -115,38 +115,38 @@ class CallListServiceUtils {
         competitionRepository: CompetitionRepository,
         matchDayRepository: MatchDayRepository,
         sessionsRepository: SessionsRepository,
-    ): Pair<Int, Map<LocalDate, Int>> {
-        val competitionId =
-            competitionRepository.updateCompetition(
-                callList.callListId!!,  // This function is only called when callList.callListId is not null
-                callList.competitionName,
-                callList.address,
-                callList.phoneNumber,
-                callList.email,
-                callList.association,
-                callList.location,
-            )
+    ): Either< ApiError,Pair<Int, Map<LocalDate, Int>>> {// TODO review this the pair should be a data class
 
-        val matchDayMap =
-            callList
-                .matchDaySessions
-                .associate { md ->
-                    val matchDayId =
-                        matchDayRepository.getMatchDayId(competitionId, md.matchDay)
-                            ?: throw IllegalArgumentException("Match day not found") // TODO ERROR HANDLING
-                    md.matchDay to matchDayRepository.updateMatchDay(matchDayId, competitionId, md.matchDay)
-                }
+        val competitionId = competitionRepository.getCompetitionIdByCallListId(callList.callListId!!)
 
+        competitionRepository.updateCompetition(
+            competitionId,  // This function is only called when callList.callListId is not null
+            callList.competitionName,
+            callList.address,
+            callList.phoneNumber,
+            callList.email,
+            callList.association,
+            callList.location,
+        )
+
+        // 1. Delete existing match days + sessions
+
+        sessionsRepository.deleteCompetitionSessions(competitionId)
+        matchDayRepository.deleteCompetitionMatchDays(competitionId)
+
+        // 2. Insert new match days and sessions
+        val matchDayMap = mutableMapOf<LocalDate, Int>()
         callList.matchDaySessions.forEach { md ->
-            val mdId = matchDayMap[md.matchDay]!!
+            val matchDayId = matchDayRepository.createMatchDay(competitionId, md.matchDay)
+            matchDayMap[md.matchDay] = matchDayId
+
             md.sessions.forEach { tm ->
-                val sessions = sessionsRepository.getSessionByMatchId(mdId)
-                sessions.forEach {
-                    sessionsRepository.updateSession(it.id, competitionId, mdId, tm)
-                }
+                sessionsRepository.createSession(competitionId, matchDayId, tm)
             }
         }
-        return competitionId to matchDayMap
+
+
+        return success(competitionId to matchDayMap)
     }
 
     fun createCallListOnly(
@@ -279,5 +279,11 @@ class CallListServiceUtils {
 
         return success(competition)
     }
+
+    // Data class to hold the result of competition update only used in this class
+    data class CompetitionUpdateResult(
+        val competitionId: Int,
+        val matchDayMap: Map<LocalDate, Int>
+    )
 
 }

@@ -98,18 +98,20 @@ class CallListService(
             )
             if (result is Failure) return@run result
 
-            val (competitionId, matchDayMap) =
+            val result2 =
                 callListUtils.updateCompetitionAndSessions(
                     callList,
                     it.competitionRepository,
                     it.matchDayRepository,
                     it.sessionsRepository,
                 )
+            if (result2 is Failure) return@run result2
+            val (competitionId, matchDayMap) = (result2 as Success).value
 
             val callListId = callListUtils.updateCallListOnly(
                     callList,
                     it.callListRepository,
-                    competitionId,
+                    competitionId
                 )
 
             if (callList.participants.isNotEmpty()) {

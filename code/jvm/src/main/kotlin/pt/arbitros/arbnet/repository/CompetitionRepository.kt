@@ -20,7 +20,7 @@ interface CompetitionRepository {
         email: String,
         association: String,
         location: String,
-    ): Int
+    ): Boolean
 
     fun getCompetitionById(id: Int): Competition?
 
@@ -39,4 +39,5 @@ interface CompetitionRepository {
 //    ): Boolean
 //
 //    fun deleteCompetition(id: Int): Boolean
+    fun getCompetitionIdByCallListId(callListId: Int): Int
 }

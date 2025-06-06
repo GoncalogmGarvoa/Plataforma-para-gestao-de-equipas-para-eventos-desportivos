@@ -37,4 +37,5 @@ interface MatchDayRepository {
 //    ): Boolean
 //
 //    fun updateMatchDay(matchDay: MatchDay): Boolean
+    fun deleteCompetitionMatchDays(competitionId: Int): Boolean
 }

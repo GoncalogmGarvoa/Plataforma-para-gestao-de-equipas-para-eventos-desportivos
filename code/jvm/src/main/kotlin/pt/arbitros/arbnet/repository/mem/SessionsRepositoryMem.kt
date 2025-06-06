@@ -45,4 +45,8 @@ class SessionsRepositoryMem : SessionsRepository {
     override fun finishSession(id: Int): Boolean {
         TODO("Not yet implemented")
     }
+
+    override fun deleteCompetitionSessions(competitionId: Int): Boolean {
+        TODO("Not yet implemented")
+    }
 }

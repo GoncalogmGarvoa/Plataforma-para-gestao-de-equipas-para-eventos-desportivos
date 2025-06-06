@@ -22,4 +22,5 @@ interface SessionsRepository {
     fun getSessionById(id: Int): Session?
 
     fun finishSession(id: Int): Boolean
+    fun deleteCompetitionSessions(competitionId: Int): Boolean
 }
