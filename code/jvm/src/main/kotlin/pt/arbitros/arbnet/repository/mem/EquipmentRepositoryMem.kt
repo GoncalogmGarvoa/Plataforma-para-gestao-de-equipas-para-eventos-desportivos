@@ -18,4 +18,8 @@ class EquipmentRepositoryMem: EquipmentRepository {
     override fun verifyEquipmentId(equipmentsId: List<Int>): Boolean {
         TODO("Not yet implemented")
     }
+
+    override fun getEquipmentByCompetitionId(competitionId: Int): List<Equipment> {
+        TODO("Not yet implemented")
+    }
 }
