@@ -5,18 +5,14 @@ package pt.arbitros.arbnet.services
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.*
-import pt.arbitros.arbnet.domain.users.User
 import pt.arbitros.arbnet.http.ApiError
-import pt.arbitros.arbnet.http.invalidFieldError
 import pt.arbitros.arbnet.http.model.CallListInputModel
 import pt.arbitros.arbnet.http.model.EquipmentOutputModel
 import pt.arbitros.arbnet.http.model.EventOutputModel
-import pt.arbitros.arbnet.http.model.ParticipantChoice
 import pt.arbitros.arbnet.http.model.ParticipantWithCategory
 import pt.arbitros.arbnet.repository.*
 import pt.arbitros.arbnet.repository.mongo.CallListMongoRepository
 import pt.arbitros.arbnet.transactionRepo
-import java.time.LocalDate
 
 @Component
 class CallListService(
@@ -32,7 +28,7 @@ class CallListService(
     // todo Event > callList + competition
     fun createEvent(callList: CallListInputModel): Either<ApiError, Int> =
         transactionManager.run {
-            val result = callListUtils.validateAndCheckUsers(
+            val result = callListUtils.validateUserInfo(
                 callList,
                 it.usersRepository,
                 callListDomain,
@@ -91,7 +87,7 @@ class CallListService(
                     "CallList with id ${callList.callListId} not found"
                 ))
 
-            val result = callListUtils.validateAndCheckUsers(
+            val result = callListUtils.validateUserInfo(
                 callList,
                 it.usersRepository,
                 callListDomain,
@@ -99,47 +95,20 @@ class CallListService(
             )
             if (result is Failure) return@run result
 
-            val result2 =
-                callListUtils.updateCompetitionAndSessions(
-                    callList,
-                    it.competitionRepository,
-                    it.matchDayRepository,
-                    it.sessionsRepository,
-                )
-            if (result2 is Failure) return@run result2
-            val (competitionId, matchDayMap) = (result2 as Success).value
+            val updateEventResult = callListUtils.updateEventFull(
+                callList,
+                it.callListRepository,
+                it.competitionRepository,
+                it.matchDayRepository,
+                it.sessionsRepository,
+                it.functionRepository,
+                it.participantRepository,
+                it.equipmentRepository,
+            )
 
-            val callListId = callListUtils.updateCallListOnly(
-                    callList,
-                    it.callListRepository,
-                    competitionId
-                )
+            if (updateEventResult is Failure) return@run updateEventResult
 
-            if (callList.participants.isNotEmpty()) {
-                val participantsResult =
-                    callListUtils.createParticipantsOnly(
-                        callList.participants,
-                        matchDayMap,
-                        callListId,
-                        competitionId,
-                        it.functionRepository,
-                        it.participantRepository,
-                    )
-                if (participantsResult is Failure) return@run participantsResult
-            }
-
-            //TODO send this to callListServiceUtils and add more validation
-            if (callList.equipmentIds.isNotEmpty()) {
-                if (!it.equipmentRepository.verifyEquipmentId(callList.equipmentIds))
-                    return@run failure(ApiError.InvalidField(
-                        "Invalid equipment IDs",
-                        "One or more equipment IDs provided do not exist in the database",
-                    ))
-                it.equipmentRepository.deleteEquipmentByCompetitionId(competitionId)
-                it.equipmentRepository.selectEquipment(competitionId, callList.equipmentIds)
-            }
-
-            success(callListId)
+            success((updateEventResult as Success<Int>).value)
         }
 
 

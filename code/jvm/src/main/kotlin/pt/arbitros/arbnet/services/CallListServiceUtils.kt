@@ -15,6 +15,7 @@ import pt.arbitros.arbnet.http.model.CallListInputModel
 import pt.arbitros.arbnet.http.model.ParticipantChoice
 import pt.arbitros.arbnet.repository.CallListRepository
 import pt.arbitros.arbnet.repository.CompetitionRepository
+import pt.arbitros.arbnet.repository.EquipmentRepository
 import pt.arbitros.arbnet.repository.FunctionRepository
 import pt.arbitros.arbnet.repository.MatchDayRepository
 import pt.arbitros.arbnet.repository.ParticipantRepository
@@ -22,12 +23,13 @@ import pt.arbitros.arbnet.repository.SessionsRepository
 import pt.arbitros.arbnet.repository.Transaction
 import pt.arbitros.arbnet.repository.UsersRepository
 import pt.arbitros.arbnet.services.Failure
+import pt.arbitros.arbnet.services.Success
 import java.time.LocalDate
 
 @Component
 class CallListServiceUtils {
 
-    fun validateAndCheckUsers(
+    fun validateUserInfo(
         callList: CallListInputModel,
         usersRepository: UsersRepository,
         callListDomain: CallListDomain,
@@ -279,6 +281,51 @@ class CallListServiceUtils {
 
         return success(competition)
     }
+
+    fun updateEventFull(
+        callList: CallListInputModel,
+        callListRepository: CallListRepository,
+        competitionRepository: CompetitionRepository,
+        matchDayRepository: MatchDayRepository,
+        sessionsRepository: SessionsRepository,
+        functionRepository: FunctionRepository,
+        participantRepository: ParticipantRepository,
+        equipmentRepository: EquipmentRepository,
+    ): Either<ApiError, Int> {
+
+        // 3. Update match days and sessions
+        val result2 =
+            updateCompetitionAndSessions(
+                callList,
+                competitionRepository,
+                matchDayRepository,
+                sessionsRepository,
+            )
+        if (result2 is Failure) return result2
+        val (competitionId, matchDayMap) = (result2 as Success).value
+
+        val callListId = updateCallListOnly(
+            callList,
+            callListRepository,
+            competitionId
+        )
+
+        if (callList.participants.isNotEmpty()) {
+            val participantsResult =
+                createParticipantsOnly(
+                    callList.participants,
+                    matchDayMap,
+                    callListId,
+                    competitionId,
+                    functionRepository,
+                    participantRepository,
+                )
+            if (participantsResult is Failure) return participantsResult
+        }
+
+        return success(callListId)
+    }
+
 
     // Data class to hold the result of competition update only used in this class
     data class CompetitionUpdateResult(
