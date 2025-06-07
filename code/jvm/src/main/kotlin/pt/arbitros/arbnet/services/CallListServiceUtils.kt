@@ -323,6 +323,17 @@ class CallListServiceUtils {
             if (participantsResult is Failure) return participantsResult
         }
 
+        // 4. Update equipments
+
+
+        if (!equipmentRepository.verifyEquipmentId(callList.equipmentIds))
+            return failure(ApiError.InvalidField(
+                "Invalid equipment IDs",
+                "One or more equipment IDs provided do not exist in the database",
+            ))
+        equipmentRepository.deleteEquipmentByCompetitionId(competitionId)
+        equipmentRepository.selectEquipment(competitionId, callList.equipmentIds)
+
         return success(callListId)
     }
 
