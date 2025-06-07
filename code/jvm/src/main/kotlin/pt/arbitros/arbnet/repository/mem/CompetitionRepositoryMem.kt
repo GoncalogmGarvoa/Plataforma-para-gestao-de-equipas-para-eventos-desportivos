@@ -39,11 +39,15 @@ class CompetitionRepositoryMem : CompetitionRepository {
         email: String,
         association: String,
         location: String
-    ): Int {
+    ): Boolean {
         TODO("Not yet implemented")
     }
 
     override fun getCompetitionById(id: Int): Competition? {
+        TODO("Not yet implemented")
+    }
+
+    override fun getCompetitionIdByCallListId(callListId: Int): Int {
         TODO("Not yet implemented")
     }
 }

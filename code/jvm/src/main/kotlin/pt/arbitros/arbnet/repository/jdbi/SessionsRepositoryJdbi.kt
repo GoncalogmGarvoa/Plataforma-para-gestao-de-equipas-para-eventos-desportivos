@@ -11,14 +11,14 @@ class SessionsRepositoryJdbi(
 ) : SessionsRepository {
     override fun createSession(
         competitionId: Int,
-        matchDate: Int,
+        matchDateId: Int,
         startTime: LocalTime,
     ): Boolean =
         handle
             .createUpdate(
                 """insert into dbp.session (start_time, match_day_id, competition_id_match_day) values (:start_time, :match_date, :competition_id)""",
             ).bind("competition_id", competitionId)
-            .bind("match_date", matchDate)
+            .bind("match_date", matchDateId)
             .bind("start_time", startTime)
             .execute() > 0
 
@@ -68,5 +68,15 @@ class SessionsRepositoryJdbi(
                     WHERE id = :id
                     """.trimIndent(),
             ).bind("id", id)
+            .execute() > 0
+
+    override fun deleteCompetitionSessions(competitionId: Int): Boolean =
+        handle
+            .createUpdate(
+                """
+                    DELETE FROM dbp.session 
+                    WHERE competition_id_match_day = :competitionId
+                    """.trimIndent(),
+            ).bind("competitionId", competitionId)
             .execute() > 0
 }

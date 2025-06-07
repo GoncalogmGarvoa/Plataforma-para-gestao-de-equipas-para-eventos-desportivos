@@ -66,6 +66,7 @@ fun main(args: Array<String>) {
     runApplication<ArbNetApplication>(*args)
 }
 
+// TODO : Should be environment variable?
 @Suppress("ktlint:standard:property-naming")
 const val transactionRepo = "transactionManagerJdbi"
 // transactionManagerMem

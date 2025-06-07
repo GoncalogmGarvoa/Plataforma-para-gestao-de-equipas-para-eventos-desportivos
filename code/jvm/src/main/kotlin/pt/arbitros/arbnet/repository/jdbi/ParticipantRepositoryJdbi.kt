@@ -120,4 +120,15 @@ class ParticipantRepositoryJdbi(
 
         return batch.execute().all { it > 0 }
     }
+
+    override fun deleteParticipantsByCallListId(callListId: Int): Boolean {
+        val sql = """
+        delete from dbp.participant
+        where call_list_id = :callListId
+        """
+
+        return handle.createUpdate(sql)
+            .bind("callListId", callListId)
+            .execute() > 0
+    }
 }
