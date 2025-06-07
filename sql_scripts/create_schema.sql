@@ -99,6 +99,7 @@ create table dbp.match_day (
                                competition_id int,
                                primary key (id, competition_id),
                                foreign key (competition_id) references dbp.competition(competition_number)
+                               on delete cascade
 );
 
 create table dbp.participant (

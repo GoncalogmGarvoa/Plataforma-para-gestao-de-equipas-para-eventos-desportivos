@@ -31,10 +31,6 @@ interface ParticipantRepository {
 
     fun batchAddParticipants(participants: List<Participant>): Boolean
 
-//    fun removeParticipant(
-//        callListId: Int,
-//        matchDayId: Int,
-//        refereeId: Int,
-//        roleId: Int,
-//    ): Boolean
+    fun deleteParticipantsByCallListId(callListId: Int): Boolean
+
 }
