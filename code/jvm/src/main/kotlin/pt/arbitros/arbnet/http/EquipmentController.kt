@@ -17,7 +17,7 @@ import pt.arbitros.arbnet.services.Success
 class EquipmentController(
     private val equipmentService: EquipmentService,
 ) {
-    //TODO verify this error
+
 
     @GetMapping(Uris.EquipmentUris.GET_EQUIPMENT)
     fun getEquipment(): ResponseEntity<*> =

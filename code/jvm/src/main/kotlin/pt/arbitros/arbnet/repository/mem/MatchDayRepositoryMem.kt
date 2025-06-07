@@ -50,4 +50,8 @@ class MatchDayRepositoryMem : MatchDayRepository {
     override fun getMatchDaysByCompetition(competitionId: Int): List<MatchDay> {
         TODO("Not yet implemented")
     }
+
+    override fun deleteCompetitionMatchDays(competitionId: Int): Boolean {
+        TODO("Not yet implemented")
+    }
 }
