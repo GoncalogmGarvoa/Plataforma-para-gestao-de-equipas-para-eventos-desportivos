@@ -63,7 +63,6 @@ export function Login() {
         }
     }, [setUser, setEmail])
 
-
     if(redirect) {
         return <Navigate to={locationPath} replace={true}/>
     }
@@ -73,6 +72,7 @@ export function Login() {
         setInputs({ ...inputs, [name]: ev.currentTarget.value })
         setError(undefined)
     }
+
     function handleSubmit(ev: React.FormEvent<HTMLFormElement>) {
         ev.preventDefault();
         setIsSubmitting(true);
@@ -83,13 +83,11 @@ export function Login() {
                 setIsSubmitting(false);
 
                 if (typeof res === "string") {
-                    // login com sucesso
                     setUser(res);
                     setEmail(email);
                     setRedirect(true);
                     setLocationPath("/me");
                 } else {
-                    // erro retornado com mensagem
                     setError(res.error || "Login failed. Please try again.");
                 }
             })
@@ -98,83 +96,62 @@ export function Login() {
                 setError("Unexpected error. Please try again.");
             });
     }
+
     return (
-        <div>
-            <h1>Login</h1>
-            <form onSubmit={handleSubmit}>
-                <label>
-                    Email:
-                    <input type="text" name="email" value={inputs.email} onChange={handleChange}/>
-                </label>
-                <br/>
-                <label>
-                    Password:
-                    <input type="password" name="password" value={inputs.password} onChange={handleChange}/>
-                </label>
-                <br/>
-                <button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? "Logging in..." : "Login"}
-                </button>
-            </form>
+        <div className="center-container">
+            <div className="form-container">
+                <h1 className="form-title">Welcome Back</h1>
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label className="form-label" htmlFor="email">
+                            Email
+                        </label>
+                        <input
+                            id="email"
+                            className="form-input"
+                            type="email"
+                            name="email"
+                            value={inputs.email}
+                            onChange={handleChange}
+                            placeholder="Enter your email"
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label" htmlFor="password">
+                            Password
+                        </label>
+                        <input
+                            id="password"
+                            className="form-input"
+                            type="password"
+                            name="password"
+                            value={inputs.password}
+                            onChange={handleChange}
+                            placeholder="Enter your password"
+                            required
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        className="btn btn-primary"
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? "Signing in..." : "Sign In"}
+                    </button>
+                </form>
 
-            {error && (
-                <p style={{ color: "red", textAlign: "center", marginTop: "1rem" }}>
-                    {error}
+                {error && (
+                    <p className="error-message">
+                        {error}
+                    </p>
+                )}
+
+                <p className="link-text">
+                    Don't have an account?{" "}
+                    <Link to="/users">Create an account</Link>
                 </p>
-            )}
-
-            <p style={{ textAlign: 'center' }}>
-                Don’t have an account? <Link to="/users">Create an account</Link>
-            </p>
+            </div>
         </div>
     )
-
-
-        // <form onSubmit={handleSubmit}>
-        //     <h2>Login</h2>
-        //     <fieldset disabled={isSubmitting}>
-        //         <div>
-        //             <label htmlFor="email">Email</label>
-        //             <input id="email" type="text" name="email" value={inputs.email} onChange={handleChange}/>
-        //         </div>
-        //         <div>
-        //             <label htmlFor="password">Password</label>
-        //             <input id="password" type="password" name="password" value={inputs.password}
-        //                    onChange={handleChange}/>
-        //         </div>
-        //         <div>
-        //             <button type="submit">Login</button>
-        //         </div>
-        //     </fieldset>
-        //
-        //     {error && <p style={{color: 'red'}}>{error}</p>}
-        //
-        //     <hr style={{margin: '1rem 0'}}/>
-        //
-        //     <p style={{textAlign: 'center'}}>
-        //         Don’t have an account? <Link to="/users">Create an account</Link>
-        //     </p>
-        // </form>
-
-        // <form onSubmit={handleSubmit}>
-        //     <h2>Login</h2>
-        //     <fieldset disabled={isSubmitting}>
-        //         <div>
-        //             <label htmlFor="email">Email</label>
-        //             <input id="email" type="text" name="email" value={inputs.email} onChange={handleChange} />
-        //         </div>
-        //         <div>
-        //             <label htmlFor="password">Password</label>
-        //             <input id="password" type="password" name="password" value={inputs.password} onChange={handleChange} />
-        //         </div>
-        //         <div>
-        //             <button type="submit">Login</button>
-        //         </div>
-        //     </fieldset>
-        //     {error && <p style={{ color: 'red' }}>{error}</p>}
-        //
-        //     <p>Don't have an account? <Link to="/users">Create an account</Link></p>
-        // </form>
-
-
 }

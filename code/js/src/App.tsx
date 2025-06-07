@@ -121,7 +121,7 @@ export function Header() {
                     <li><Link to="/">Home</Link></li>
                     {currentUser ? (
                         <>
-                            <strong>{currentEmail} </strong>&nbsp;
+                            <li><Link to="/me">Me</Link></li>
                             <li><Logout/></li>
                         </>
                     ) : (
