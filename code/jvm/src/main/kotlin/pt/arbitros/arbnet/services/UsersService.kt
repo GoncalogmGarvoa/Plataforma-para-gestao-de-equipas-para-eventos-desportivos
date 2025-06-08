@@ -325,6 +325,23 @@ class UsersService(
             return@run success(roles)
         }
 
+    fun getAllRolesFromPlayer(userId: Int): Either<ApiError.NotFound, List<String>> =
+        transactionManager.run {
+            val usersRepository = it.usersRepository
+            val usersRolesRepository = it.usersRolesRepository
+            val roleRepository = it.roleRepository
+
+            usersRepository.getUserById(userId) ?: return@run failure(userNotFoundId)
+
+            val rolesId = usersRolesRepository.getUserRolesId(userId)
+            if (rolesId.isEmpty()) return@run failure(ApiError.NotFound(
+                "No roles found",
+                "The user does not have any roles assigned.",
+            ))
+            val roles = rolesId.mapNotNull { elem -> roleRepository.getRoleName(elem) }
+            return@run success(roles)
+        }
+
     private fun inUseError (field : String): ApiError =
         ApiError.InvalidField(
             "$field in use",

@@ -5,6 +5,7 @@ package pt.arbitros.arbnet.http
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import pt.arbitros.arbnet.domain.universal.Role
 import pt.arbitros.arbnet.domain.users.AuthenticatedUser
 import pt.arbitros.arbnet.http.model.*
 import pt.arbitros.arbnet.services.*
@@ -28,6 +29,82 @@ class UsersController(
     fun logout(user: AuthenticatedUser) {
         usersService.revokeToken(user.token) // .also { removeCookies(response) }
     }
+
+
+    data class RoleSelectionRequest(val id: Int)
+    @PostMapping(Uris.UsersUris.SET_ROLE)
+    fun setRoleUser(
+        @RequestHeader token: String,
+        @RequestParam roleId: RoleSelectionRequest
+    ): ResponseEntity<*> {
+        val userResult = usersService.getUserByToken(token)
+        return when (userResult) {
+            is Success -> {
+                val user = userResult.value
+                when (val roleResult = usersService.updateUserRoles(user.id, roleId.id, true)) {
+                    is Success -> ResponseEntity.ok(roleResult)
+                    is Failure -> Problem.fromApiErrorToProblemResponse(roleResult.value)
+                }
+            }
+            is Failure -> Problem.fromApiErrorToProblemResponse(userResult.value)
+        }
+    }
+    @GetMapping(Uris.UsersUris.USER_ROLES_FROM_USER)
+    fun getAllRolesFromPlayer(
+        @RequestHeader token: String,
+    ): ResponseEntity<*> {
+        val userResult = usersService.getUserByToken(token)
+
+        return when (userResult) {
+            is Success -> when (val result = usersService.getAllRolesFromPlayer(userResult.value.id)) {
+                is Success -> ResponseEntity.ok(result)
+                is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+            }
+            is Failure -> Problem.fromApiErrorToProblemResponse(userResult.value)
+        }
+
+    }
+    // ... existing code ...
+
+    // ... existing code ...
+//    @PostMapping(Uris.UsersUris.SET_ROLE)
+//    fun setRoleUser(
+//        @RequestHeader("Authorization") authorizationHeader: String,
+//        @RequestParam roleId: Int
+//    ): ResponseEntity<*> {
+//        val token = authorizationHeader.removePrefix("Bearer ").trim()
+//
+//        val userResult = usersService.getUserByToken(token)
+//        return when (userResult) {
+//            is Success -> {
+//                val user = userResult.value
+//                when (val roleResult = usersService.updateUserRoles(user.id, roleId, true)) {
+//                    is Success -> ResponseEntity.ok(roleResult)
+//                    is Failure -> Problem.fromApiErrorToProblemResponse(roleResult.value)
+//                }
+//            }
+//            is Failure -> Problem.fromApiErrorToProblemResponse(userResult.value)
+//        }
+//    }
+//
+//    @GetMapping(Uris.UsersUris.USER_ROLES_FROM_USER)
+//    fun getAllRolesFromPlayer(
+//        @RequestHeader("Authorization") authorizationHeader: String,
+//    ): ResponseEntity<*> {
+//        val token = authorizationHeader.removePrefix("Bearer ").trim()
+//        val userResult = usersService.getUserByToken(token)
+//        val aul = 0
+//        return when (userResult) {
+//            is Success -> when (val result = usersService.getAllRolesFromPlayer(userResult.value.id)) {
+//                is Success -> ResponseEntity.ok(result)
+//                is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+//            }
+//            is Failure -> Problem.fromApiErrorToProblemResponse(userResult.value)
+//        }
+//    }
+//
+
+
 
     @GetMapping(Uris.UsersUris.GET_BY_TOKEN)
     fun getUserByToken(

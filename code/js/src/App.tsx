@@ -10,6 +10,7 @@ import { RequireAuthn } from './RequireAuthn'
 import { Logout } from '../components/user/Logout'
 
 import {useCurrentEmail, UserContainer} from "./context/Player";
+import {SelectRole} from "../components/user/SelectRole";
 
 
 
@@ -36,9 +37,14 @@ const router = createBrowserRouter([
                 "element": <Login />
             },
             {
+                "path": "/select-role",
+                "element": <RequireAuthn><SelectRole /></RequireAuthn>
+            },
+            {
                 "path": "/Me",
                 "element": <RequireAuthn><Me /></RequireAuthn>
             },
+
             {
                 "path": "/logout",
                 "element":<Logout />
