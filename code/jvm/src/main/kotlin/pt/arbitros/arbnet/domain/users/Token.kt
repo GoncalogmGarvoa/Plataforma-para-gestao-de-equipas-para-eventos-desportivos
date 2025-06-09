@@ -7,3 +7,5 @@ class Token(
     val createdAt: Instant,
     val lastUsedAt: Instant,
 )
+
+

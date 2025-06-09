@@ -93,10 +93,17 @@ class UsersService(
         return transactionManager.run {
             val usersRepository = it.usersRepository
             val tokenValidationInfo = usersDomain.createTokenValidationInformation(token)
-            val userAndToken = usersRepository.getTokenByTokenValidationInfo(tokenValidationInfo)
-            if (userAndToken != null && usersDomain.isTokenTimeValid(clock, userAndToken.second)) {
-                usersRepository.updateTokenLastUsed(userAndToken.second, clock.now())
-                return@run success(userAndToken.first)
+            //val userAndToken = usersRepository.getTokenByTokenValidationInfo(tokenValidationInfo)
+            // ir buscar à tabela token só token
+            // tras que já tras o user e depois ir buscar o user
+            // TODO
+            val token = usersRepository.getTokenByTokenValidationInfo(tokenValidationInfo)
+
+            val user = usersRepository.getUserByToken(tokenValidationInfo)
+
+            if (token != null && user!= null && usersDomain.isTokenTimeValid(clock, token)) {
+                usersRepository.updateTokenLastUsed(token, clock.now())
+                return@run success(user)
             } else {
                 return@run failure(ApiError.NotFound(
                     "User not found",
@@ -325,22 +332,60 @@ class UsersService(
             return@run success(roles)
         }
 
-    fun getAllRolesFromPlayer(userId: Int): Either<ApiError.NotFound, List<String>> =
+//    fun getAllRolesFromPlayer(userId: Int): Either<ApiError.NotFound, List<Pair<Int, String?>>> =
+//        transactionManager.run {
+//            val usersRepository = it.usersRepository
+//            val usersRolesRepository = it.usersRolesRepository
+//            val roleRepository = it.roleRepository
+//
+//            usersRepository.getUserById(userId) ?: return@run failure(userNotFoundId)
+//
+//            val rolesId = usersRolesRepository.getUserRolesId(userId)
+//            if (rolesId.isEmpty()) return@run failure(ApiError.NotFound(
+//                "No roles found",
+//                "The user does not have any roles assigned.",
+//            ))
+//            val roles = rolesId.mapNotNull { elem -> elem to roleRepository.getRoleName(elem) }
+//            return@run success(roles)
+//        }
+
+    fun getAllRolesFromPlayer(userId: Int): Either<ApiError.NotFound, List<Role>> =
         transactionManager.run {
             val usersRepository = it.usersRepository
             val usersRolesRepository = it.usersRolesRepository
             val roleRepository = it.roleRepository
 
-            usersRepository.getUserById(userId) ?: return@run failure(userNotFoundId)
+            val user = usersRepository.getUserById(userId)
+                ?: return@run failure(ApiError.NotFound("User not found", "No user with id $userId"))
 
             val rolesId = usersRolesRepository.getUserRolesId(userId)
-            if (rolesId.isEmpty()) return@run failure(ApiError.NotFound(
-                "No roles found",
-                "The user does not have any roles assigned.",
-            ))
-            val roles = rolesId.mapNotNull { elem -> roleRepository.getRoleName(elem) }
+            if (rolesId.isEmpty()) {
+                return@run failure(
+                    ApiError.NotFound(
+                        "No roles found",
+                        "The user does not have any roles assigned."
+                    )
+                )
+            }
+
+            val roles = rolesId.mapNotNull { roleId ->
+                roleRepository.getRoleName(roleId)?.let { roleName ->
+                    Role(roleId, roleName)
+                }
+            }
+
+            if (roles.isEmpty()) {
+                return@run failure(
+                    ApiError.NotFound(
+                        "Roles not found",
+                        "Roles IDs exist, but names could not be resolved."
+                    )
+                )
+            }
+
             return@run success(roles)
         }
+
 
     private fun inUseError (field : String): ApiError =
         ApiError.InvalidField(

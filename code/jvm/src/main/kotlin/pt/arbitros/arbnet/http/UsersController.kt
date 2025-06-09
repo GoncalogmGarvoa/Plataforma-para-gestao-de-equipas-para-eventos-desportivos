@@ -53,9 +53,7 @@ class UsersController(
     fun getAllRolesFromPlayer(
         @RequestHeader token: String,
     ): ResponseEntity<*> {
-        val userResult = usersService.getUserByToken(token)
-
-        return when (userResult) {
+        return when (val userResult = usersService.getUserByToken(token)) {
             is Success -> when (val result = usersService.getAllRolesFromPlayer(userResult.value.id)) {
                 is Success -> ResponseEntity.ok(result)
                 is Failure -> Problem.fromApiErrorToProblemResponse(result.value)

@@ -1,14 +1,14 @@
 package pt.arbitros.arbnet.repository
 
 import kotlinx.datetime.Instant
-import pt.arbitros.arbnet.domain.users.PasswordValidationInfo
-import pt.arbitros.arbnet.domain.users.Token
-import pt.arbitros.arbnet.domain.users.TokenValidationInfo
-import pt.arbitros.arbnet.domain.users.User
+import pt.arbitros.arbnet.domain.users.*
 import java.time.LocalDate
 
 interface UsersRepository {
-    fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>?
+    fun getTokenAndUserByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>?
+
+    fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Token?
+
 
     fun createToken(
         token: Token,
@@ -22,7 +22,7 @@ interface UsersRepository {
 
     fun removeTokenByValidationInfo(tokenValidationInfo: TokenValidationInfo): Int
 
-    fun getUserByToken(token: String): User?
+    fun getUserByToken(tokenValidationInfo: TokenValidationInfo): User?
 
     fun createUser(
         name: String,

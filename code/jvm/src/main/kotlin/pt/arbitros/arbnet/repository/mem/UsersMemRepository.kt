@@ -11,7 +11,11 @@ class UsersRepositoryMem : UsersRepository {
     private val users = mutableListOf<User>()
     private var nextId = 1
 
-    override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>? {
+    override fun getTokenAndUserByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>? {
+        TODO("Not yet implemented")
+    }
+
+    override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Token? {
         TODO("Not yet implemented")
     }
 
@@ -33,9 +37,11 @@ class UsersRepositoryMem : UsersRepository {
         TODO("Not yet implemented")
     }
 
-    override fun getUserByToken(token: String): User? {
+    override fun getUserByToken(tokenValidationInfo: TokenValidationInfo): User? {
         TODO("Not yet implemented")
     }
+
+
 
     override fun createUser(
         name: String,

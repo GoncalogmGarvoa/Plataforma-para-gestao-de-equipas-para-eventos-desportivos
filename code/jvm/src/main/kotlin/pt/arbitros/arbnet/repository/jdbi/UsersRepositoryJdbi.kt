@@ -16,7 +16,7 @@ import java.time.LocalDate
 class UsersRepositoryJdbi(
     private val handle: Handle,
 ) : UsersRepository {
-    override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>? =
+    override fun getTokenAndUserByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>? =
         handle
             .createQuery(
                 """
@@ -28,8 +28,39 @@ class UsersRepositoryJdbi(
             """,
             ).bind("validation_information", tokenValidationInfo.validationInfo)
             .mapTo<UserAndTokenModel>()
-            .singleOrNull()
-            ?.userAndToken
+            .singleOrNull()?.userAndToken
+
+    override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Token? =
+        handle
+            .createQuery(
+                """
+                select * from dbp.tokens where token_validation = :validation_information
+            """,
+            ).bind("validation_information", tokenValidationInfo.validationInfo)
+            .mapTo<TokenModel>()
+            .singleOrNull()?.toToken()
+
+    private data class TokenModel(
+        @ColumnName("token_validation")
+        val tokenValidation: String,
+
+        @ColumnName("user_id")
+        val userId: Int,
+
+        @ColumnName("created_at")
+        val createdAt: Long,
+
+        @ColumnName("last_used_at")
+        val lastUsedAt: Long,
+    ) {
+        fun toToken(): Token = Token(
+            tokenValidationInfo = TokenValidationInfo(tokenValidation),
+            userId = userId,
+            createdAt = Instant.fromEpochSeconds(createdAt),
+            lastUsedAt = Instant.fromEpochSeconds(lastUsedAt),
+        )
+    }
+
 
     fun assignRoleToToken(
         userId: Int,
@@ -62,43 +93,19 @@ class UsersRepositoryJdbi(
             .list()
 
 
-
     private data class UserAndTokenModel(
-        @ColumnName("id")
         val id: Int,
-
-        @ColumnName("phone_number")
         val phoneNumber: String,
-
-        @ColumnName("address")
         val address: String,
-
-        @ColumnName("name")
         val name: String,
-
-        @ColumnName("email")
         val email: String,
-
-        @ColumnName("password_validation")
         val passwordValidation: PasswordValidationInfo,
-
-        @ColumnName("birth_date")
         val birthDate: LocalDate,
-
-        @ColumnName("iban")
         val iban: String,
-
-        @ColumnName("status")
         val status: String,
-
-        @ColumnName("token_validation")
         val tokenValidation: TokenValidationInfo,
-
-        @ColumnName("created_at")
         val createdAt: Long,
-
-        @ColumnName("last_used_at")
-        val lastUsedAt: Long
+        val lastUsedAt: Long,
     ) {
         val status2 =
             UserStatus.values().firstOrNull { it.status == status }
@@ -116,39 +123,6 @@ class UsersRepositoryJdbi(
                     ),
                 )
     }
-
-
-
-//    private data class UserAndTokenModel(
-//        val id: Int,
-//        val phoneNumber: String,
-//        val address: String,
-//        val name: String,
-//        val email: String,
-//        val passwordValidation: PasswordValidationInfo,
-//        val birthDate: LocalDate,
-//        val iban: String,
-//        val status: String,
-//        val tokenValidation: TokenValidationInfo,
-//        val createdAt: Long,
-//        val lastUsedAt: Long,
-//    ) {
-//        val status2 =
-//            UserStatus.values().firstOrNull { it.status == status }
-//                ?: throw IllegalArgumentException("Invalid user status: $status")
-//
-//        val userAndToken: Pair<User, Token>
-//            get() =
-//                Pair(
-//                    User(id, phoneNumber, address, name, email, passwordValidation, birthDate, iban, status2),
-//                    Token(
-//                        tokenValidation,
-//                        id,
-//                        Instant.fromEpochSeconds(createdAt),
-//                        Instant.fromEpochSeconds(lastUsedAt),
-//                    ),
-//                )
-//    }
 
     private data class UserAndTokenModelWithRoles(
         val id: Int,
@@ -236,8 +210,17 @@ class UsersRepositoryJdbi(
             ).bind("validation_information", tokenValidationInfo.validationInfo)
             .execute()
 
-    override fun getUserByToken(token: String): User? {
-        TODO("Not yet implemented")
+    override fun getUserByToken(tokenValidationInfo: TokenValidationInfo): User? {
+        return handle
+            .createQuery(
+                """
+                select * from dbp.users as u
+                inner join dbp.tokens as t on u.id = t.user_id
+                where t.token_validation = :token
+            """,
+            ).bind("token", tokenValidationInfo.validationInfo)
+            .map(UsersMapper())
+            .singleOrNull()
     }
 
     override fun createUser(
@@ -306,9 +289,11 @@ class UsersRepositoryJdbi(
                 passwordValidation = PasswordValidationInfo(rs.getString("password_validation")),
                 birthDate = rs.getDate("birth_date").toLocalDate(),
                 iban = rs.getString("iban"),
-                userStatus = UserStatus.valueOf(rs.getString("status")),
+                userStatus = UserStatus.values().firstOrNull { it.status == rs.getString("status") }
+                    ?: throw IllegalArgumentException("Invalid user status: ${rs.getString("status")}")
             )
     }
+
 
     override fun existsByEmail(email: String): Boolean =
         handle
