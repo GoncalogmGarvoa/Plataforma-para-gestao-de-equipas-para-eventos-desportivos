@@ -86,7 +86,7 @@ export function Login() {
                     setUser(res);
                     setEmail(email);
                     setRedirect(true);
-                    setLocationPath("/me");
+                    setLocationPath("/select-role");
                 } else {
                     setError(res.error || "Login failed. Please try again.");
                 }

@@ -6,6 +6,7 @@ import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.RowMapper
+import org.jdbi.v3.core.mapper.reflect.ColumnName
 import org.jdbi.v3.core.statement.StatementContext
 import pt.arbitros.arbnet.domain.users.*
 import pt.arbitros.arbnet.repository.UsersRepository
@@ -21,7 +22,7 @@ class UsersRepositoryJdbi(
                 """
                 select id, phone_number, address ,name ,email ,password_validation, birth_date,iban, status ,token_validation, created_at, last_used_at
                 from dbp.Users as users 
-                inner join dbp.Tokens as tokens 
+                inner join dbp.tokens as tokens 
                 on users.id = tokens.user_id
                 where token_validation = :validation_information
             """,
@@ -60,19 +61,44 @@ class UsersRepositoryJdbi(
             .mapTo<String>()
             .list()
 
+
+
     private data class UserAndTokenModel(
+        @ColumnName("id")
         val id: Int,
+
+        @ColumnName("phone_number")
         val phoneNumber: String,
+
+        @ColumnName("address")
         val address: String,
+
+        @ColumnName("name")
         val name: String,
+
+        @ColumnName("email")
         val email: String,
+
+        @ColumnName("password_validation")
         val passwordValidation: PasswordValidationInfo,
+
+        @ColumnName("birth_date")
         val birthDate: LocalDate,
+
+        @ColumnName("iban")
         val iban: String,
+
+        @ColumnName("status")
         val status: String,
+
+        @ColumnName("token_validation")
         val tokenValidation: TokenValidationInfo,
+
+        @ColumnName("created_at")
         val createdAt: Long,
-        val lastUsedAt: Long,
+
+        @ColumnName("last_used_at")
+        val lastUsedAt: Long
     ) {
         val status2 =
             UserStatus.values().firstOrNull { it.status == status }
@@ -90,6 +116,39 @@ class UsersRepositoryJdbi(
                     ),
                 )
     }
+
+
+
+//    private data class UserAndTokenModel(
+//        val id: Int,
+//        val phoneNumber: String,
+//        val address: String,
+//        val name: String,
+//        val email: String,
+//        val passwordValidation: PasswordValidationInfo,
+//        val birthDate: LocalDate,
+//        val iban: String,
+//        val status: String,
+//        val tokenValidation: TokenValidationInfo,
+//        val createdAt: Long,
+//        val lastUsedAt: Long,
+//    ) {
+//        val status2 =
+//            UserStatus.values().firstOrNull { it.status == status }
+//                ?: throw IllegalArgumentException("Invalid user status: $status")
+//
+//        val userAndToken: Pair<User, Token>
+//            get() =
+//                Pair(
+//                    User(id, phoneNumber, address, name, email, passwordValidation, birthDate, iban, status2),
+//                    Token(
+//                        tokenValidation,
+//                        id,
+//                        Instant.fromEpochSeconds(createdAt),
+//                        Instant.fromEpochSeconds(lastUsedAt),
+//                    ),
+//                )
+//    }
 
     private data class UserAndTokenModelWithRoles(
         val id: Int,
