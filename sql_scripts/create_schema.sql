@@ -15,8 +15,7 @@ create table dbp.users (
 );
 
 create table dbp.tokens(
-                        id serial primary key,
-                        token_validation VARCHAR(256),
+                        token_validation VARCHAR(256) primary key,
                         user_id int ,
                         created_at bigint not null,
                         last_used_at bigint not null,
@@ -32,10 +31,10 @@ create table dbp.role (
 CREATE TABLE dbp.user_token_role (
                                      id SERIAL PRIMARY KEY,
                                      user_id INT NOT NULL,
-                                     token_id int NOT NULL,
+                                     token_val VARCHAR(256) NOT NULL,
                                      role_id INT NOT NULL,
                                      FOREIGN KEY (user_id) REFERENCES dbp.users(id),
-                                     FOREIGN KEY (token_id) REFERENCES dbp.tokens(id),
+                                     FOREIGN KEY (token_val) REFERENCES dbp.tokens(token_validation),
                                      FOREIGN KEY (role_id) REFERENCES dbp.role(id)
 );
 

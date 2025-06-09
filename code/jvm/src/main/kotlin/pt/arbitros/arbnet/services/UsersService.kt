@@ -113,6 +113,47 @@ class UsersService(
         }
     }
 
+    fun setUserTokenRole(
+        userId: Int,
+        token: String,
+        roleId: Int,
+
+    ): Either<ApiError, Boolean> =
+        transactionManager.run {
+            val usersRepository = it.usersRepository
+            val usersRolesRepository = it.usersRolesRepository
+            val roleRepository = it.roleRepository
+
+            val user = usersRepository.getUserById(userId) ?: return@run failure(userNotFoundId)
+            val tokenValidationInfo = usersDomain.createTokenValidationInformation(token)
+            val tokenObj = usersRepository.getTokenByTokenValidationInfo(tokenValidationInfo)
+                ?: return@run failure(ApiError.NotFound("Token not found", "No token found with the provided value"))
+
+            if (!usersDomain.isTokenTimeValid(clock, tokenObj)) {
+                return@run failure(ApiError.InvalidField(
+                    "Invalid token",
+                    "The provided token is expired or invalid.",
+                ))
+            }
+
+            if (tokenObj.userId != userId) {
+                return@run failure(ApiError.InvalidField(
+                    "Token does not match user",
+                    "The provided token does not belong to the specified user.",
+                ))
+            }
+
+            roleRepository.getRoleName(roleId) ?: return@run failure(ApiError.NotFound("Role not found", "The provided role does not exist"))
+
+            val success = usersRepository.assignRoleToUserToToken(
+                userId,
+                tokenValidationInfo,
+                roleId,
+            ) ?: return@run failure(ApiError.NotFound("Error", "Error setting role for user and token"))
+
+            return@run success(success)
+        }
+
     fun getUserById(id: Int): Either<ApiError, Pair<User, List<String>>> =
         transactionManager.run {
             val usersRepository = it.usersRepository

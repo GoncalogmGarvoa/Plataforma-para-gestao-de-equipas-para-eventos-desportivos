@@ -62,20 +62,21 @@ class UsersRepositoryJdbi(
     }
 
 
-    fun assignRoleToToken(
+
+    override fun assignRoleToUserToToken(
         userId: Int,
-        tokenId: Int,
+        tokenValidationInfo: TokenValidationInfo,
         roleId: Int,
     ): Boolean =
         handle
             .createUpdate(
                 """
-            INSERT INTO dbp.user_token_role (user_id, token_id, role_id)
-            VALUES (:user_id, :token_id, :role_id)
+            INSERT INTO dbp.user_token_role (user_id, token_val, role_id)
+            VALUES (:user_id, :token_v, :role_id)
             ON CONFLICT DO NOTHING
         """,
             ).bind("user_id", userId)
-            .bind("token_id", tokenId)
+            .bind("token_v", tokenValidationInfo.validationInfo)
             .bind("role_id", roleId)
             .execute() > 0
 
@@ -124,33 +125,7 @@ class UsersRepositoryJdbi(
                 )
     }
 
-    private data class UserAndTokenModelWithRoles(
-        val id: Int,
-        val phoneNumber: String,
-        val address: String,
-        val name: String,
-        val email: String,
-        val passwordValidation: PasswordValidationInfo,
-        val birthDate: LocalDate,
-        val iban: String,
-        val status: String,
-        val tokenValidation: TokenValidationInfo,
-        val createdAt: Long,
-        val lastUsedAt: Long,
-        val roles: List<String>,
-    ) {
-        val statusEnum =
-            UserStatus.values().firstOrNull { it.status == status }
-                ?: throw IllegalArgumentException("Invalid user status: $status")
 
-        val userAndToken: Triple<User, Token, List<String>>
-            get() =
-                Triple(
-                    User(id, phoneNumber, address, name, email, passwordValidation, birthDate, iban, statusEnum),
-                    Token(tokenValidation, id, Instant.fromEpochSeconds(createdAt), Instant.fromEpochSeconds(lastUsedAt)),
-                    roles,
-                )
-    }
 
     override fun createToken(
         token: Token,

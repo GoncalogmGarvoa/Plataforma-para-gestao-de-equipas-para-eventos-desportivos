@@ -31,17 +31,18 @@ class UsersController(
     }
 
 
+
     data class RoleSelectionRequest(val id: Int)
     @PostMapping(Uris.UsersUris.SET_ROLE)
     fun setRoleUser(
         @RequestHeader token: String,
-        @RequestParam roleId: RoleSelectionRequest
+        @RequestBody roleSelectionRequest: RoleSelectionRequest
     ): ResponseEntity<*> {
         val userResult = usersService.getUserByToken(token)
         return when (userResult) {
             is Success -> {
                 val user = userResult.value
-                when (val roleResult = usersService.updateUserRoles(user.id, roleId.id, true)) {
+                when (val roleResult = usersService.setUserTokenRole(user.id,token,roleSelectionRequest.id)) {
                     is Success -> ResponseEntity.ok(roleResult)
                     is Failure -> Problem.fromApiErrorToProblemResponse(roleResult.value)
                 }
@@ -49,6 +50,8 @@ class UsersController(
             is Failure -> Problem.fromApiErrorToProblemResponse(userResult.value)
         }
     }
+
+
     @GetMapping(Uris.UsersUris.USER_ROLES_FROM_USER)
     fun getAllRolesFromPlayer(
         @RequestHeader token: String,
@@ -62,46 +65,6 @@ class UsersController(
         }
 
     }
-    // ... existing code ...
-
-    // ... existing code ...
-//    @PostMapping(Uris.UsersUris.SET_ROLE)
-//    fun setRoleUser(
-//        @RequestHeader("Authorization") authorizationHeader: String,
-//        @RequestParam roleId: Int
-//    ): ResponseEntity<*> {
-//        val token = authorizationHeader.removePrefix("Bearer ").trim()
-//
-//        val userResult = usersService.getUserByToken(token)
-//        return when (userResult) {
-//            is Success -> {
-//                val user = userResult.value
-//                when (val roleResult = usersService.updateUserRoles(user.id, roleId, true)) {
-//                    is Success -> ResponseEntity.ok(roleResult)
-//                    is Failure -> Problem.fromApiErrorToProblemResponse(roleResult.value)
-//                }
-//            }
-//            is Failure -> Problem.fromApiErrorToProblemResponse(userResult.value)
-//        }
-//    }
-//
-//    @GetMapping(Uris.UsersUris.USER_ROLES_FROM_USER)
-//    fun getAllRolesFromPlayer(
-//        @RequestHeader("Authorization") authorizationHeader: String,
-//    ): ResponseEntity<*> {
-//        val token = authorizationHeader.removePrefix("Bearer ").trim()
-//        val userResult = usersService.getUserByToken(token)
-//        val aul = 0
-//        return when (userResult) {
-//            is Success -> when (val result = usersService.getAllRolesFromPlayer(userResult.value.id)) {
-//                is Success -> ResponseEntity.ok(result)
-//                is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
-//            }
-//            is Failure -> Problem.fromApiErrorToProblemResponse(userResult.value)
-//        }
-//    }
-//
-
 
 
     @GetMapping(Uris.UsersUris.GET_BY_TOKEN)

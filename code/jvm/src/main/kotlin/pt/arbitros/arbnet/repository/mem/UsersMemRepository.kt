@@ -33,6 +33,10 @@ class UsersRepositoryMem : UsersRepository {
         TODO("Not yet implemented")
     }
 
+    override fun assignRoleToUserToToken(userId: Int, tokenId: TokenValidationInfo, roleId: Int): Boolean {
+        TODO("Not yet implemented")
+    }
+
     override fun removeTokenByValidationInfo(tokenValidationInfo: TokenValidationInfo): Int {
         TODO("Not yet implemented")
     }

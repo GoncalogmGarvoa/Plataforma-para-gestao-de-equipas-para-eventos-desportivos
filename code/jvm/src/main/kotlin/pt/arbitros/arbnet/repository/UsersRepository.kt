@@ -20,6 +20,12 @@ interface UsersRepository {
         now: Instant,
     )
 
+    fun assignRoleToUserToToken(
+        userId: Int,
+        tokenId: TokenValidationInfo,
+        roleId: Int,
+    ): Boolean
+
     fun removeTokenByValidationInfo(tokenValidationInfo: TokenValidationInfo): Int
 
     fun getUserByToken(tokenValidationInfo: TokenValidationInfo): User?

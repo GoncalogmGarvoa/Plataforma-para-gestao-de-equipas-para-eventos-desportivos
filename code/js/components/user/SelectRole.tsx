@@ -83,9 +83,9 @@ export function SelectRole() {
                 method: "POST",
                 headers: {
                     token: token,
-                    "Content-Type": "application/x-www-form-urlencoded"
+                    "Content-Type": "application/json"
                 },
-                body: new URLSearchParams({ roleId: roleId.toString() })
+                body: JSON.stringify({ id: roleId })  // enviando JSON
             });
 
             if (!response.ok) {
@@ -101,6 +101,7 @@ export function SelectRole() {
             setError(err instanceof Error ? err.message : "Erro inesperado ao definir role.");
         }
     };
+
 
     if (error) {
         return (
