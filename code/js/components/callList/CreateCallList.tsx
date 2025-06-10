@@ -56,9 +56,11 @@ export function CreateCallList() {
     });
 
     const [participants, setParticipants] = useState<ParticipantChoice[]>([]);
-    const [matchDays, setMatchDays] = useState<string[]>([]);
-    const [newDay, setNewDay] = useState<string>("");
+    const [matchDaySessionsInput, setMatchDaySessionsInput] = useState<MatchDaySessionsInput[]>([]);
     const [newParticipantName, setNewParticipantName] = useState<string>("");
+
+    const [newDay, setNewDay] = useState<string>("");
+    const [newSessionTime, setNewSessionTime] = useState<string>("");
 
     const [participantQuery, setParticipantQuery] = useState("");
     const [userSuggestions, setUserSuggestions] = useState<{ name: string; id: number }[]>([]);
@@ -78,12 +80,12 @@ export function CreateCallList() {
                     headers: { token }
                 });
 
-                if (!res.ok) throw new Error("Erro ao buscar utilizadores");
+                if (!res.ok) throw new Error("Erro ao procurar utilizadores");
 
                 const users: { name: string, id: number }[] = await res.json();
                 setUserSuggestions(users);
             } catch (err) {
-                console.error("Erro ao buscar utilizadores:", err);
+                console.error("Nenhum utilizador encontrado", err);
                 setUserSuggestions([]);
             }
         };
@@ -101,10 +103,25 @@ export function CreateCallList() {
     };
 
     const addMatchDay = () => {
-        if (newDay && !matchDays.includes(newDay)) {
-            setMatchDays([...matchDays, newDay]);
-            setNewDay("");
-        }
+        if (!newDay || !newSessionTime) return;
+
+        setMatchDaySessionsInput((prev) => {
+            const existing = prev.find(d => d.matchDay === newDay);
+            if (existing) {
+                // Se já existe o dia, adiciona a hora
+                return prev.map(d =>
+                    d.matchDay === newDay
+                        ? { ...d, sessions: [...new Set([...d.sessions, newSessionTime])] }
+                        : d
+                );
+            } else {
+                // Se não existe, adiciona novo dia com essa hora
+                return [...prev, { matchDay: newDay, sessions: [newSessionTime] }];
+            }
+        });
+
+        setNewDay("");
+        setNewSessionTime("");
     };
 
     const addParticipant = async () => {
@@ -132,15 +149,15 @@ export function CreateCallList() {
 
             setParticipantInputs((prev) => ({
                 ...prev,
-                [newParticipantName]: Object.fromEntries(matchDays.map(day => [day, "DEFAULT"]))
+                [newParticipantName]: Object.fromEntries(matchDaySessionsInput.map(({ matchDay }) => [matchDay, "DEFAULT"]))
             }));
 
             setParticipants((prev) => [
                 ...prev,
                 {
                     userId,
-                    participantAndRole: matchDays.map(day => ({
-                        matchDay: day,
+                    participantAndRole: matchDaySessionsInput.map(({ matchDay }) => ({
+                        matchDay: matchDay,
                         function: "DEFAULT"
                     }))
                 }
@@ -170,10 +187,7 @@ export function CreateCallList() {
             return;
         }
 
-        const matchDaySessions: MatchDaySessionsInput[] = matchDays.map(day => ({
-            matchDay: day,
-            sessions: ["10:00"]
-        }));
+        const matchDaySessions: MatchDaySessionsInput[] = matchDaySessionsInput;
 
         const fullFormData : CallListInputModel= {
             ...formData,
@@ -217,11 +231,28 @@ export function CreateCallList() {
             <input name="email" placeholder="email" onChange={handleChange}/>
 
             <h3>Dias da Convocatória</h3>
-            <input type="date" value={newDay} onChange={(e) => setNewDay(e.target.value)}/>
-            <button onClick={addMatchDay}>Adicionar Dia</button>
-
+            <div>
+                <input
+                    type="date"
+                    value={newDay}
+                    onChange={(e) => setNewDay(e.target.value)}
+                />
+                <input
+                    type="time"
+                    value={newSessionTime}
+                    onChange={(e) => setNewSessionTime(e.target.value)}
+                />
+                <button onClick={addMatchDay}>Adicionar Dia e Hora</button>
+            </div>
+            <ul>
+                {matchDaySessionsInput.map(({ matchDay, sessions }) => (
+                    <li key={matchDay}>
+                        {matchDay}: {sessions.join(", ")}
+                    </li>
+                ))}
+            </ul>
             <h3>Participantes</h3>
-            <div style={{position: "relative"}}>
+            <div style={{ position: "relative" }}>
                 <input
                     value={participantQuery}
                     placeholder="Nome do participante"
@@ -246,7 +277,7 @@ export function CreateCallList() {
                         {userSuggestions.map((user) => (
                             <li
                                 key={user.id}
-                                style={{cursor: "pointer", padding: "4px"}}
+                                style={{ cursor: "pointer", padding: "4px" }}
                                 onClick={() => {
                                     setNewParticipantName(user.name);
                                     setParticipantQuery(user.name);
@@ -263,18 +294,18 @@ export function CreateCallList() {
             {Object.entries(participantInputs).map(([name, roles]) => (
                 <div key={name}>
                     <strong>{name}</strong>
-                    {matchDays.map(day => (
-                        <div key={day}>
+                    {matchDaySessionsInput.map(({ matchDay }) => (
+                        <div key={matchDay}>
                             <input
-                                value={day}
+                                value={matchDay}
                                 disabled
-                                style={{width: "120px", marginRight: "5px"}}
+                                style={{ width: "120px", marginRight: "5px" }}
                             />
                             <input
-                                value={roles[day]}
-                                onChange={(e) => handleRoleChange(name, day, e.target.value)}
+                                value={roles[matchDay]}
+                                onChange={(e) => handleRoleChange(name, matchDay, e.target.value)}
                                 placeholder="Função"
-                                style={{width: "100px"}}
+                                style={{ width: "100px" }}
                             />
                         </div>
                     ))}
