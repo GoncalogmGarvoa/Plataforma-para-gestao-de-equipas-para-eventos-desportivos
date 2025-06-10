@@ -125,8 +125,58 @@ class UsersRepositoryJdbi(
                 )
     }
 
+    override fun createToken(
+        token: Token,
+        maxTokens: Int,
+    ) {
+        // Primeiro apaga os registros relacionados na tabela user_token_role
+        handle.createUpdate(
+            """
+        delete from dbp.user_token_role
+        where token_val in (
+            select token_validation from dbp.tokens
+            where user_id = :user_id
+            order by last_used_at desc
+            offset :offset
+        )
+        """.trimIndent()
+        ).bind("user_id", token.userId)
+            .bind("offset", maxTokens - 1)
+            .execute()
+
+        // Agora sim pode deletar os tokens antigos
+        handle.createUpdate(
+            """
+        delete from dbp.tokens
+        where user_id = :user_id
+        and token_validation in (
+            select token_validation from dbp.tokens
+            where user_id = :user_id
+            order by last_used_at desc
+            offset :offset
+        )
+        """.trimIndent()
+        ).bind("user_id", token.userId)
+            .bind("offset", maxTokens - 1)
+            .execute()
+
+        // Insere o novo token
+        handle.createUpdate(
+            """
+        insert into dbp.tokens(user_id, token_validation, created_at, last_used_at)
+        values (:user_id, :token_validation, :created_at, :last_used_at)
+        """.trimIndent()
+        ).bind("user_id", token.userId)
+            .bind("token_validation", token.tokenValidationInfo.validationInfo)
+            .bind("created_at", token.createdAt.epochSeconds)
+            .bind("last_used_at", token.lastUsedAt.epochSeconds)
+            .execute()
+    }
 
 
+
+
+    /*
     override fun createToken(
         token: Token,
         maxTokens: Int,
@@ -158,7 +208,7 @@ class UsersRepositoryJdbi(
             .bind("last_used_at", token.lastUsedAt.epochSeconds)
             .execute()
     }
-
+*/
     override fun updateTokenLastUsed(
         token: Token,
         now: Instant,
@@ -236,6 +286,14 @@ class UsersRepositoryJdbi(
             .map { rs, _ ->
                 usersMap(rs)
             }.singleOrNull()
+
+    override fun getUsersByName(name: String): List<User> =
+        handle
+            .createQuery("""select * from dbp.users where name like :name""")
+            .bind("name", "%$name%")
+            .map { rs, _ ->
+                usersMap(rs)
+            }.list()
 
     private fun usersMap(rs: ResultSet) =
         User(

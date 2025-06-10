@@ -1,8 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useSetUser } from "../../src/context/Authn";
-import { useSetEmail } from "../../src/context/Player";
+import { useSetEmail } from "../../src/context/Referee";
+import { useSetRole } from "../../src/context/Referee"
 import { useEffect, useState } from "react";
 import * as React from "react";
+
+
 
 interface Role {
     id: number;
@@ -27,6 +30,7 @@ export function SelectRole() {
     const navigate = useNavigate();
     const setUser = useSetUser();
     const setEmail = useSetEmail();
+    const setRole = useSetRole();
 
     useEffect(() => {
         const fetchRoles = async () => {
@@ -95,6 +99,8 @@ export function SelectRole() {
 
             setUser("authenticated");
             setEmail(getCookie("email") || "");
+            //setRole(roles.find(r => r.id === roleId)?.name || "");
+
             navigate("/");
         } catch (err) {
             console.error("Erro ao selecionar role:", err);

@@ -1,8 +1,8 @@
-import * as React from "react"
+import * as React from 'react'
 import {useEffect, useState} from "react"
 import {Link, Navigate} from "react-router-dom"
 import {useSetUser} from "../../src/context/Authn"
-import {useSetEmail} from "../../src/context/Player"
+import {useSetEmail} from "../../src/context/Referee"
 import "core-js/features/promise";
 
 

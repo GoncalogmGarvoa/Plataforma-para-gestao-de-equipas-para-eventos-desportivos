@@ -8,8 +8,10 @@ import { Me } from "../components/user/Me"
 import { useCurrentUser } from "./context/Authn"
 import { RequireAuthn } from './RequireAuthn'
 import { Logout } from '../components/user/Logout'
+import { CreateCallList } from "../components/callList/CreateCallList";
+import { useCurrentRole } from "./context/Referee";
 
-import {useCurrentEmail, UserContainer} from "./context/Player";
+import {useCurrentEmail, UserContainer} from "./context/Referee";
 import {SelectRole} from "../components/user/SelectRole";
 
 
@@ -44,7 +46,10 @@ const router = createBrowserRouter([
                 "path": "/Me",
                 "element": <RequireAuthn><Me /></RequireAuthn>
             },
-
+            {
+                "path": "/create-calllist",
+                "element": <RequireAuthn><CreateCallList /></RequireAuthn>
+            },
             {
                 "path": "/logout",
                 "element":<Logout />
@@ -119,6 +124,9 @@ function Home() {
 export function Header() {
     const currentUser = useCurrentUser()
     const currentEmail = useCurrentEmail()
+    const currentRole = useCurrentRole() // <-- nova linha
+
+    const isConselhoDeArbitragem = currentRole === "Arbitration_Council"
 
     return (
         <header>
@@ -128,12 +136,13 @@ export function Header() {
                     {currentUser ? (
                         <>
                             <li><Link to="/me">Me</Link></li>
-                            <li><Logout/></li>
+                            <li><Link to="/create-calllist">Criar Convocatória</Link></li>
+                            <li><Logout /></li>
                         </>
                     ) : (
                         <>
-                            {<li><Link to="/login">Login</Link></li>}
-                            {<li><Link to="/users">Create User</Link></li>}
+                            <li><Link to="/login">Login</Link></li>
+                            <li><Link to="/users">Create User</Link></li>
                         </>
                     )}
                 </ul>
@@ -141,6 +150,7 @@ export function Header() {
         </header>
     )
 }
+
 
 
 

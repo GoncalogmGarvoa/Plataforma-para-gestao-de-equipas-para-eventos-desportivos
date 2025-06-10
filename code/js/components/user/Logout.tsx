@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import { useSetUser, useCurrentUser } from "../../src/context/Authn"
-import {useSetEmail} from "../../src/context/Player";
+import {useSetEmail} from "../../src/context/Referee";
 
 export function Logout() {
     const navigate = useNavigate()

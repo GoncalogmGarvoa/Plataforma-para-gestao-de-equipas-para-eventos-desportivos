@@ -44,6 +44,8 @@ interface UsersRepository {
 
     fun getUserByEmail(email: String): User?
 
+    fun getUsersByName(name: String): List<User>
+
     fun existsByEmail(email: String): Boolean
 
     fun existsByEmailExcludingId(

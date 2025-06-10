@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react"
 import * as React from "react"
 
-import { useCurrentEmail } from "../../src/context/Player"
+import { useCurrentEmail } from "../../src/context/Referee"
 
 
 export function Me() {

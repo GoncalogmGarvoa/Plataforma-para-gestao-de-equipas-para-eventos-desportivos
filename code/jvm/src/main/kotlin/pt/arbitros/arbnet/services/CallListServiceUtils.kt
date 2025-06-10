@@ -70,7 +70,7 @@ class CallListServiceUtils {
         val participantIds = participants.map { it.userId }
         val foundReferees = usersRepository.getUsersAndCheckIfReferee(participantIds)
 
-        if (foundReferees.size != participants.size) {
+        if (foundReferees.size != participants.size) { //todo check
             return failure(ApiError.InvalidField(
                 "Invalid participants",
                 "Some participants are not referees or do not exist in the system",

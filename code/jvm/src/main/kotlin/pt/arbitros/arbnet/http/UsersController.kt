@@ -117,6 +117,23 @@ class UsersController(
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
+    @GetMapping(Uris.UsersUris.GET_BY_NAME)
+    fun getUsersByName(
+        @RequestParam name: String,
+    ): ResponseEntity<*> =
+        when (
+            val result = usersService.getUsersByName(name)
+        ) {
+            is Success ->
+                ResponseEntity.ok(
+                    result.value.map {
+                        UserNameId(it.name, it.id)
+                    },
+                )
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
+
+
     @GetMapping(Uris.UsersUris.GET_BY_EMAIL)
     fun getUserByEmail(
         @RequestParam email: UsersEmailInput,

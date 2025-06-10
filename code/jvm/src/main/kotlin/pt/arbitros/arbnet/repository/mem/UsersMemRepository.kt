@@ -77,6 +77,10 @@ class UsersRepositoryMem : UsersRepository {
 
     override fun getUserByEmail(email: String): User? = users.find { it.email == email }
 
+    override fun getUsersByName(name: String): List<User> {
+        TODO("Not yet implemented")
+    }
+
     override fun existsByEmail(email: String): Boolean = users.any { it.email == email }
 
     override fun existsByEmailExcludingId(

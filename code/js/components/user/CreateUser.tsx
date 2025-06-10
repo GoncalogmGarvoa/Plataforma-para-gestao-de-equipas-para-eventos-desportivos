@@ -1,8 +1,9 @@
+/// <reference types="react" />
 import { useState} from "react"
 import * as React from "react"
 import {Navigate, useLocation} from "react-router-dom"
 
-export function CreateUser() {
+export function CreateUser(): JSX.Element {
     const [inputs, setInputs] = useState({
         name: "",
         phoneNumber: "",
@@ -55,7 +56,6 @@ export function CreateUser() {
                 console.error("Error creating User:", error);
             }
         };
-
         handleCreateUser()
     }
 

@@ -179,6 +179,19 @@ class UsersService(
             return@run success(user to roles)
         }
 
+    fun getUsersByName(name: String): Either<ApiError, List<User>> =
+        transactionManager.run {
+            val usersRepository = it.usersRepository
+            val users = usersRepository.getUsersByName(name)
+            if (users.isEmpty()) {
+                return@run failure(ApiError.NotFound(
+                    "No users found",
+                    "No users found with the provided name",
+                ))
+            }
+            return@run success(users)
+        }
+
     fun createUser(user: UserInputModel): Either<ApiError, Int> =
         transactionManager.run {
             val usersRepository = it.usersRepository
