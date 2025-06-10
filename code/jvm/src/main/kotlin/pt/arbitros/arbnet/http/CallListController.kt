@@ -3,34 +3,38 @@
 package pt.arbitros.arbnet.http
 
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import pt.arbitros.arbnet.http.model.*
 import pt.arbitros.arbnet.http.model.CallListInputModel
 import pt.arbitros.arbnet.http.model.ParticipantUpdateInput
-import pt.arbitros.arbnet.services.CallListService
-import pt.arbitros.arbnet.services.Failure
-import pt.arbitros.arbnet.services.Success
+import pt.arbitros.arbnet.services.*
 
 @RestController
 class CallListController(
     private val callListService: CallListService,
-) {
+    private val usersService: UsersService,
+    ) {
     @PostMapping(Uris.CallListUris.CREATE_CALLLIST)
     fun createCallList(
         @RequestBody callList: CallListInputModel,
-    ): ResponseEntity<*> =
-        when (
-            val result =
-                callListService.createEvent(callList)
-        ) {
-            is Success -> ResponseEntity.ok(result)
-            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        @RequestHeader token: String,
+    ): ResponseEntity<*> {
+        val userResult = usersService.getUserByToken(token)
+        return if (userResult is Success) {
+            when (
+                val result = callListService.createEvent(callList,userResult.value.id)
+            ) {
+                is Success -> ResponseEntity.ok(result)
+                is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+            }
+        } else {
+            Problem.fromApiErrorToProblemResponse(
+                ApiError.NotFound(
+                    "User not found or not authorized to create a call list",
+                ))
         }
+    }
+
 
     @PutMapping(Uris.CallListUris.UPDATE_PARTICIPANT_CONFIRMATION_STATUS)
     fun updateParticipantConfirmationStatus(
@@ -75,13 +79,26 @@ class CallListController(
     @PutMapping(Uris.CallListUris.UPDATE_CALLLIST)
     fun updateCallList(
         @RequestBody callList: CallListInputModel,
-    ): ResponseEntity<*> =
-        when (
-            val result = callListService.updateEvent(callList)
-        ) {
-            is Success -> ResponseEntity.ok(result)
-            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        @RequestHeader token: String,
+    ): ResponseEntity<*> {
+        val userResult = usersService.getUserByToken(token)
+        return if (userResult is Success) {
+            when (
+                val result = callListService.updateEvent(callList,userResult.value.id)
+            ) {
+                is Success -> ResponseEntity.ok(result)
+                is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+            }
+        } else {
+            Problem.fromApiErrorToProblemResponse(
+                ApiError.NotFound(
+                    "User not found or not authorized to create a call list",
+                ))
         }
+    }
+
+
+
 
     @GetMapping(Uris.CallListUris.GET_SEALED_CALLLIST)
     fun getSealedCallList(

@@ -20,3 +20,9 @@ enum class UserStatus(
     ACTIVE("active"),
     INACTIVE("inactive"),
 }
+
+
+data class UsersIdName(
+    val id: Int,
+    val name: String,
+)

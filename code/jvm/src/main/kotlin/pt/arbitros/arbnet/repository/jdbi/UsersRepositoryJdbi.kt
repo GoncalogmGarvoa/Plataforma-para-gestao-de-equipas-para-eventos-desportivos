@@ -80,18 +80,7 @@ class UsersRepositoryJdbi(
             .bind("role_id", roleId)
             .execute() > 0
 
-    fun getUserRolesByToken(token: String): List<String> =
-        handle
-            .createQuery(
-                """
-            SELECT r.name FROM dbp.user_token_role utr
-            JOIN dbp.tokens t ON utr.token_id = t.id
-            JOIN dbp.role r ON utr.role_id = r.id
-            WHERE t.token_validation = :token
-        """,
-            ).bind("token", token)
-            .mapTo<String>()
-            .list()
+
 
 
     private data class UserAndTokenModel(
@@ -176,39 +165,6 @@ class UsersRepositoryJdbi(
 
 
 
-    /*
-    override fun createToken(
-        token: Token,
-        maxTokens: Int,
-    ) {
-        val deletions =
-            handle
-                .createUpdate(
-                    """
-                    delete from dbp.Tokens
-                    where user_id = :user_id
-                        and token_validation in (
-                            select token_validation from dbp.tokens where user_id = :user_id
-                                order by last_used_at desc offset :offset
-                        )
-                    """.trimIndent(),
-                ).bind("user_id", token.userId)
-                .bind("offset", maxTokens - 1)
-                .execute()
-
-        handle
-            .createUpdate(
-                """
-                insert into dbp.tokens(user_id, token_validation, created_at, last_used_at)
-                values (:user_id, :token_validation, :created_at, :last_used_at)
-                """.trimIndent(),
-            ).bind("user_id", token.userId)
-            .bind("token_validation", token.tokenValidationInfo.validationInfo)
-            .bind("created_at", token.createdAt.epochSeconds)
-            .bind("last_used_at", token.lastUsedAt.epochSeconds)
-            .execute()
-    }
-*/
     override fun updateTokenLastUsed(
         token: Token,
         now: Instant,

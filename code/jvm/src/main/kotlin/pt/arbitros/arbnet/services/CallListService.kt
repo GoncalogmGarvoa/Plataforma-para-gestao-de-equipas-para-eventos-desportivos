@@ -26,13 +26,14 @@ class CallListService(
 ) {
 
     // todo Event > callList + competition
-    fun createEvent(callList: CallListInputModel): Either<ApiError, Int> =
+    fun createEvent(callList: CallListInputModel, userId: Int): Either<ApiError, Int> =
         transactionManager.run {
             val result = callListUtils.validateUserInfo(
                 callList,
                 it.usersRepository,
                 callListDomain,
                 utilsDomain,
+                userId
             )
             if (result is Failure) return@run result
 
@@ -49,6 +50,7 @@ class CallListService(
                     callList,
                     it.callListRepository,
                     competitionId,
+                    userId,
                 )
 
             if (callList.participants.isNotEmpty()) {
@@ -72,7 +74,7 @@ class CallListService(
             success(callListId)
         }
 
-    fun updateEvent(callList: CallListInputModel): Either<ApiError, Int> =
+    fun updateEvent(callList: CallListInputModel,userId: Int): Either<ApiError, Int> =
         transactionManager.run {
             // check if callList with id exists
             if (callList.callListId == null) {
@@ -92,6 +94,7 @@ class CallListService(
                 it.usersRepository,
                 callListDomain,
                 utilsDomain,
+                userId
             )
             if (result is Failure) return@run result
 

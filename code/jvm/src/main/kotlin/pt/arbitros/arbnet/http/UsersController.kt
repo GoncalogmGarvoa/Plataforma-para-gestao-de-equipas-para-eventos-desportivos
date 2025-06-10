@@ -2,10 +2,8 @@
 
 package pt.arbitros.arbnet.http
 
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import pt.arbitros.arbnet.domain.universal.Role
 import pt.arbitros.arbnet.domain.users.AuthenticatedUser
 import pt.arbitros.arbnet.http.model.*
 import pt.arbitros.arbnet.services.*
@@ -65,6 +63,7 @@ class UsersController(
         }
 
     }
+
 
 
     @GetMapping(Uris.UsersUris.GET_BY_TOKEN)

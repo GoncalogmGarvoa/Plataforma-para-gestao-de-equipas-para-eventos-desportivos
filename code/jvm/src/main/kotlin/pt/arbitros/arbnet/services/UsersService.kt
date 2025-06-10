@@ -6,10 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.UtilsDomain
 import pt.arbitros.arbnet.domain.universal.Role
-import pt.arbitros.arbnet.domain.users.Token
-import pt.arbitros.arbnet.domain.users.User
-import pt.arbitros.arbnet.domain.users.UsersDomain
-import pt.arbitros.arbnet.domain.users.UsersUtils
+import pt.arbitros.arbnet.domain.users.*
 import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.http.invalidFieldError
 import pt.arbitros.arbnet.http.model.UserInputModel
@@ -153,6 +150,9 @@ class UsersService(
 
             return@run success(success)
         }
+
+
+
 
     fun getUserById(id: Int): Either<ApiError, Pair<User, List<String>>> =
         transactionManager.run {

@@ -11,7 +11,7 @@ class CallListInputModel(
     val email: String,
     val association: String,
     val location: String,
-    val userId: Int,
+    //val userId: Int,
     val participants: List<ParticipantChoice>,
     val deadline: LocalDate,
     val callListType: String,

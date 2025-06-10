@@ -34,6 +34,7 @@ class CallListServiceUtils {
         usersRepository: UsersRepository,
         callListDomain: CallListDomain,
         utilsDomain: UtilsDomain,
+        userId: Int,
     ): Either<ApiError, List<User>>? {
         val validateResult =
             validateCallList(
@@ -49,13 +50,13 @@ class CallListServiceUtils {
             )
         if (validateResult is Failure) return validateResult
 
-        usersRepository.getUserById(callList.userId)
+        usersRepository.getUserById(userId)
             ?: return failure(ApiError.NotFound(
                 "User not found",
                 "No user found with the provided ID",
             ))
 
-        if(!usersRepository.userHasCouncilRole(callList.userId))
+        if(!usersRepository.userHasCouncilRole(userId))
             return failure(ApiError.InvalidField(
                 "User does not have the required role",
                 "The user must have a council role to create or update a call list"
@@ -155,10 +156,11 @@ class CallListServiceUtils {
         callList: CallListInputModel,
         callListRepository: CallListRepository,
         competitionId: Int,
+        userId: Int,
     ): Int =
         callListRepository.createCallList(
             callList.deadline,
-            callList.userId,
+            userId,
             competitionId,
             callList.callListType,
         )
