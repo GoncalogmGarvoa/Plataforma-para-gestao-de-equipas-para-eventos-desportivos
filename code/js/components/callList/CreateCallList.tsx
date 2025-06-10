@@ -48,11 +48,11 @@ export function CreateCallList() {
         competitionName: "",
         address: "",
         phoneNumber: "",
-        email: getCookie("email") || "",
+        email: "",//getCookie("email") || "",
         association: "",
         location: "",
         deadline: "",
-        callListType: ""
+        callListType: "callList"
     });
 
     const [participants, setParticipants] = useState<ParticipantChoice[]>([]);
@@ -172,7 +172,7 @@ export function CreateCallList() {
 
         const matchDaySessions: MatchDaySessionsInput[] = matchDays.map(day => ({
             matchDay: day,
-            sessions: ["10:00"] // podes tornar isto editável depois
+            sessions: ["10:00"]
         }));
 
         const fullFormData : CallListInputModel= {
@@ -208,20 +208,20 @@ export function CreateCallList() {
     return (
         <div>
             <h2>Criar Convocatória</h2>
-            <input name="competitionName" placeholder="Competição" onChange={handleChange} />
-            <input name="address" placeholder="Morada" onChange={handleChange} />
-            <input name="phoneNumber" placeholder="Telefone" onChange={handleChange} />
-            <input name="association" placeholder="Associação" onChange={handleChange} />
-            <input name="location" placeholder="Local" onChange={handleChange} />
-            <input name="deadline" type="date" onChange={handleChange} />
-            <input name="callListType" placeholder="Tipo de convocatória" onChange={handleChange} />
+            <input name="competitionName" placeholder="Competição" onChange={handleChange}/>
+            <input name="address" placeholder="Morada" onChange={handleChange}/>
+            <input name="phoneNumber" placeholder="Telefone" onChange={handleChange}/>
+            <input name="association" placeholder="Associação" onChange={handleChange}/>
+            <input name="location" placeholder="Local" onChange={handleChange}/>
+            <input name="deadline" type="date" onChange={handleChange}/>
+            <input name="email" placeholder="email" onChange={handleChange}/>
 
             <h3>Dias da Convocatória</h3>
-            <input type="date" value={newDay} onChange={(e) => setNewDay(e.target.value)} />
+            <input type="date" value={newDay} onChange={(e) => setNewDay(e.target.value)}/>
             <button onClick={addMatchDay}>Adicionar Dia</button>
 
             <h3>Participantes</h3>
-            <div style={{ position: "relative" }}>
+            <div style={{position: "relative"}}>
                 <input
                     value={participantQuery}
                     placeholder="Nome do participante"
@@ -246,7 +246,7 @@ export function CreateCallList() {
                         {userSuggestions.map((user) => (
                             <li
                                 key={user.id}
-                                style={{ cursor: "pointer", padding: "4px" }}
+                                style={{cursor: "pointer", padding: "4px"}}
                                 onClick={() => {
                                     setNewParticipantName(user.name);
                                     setParticipantQuery(user.name);
@@ -268,13 +268,13 @@ export function CreateCallList() {
                             <input
                                 value={day}
                                 disabled
-                                style={{ width: "120px", marginRight: "5px" }}
+                                style={{width: "120px", marginRight: "5px"}}
                             />
                             <input
                                 value={roles[day]}
                                 onChange={(e) => handleRoleChange(name, day, e.target.value)}
                                 placeholder="Função"
-                                style={{ width: "100px" }}
+                                style={{width: "100px"}}
                             />
                         </div>
                     ))}
