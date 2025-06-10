@@ -25,7 +25,6 @@ interface CallListInputModel {
     email: string;
     association: string;
     location: string;
-    userId: number;
     participants: ParticipantChoice[];
     deadline: string;
     callListType: string;
@@ -52,7 +51,6 @@ export function CreateCallList() {
         email: getCookie("email") || "",
         association: "",
         location: "",
-        userId: parseInt(getCookie("userId") || "10"),
         deadline: "",
         callListType: ""
     });
@@ -61,6 +59,39 @@ export function CreateCallList() {
     const [matchDays, setMatchDays] = useState<string[]>([]);
     const [newDay, setNewDay] = useState<string>("");
     const [newParticipantName, setNewParticipantName] = useState<string>("");
+
+    const [participantQuery, setParticipantQuery] = useState("");
+    const [userSuggestions, setUserSuggestions] = useState<{ name: string; id: number }[]>([]);
+
+
+    React.useEffect(() => {
+        const fetchUsers = async () => {
+            if (participantQuery.length < 2) {
+                setUserSuggestions([]);
+                return;
+            }
+
+            try {
+                const token = getCookie("token");
+                const res = await fetch(`/arbnet/users/name?name=${encodeURIComponent(participantQuery)}`, {
+                    method: "GET",
+                    headers: { token }
+                });
+
+                if (!res.ok) throw new Error("Erro ao buscar utilizadores");
+
+                const users: { name: string, id: number }[] = await res.json();
+                setUserSuggestions(users);
+            } catch (err) {
+                console.error("Erro ao buscar utilizadores:", err);
+                setUserSuggestions([]);
+            }
+        };
+
+        fetchUsers();
+    }, [participantQuery]);
+
+
 
     const [participantInputs, setParticipantInputs] = useState<Record<string, Record<string, string>>>({}); // name -> { date -> function }
 
@@ -190,9 +221,45 @@ export function CreateCallList() {
             <button onClick={addMatchDay}>Adicionar Dia</button>
 
             <h3>Participantes</h3>
-            <input value={newParticipantName} placeholder="Nome do participante" onChange={(e) => setNewParticipantName(e.target.value)} />
+            <div style={{ position: "relative" }}>
+                <input
+                    value={participantQuery}
+                    placeholder="Nome do participante"
+                    onChange={(e) => {
+                        setParticipantQuery(e.target.value);
+                        setNewParticipantName(e.target.value); // mantém compatibilidade
+                    }}
+                />
+                {userSuggestions.length > 0 && (
+                    <ul style={{
+                        position: "absolute",
+                        background: "white",
+                        border: "1px solid #ccc",
+                        padding: "0.5rem",
+                        margin: 0,
+                        listStyle: "none",
+                        zIndex: 10,
+                        maxHeight: "150px",
+                        overflowY: "auto",
+                        width: "100%"
+                    }}>
+                        {userSuggestions.map((user) => (
+                            <li
+                                key={user.id}
+                                style={{ cursor: "pointer", padding: "4px" }}
+                                onClick={() => {
+                                    setNewParticipantName(user.name);
+                                    setParticipantQuery(user.name);
+                                    setUserSuggestions([]);
+                                }}
+                            >
+                                {user.name}
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
             <button onClick={addParticipant}>Adicionar Participante</button>
-
             {Object.entries(participantInputs).map(([name, roles]) => (
                 <div key={name}>
                     <strong>{name}</strong>
