@@ -98,8 +98,6 @@ class CallListController(
     }
 
 
-
-
     @GetMapping(Uris.CallListUris.GET_SEALED_CALLLIST)
     fun getSealedCallList(
         @PathVariable id: String,

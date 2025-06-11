@@ -1,6 +1,6 @@
 import * as React from "react";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {useState} from "react";
+import {useNavigate} from "react-router-dom";
 
 interface ParticipantChoice {
     userId: number;
@@ -77,7 +77,7 @@ export function CreateCallList() {
                 const token = getCookie("token");
                 const res = await fetch(`/arbnet/users/name?name=${encodeURIComponent(participantQuery)}`, {
                     method: "GET",
-                    headers: { token }
+                    headers: {token}
                 });
 
                 if (!res.ok) throw new Error("Erro ao procurar utilizadores");
@@ -94,12 +94,11 @@ export function CreateCallList() {
     }, [participantQuery]);
 
 
-
     const [participantInputs, setParticipantInputs] = useState<Record<string, Record<string, string>>>({}); // name -> { date -> function }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        const {name, value} = e.target;
+        setFormData((prev) => ({...prev, [name]: value}));
     };
 
     const addMatchDay = () => {
@@ -111,12 +110,12 @@ export function CreateCallList() {
                 // Se já existe o dia, adiciona a hora
                 return prev.map(d =>
                     d.matchDay === newDay
-                        ? { ...d, sessions: [...new Set([...d.sessions, newSessionTime])] }
+                        ? {...d, sessions: [...new Set([...d.sessions, newSessionTime])]}
                         : d
                 );
             } else {
                 // Se não existe, adiciona novo dia com essa hora
-                return [...prev, { matchDay: newDay, sessions: [newSessionTime] }];
+                return [...prev, {matchDay: newDay, sessions: [newSessionTime]}];
             }
         });
 
@@ -131,7 +130,7 @@ export function CreateCallList() {
             const token = getCookie("token");
             const res = await fetch(`/arbnet/users/name?name=${encodeURIComponent(newParticipantName)}`, {
                 method: "GET",
-                headers: { token },
+                headers: {token},
             });
 
 
@@ -149,14 +148,14 @@ export function CreateCallList() {
 
             setParticipantInputs((prev) => ({
                 ...prev,
-                [newParticipantName]: Object.fromEntries(matchDaySessionsInput.map(({ matchDay }) => [matchDay, "DEFAULT"]))
+                [newParticipantName]: Object.fromEntries(matchDaySessionsInput.map(({matchDay}) => [matchDay, "DEFAULT"]))
             }));
 
             setParticipants((prev) => [
                 ...prev,
                 {
                     userId,
-                    participantAndRole: matchDaySessionsInput.map(({ matchDay }) => ({
+                    participantAndRole: matchDaySessionsInput.map(({matchDay}) => ({
                         matchDay: matchDay,
                         function: "DEFAULT"
                     }))
@@ -189,7 +188,7 @@ export function CreateCallList() {
 
         const matchDaySessions: MatchDaySessionsInput[] = matchDaySessionsInput;
 
-        const fullFormData : CallListInputModel= {
+        const fullFormData: CallListInputModel = {
             ...formData,
             participants,
             matchDaySessions,
@@ -197,7 +196,7 @@ export function CreateCallList() {
         };
 
         try {
-                const response = await fetch("/arbnet/callList/creation", {
+            const response = await fetch("/arbnet/callList/creation", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -219,24 +218,75 @@ export function CreateCallList() {
         }
     };
 
+    const removeParticipant = (name: string) => {
+        setParticipants((prev) =>
+            prev.filter((p) => {
+                const matchingName = Object.keys(participantInputs).find(
+                    (key) => key === name
+                );
+                return matchingName
+                    ? p.userId !==
+                    participants.find((pt) => participantInputs[matchingName] && pt.userId === p.userId)?.userId
+                    : true;
+            })
+        );
+
+        setParticipantInputs((prev) => {
+            const updated = {...prev};
+            delete updated[name];
+            return updated;
+        });
+    };
+
+
     return (
         <div>
             <h2>Criar Convocatória</h2>
-            <input name="competitionName" placeholder="Competição" onChange={handleChange}/>
-            <input name="address" placeholder="Morada" onChange={handleChange}/>
-            <input name="phoneNumber" placeholder="Telefone" onChange={handleChange}/>
-            <input name="association" placeholder="Associação" onChange={handleChange}/>
-            <input name="location" placeholder="Local" onChange={handleChange}/>
-            <input name="deadline" type="date" onChange={handleChange}/>
-            <input name="email" placeholder="email" onChange={handleChange}/>
+
+            <div>
+                <label>Competição:</label>
+                <input name="competitionName" onChange={handleChange}/>
+            </div>
+
+            <div>
+                <label>Morada:</label>
+                <input name="address" onChange={handleChange}/>
+            </div>
+
+            <div>
+                <label>Telefone:</label>
+                <input name="phoneNumber" onChange={handleChange}/>
+            </div>
+
+            <div>
+                <label>Associação:</label>
+                <input name="association" onChange={handleChange}/>
+            </div>
+
+            <div>
+                <label>Local:</label>
+                <input name="location" onChange={handleChange}/>
+            </div>
+
+            <div>
+                <label>Email:</label>
+                <input name="email" onChange={handleChange}/>
+            </div>
+
+            <div>
+                <label>Data Limite:</label>
+                <input name="deadline" type="date" onChange={handleChange}/>
+            </div>
 
             <h3>Dias da Convocatória</h3>
             <div>
+                <label>Data</label>
                 <input
                     type="date"
                     value={newDay}
                     onChange={(e) => setNewDay(e.target.value)}
                 />
+                <label>Hora</label>
                 <input
                     type="time"
                     value={newSessionTime}
@@ -244,21 +294,67 @@ export function CreateCallList() {
                 />
                 <button onClick={addMatchDay}>Adicionar Dia e Hora</button>
             </div>
-            <ul>
-                {matchDaySessionsInput.map(({ matchDay, sessions }) => (
-                    <li key={matchDay}>
-                        {matchDay}: {sessions.join(", ")}
-                    </li>
-                ))}
+            {/*<ul>*/}
+            {/*    {matchDaySessionsInput.map(({matchDay, sessions}) => (*/}
+            {/*        <li key={matchDay}>*/}
+            {/*            {matchDay}: {sessions.join(", ")}*/}
+            {/*        </li>*/}
+            {/*    ))}*/}
+            {/*</ul>*/}
+            <ul style={{padding: 0, listStyle: "none"}}>
+                {matchDaySessionsInput.flatMap(({matchDay, sessions}) =>
+                    sessions.map((session) => (
+                        <li key={`${matchDay}-${session}`}
+                            style={{display: "flex", alignItems: "center", gap: "1rem", marginBottom: "0.5rem"}}>
+                            <span>{matchDay}</span>
+                            <span>{session}</span>
+                            <button
+                                style={{color: "red"}}
+                                onClick={() => {
+                                    setMatchDaySessionsInput(prev =>
+                                        prev
+                                            .map(day =>
+                                                day.matchDay === matchDay
+                                                    ? {...day, sessions: day.sessions.filter(s => s !== session)}
+                                                    : day
+                                            )
+                                            .filter(day => day.sessions.length > 0)
+                                    );
+
+                                    setParticipantInputs(prev => {
+                                        const updated = {...prev};
+                                        for (const name in updated) {
+                                            if (updated[name][matchDay] !== undefined) {
+                                                delete updated[name][matchDay];
+                                            }
+                                        }
+                                        return updated;
+                                    });
+
+                                    setParticipants(prev =>
+                                        prev.map(participant => ({
+                                            ...participant,
+                                            participantAndRole: participant.participantAndRole.filter(p => p.matchDay !== matchDay)
+                                        }))
+                                    );
+                                }}
+                            >
+                                Remover
+                            </button>
+                        </li>
+                    ))
+                )}
             </ul>
+
+
             <h3>Participantes</h3>
-            <div style={{ position: "relative" }}>
+            <div style={{position: "relative"}}>
+                <label>Nomes </label>
                 <input
                     value={participantQuery}
-                    placeholder="Nome do participante"
                     onChange={(e) => {
                         setParticipantQuery(e.target.value);
-                        setNewParticipantName(e.target.value); // mantém compatibilidade
+                        setNewParticipantName(e.target.value);
                     }}
                 />
                 {userSuggestions.length > 0 && (
@@ -277,7 +373,7 @@ export function CreateCallList() {
                         {userSuggestions.map((user) => (
                             <li
                                 key={user.id}
-                                style={{ cursor: "pointer", padding: "4px" }}
+                                style={{cursor: "pointer", padding: "4px"}}
                                 onClick={() => {
                                     setNewParticipantName(user.name);
                                     setParticipantQuery(user.name);
@@ -291,28 +387,61 @@ export function CreateCallList() {
                 )}
             </div>
             <button onClick={addParticipant}>Adicionar Participante</button>
-            {Object.entries(participantInputs).map(([name, roles]) => (
-                <div key={name}>
-                    <strong>{name}</strong>
-                    {matchDaySessionsInput.map(({ matchDay }) => (
-                        <div key={matchDay}>
-                            <input
-                                value={matchDay}
-                                disabled
-                                style={{ width: "120px", marginRight: "5px" }}
-                            />
-                            <input
-                                value={roles[matchDay]}
-                                onChange={(e) => handleRoleChange(name, matchDay, e.target.value)}
-                                placeholder="Função"
-                                style={{ width: "100px" }}
-                            />
-                        </div>
-                    ))}
-                </div>
-            ))}
 
-            <button onClick={handleSubmit}>Criar</button>
+            <table border={1} cellPadding={5} style={{borderCollapse: "collapse", marginTop: "1rem"}}>
+                <thead>
+                <tr>
+                    <th>Nome</th>
+                    {matchDaySessionsInput.map(({matchDay}) => (
+                        <th key={matchDay}>{matchDay}</th>
+                    ))}
+                </tr>
+                </thead>
+                <tbody>
+                {Object.entries(participantInputs).map(([name, roles]) => (
+                    <tr key={name}>
+                        <td>
+                            <strong>{name}</strong>
+                            <button
+                                style={{marginLeft: "8px", color: "red"}}
+                                onClick={() => removeParticipant(name)}
+                            >
+                                Remover
+                            </button>
+                        </td>
+                        {matchDaySessionsInput.map(({matchDay}) => (
+                            <td key={matchDay}>
+                                <input
+                                    value={roles[matchDay] || ""}
+                                    onChange={(e) => handleRoleChange(name, matchDay, e.target.value)}
+                                    placeholder="Função"
+                                    style={{width: "100px"}}
+                                />
+                            </td>
+                        ))}
+                    </tr>
+
+                ))}
+                </tbody>
+            </table>
+
+            <div>
+                <button onClick={handleSubmit}>Criar Convocatória</button>
+            </div>
         </div>
     );
 }
+
+// <tr key={name}>
+//     <td><strong>{name}</strong></td>
+//     {matchDaySessionsInput.map(({matchDay}) => (
+//         <td key={matchDay}>
+//             <input
+//                 value={roles[matchDay] || ""}
+//                 onChange={(e) => handleRoleChange(name, matchDay, e.target.value)}
+//                 placeholder="Função"
+//                 style={{width: "100px"}}
+//             />
+//         </td>
+//     ))}
+// </tr>
