@@ -106,3 +106,63 @@
     cursor: pointer;
 }
 
+.form-inline-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-group-inline {
+    flex: 1 1 200px;
+    min-width: 150px;
+}
+
+.form-group-inline label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+.form-group-inline input {
+    width: 100%;
+}
+
+.deadline-input {
+    max-width: 250px;
+}
+
+
+
+
+.form-inline-day {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+}
+
+.form-group-day {
+    flex: 1 1 180px;
+    min-width: 120px;
+}
+
+
+.add-day-button-container {
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+.remove-button {
+    background-color: #f5a623; /* exemplo: laranja/dourado */
+    color: black;
+    border: none;
+    border-radius: 4px;
+    padding: 0.3rem 0.6rem;
+    cursor: pointer;
+}
+
+.remove-button:hover {
+    background-color: #d48806; /* tom mais escuro para hover */
+    color: black;
+}

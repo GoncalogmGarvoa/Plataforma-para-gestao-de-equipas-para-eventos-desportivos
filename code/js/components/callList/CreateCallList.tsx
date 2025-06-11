@@ -240,67 +240,70 @@ export function CreateCallList() {
 
 
     return (
-        <div>
+        <div className="create-call-list-container">
             <h2>Criar Convocatória</h2>
 
-            <div>
-                <label>Competição:</label>
-                <input name="competitionName" onChange={handleChange}/>
+            <div className="form-inline-row">
+                <div className="form-group-inline">
+                    <label>Competição:</label>
+                    <input name="competitionName" onChange={handleChange}/>
+                </div>
+                <div className="form-group-inline">
+                    <label>Morada:</label>
+                    <input name="address" onChange={handleChange}/>
+                </div>
+                <div className="form-group-inline">
+                    <label>Telefone:</label>
+                    <input name="phoneNumber" onChange={handleChange}/>
+                </div>
+                <div className="form-group-inline">
+                    <label>Associação:</label>
+                    <input name="association" onChange={handleChange}/>
+                </div>
+                <div className="form-group-inline">
+                    <label>Local:</label>
+                    <input name="location" onChange={handleChange}/>
+                </div>
+                <div className="form-group-inline">
+                    <label>Email:</label>
+                    <input name="email" onChange={handleChange}/>
+                </div>
             </div>
 
-            <div>
-                <label>Morada:</label>
-                <input name="address" onChange={handleChange}/>
-            </div>
-
-            <div>
-                <label>Telefone:</label>
-                <input name="phoneNumber" onChange={handleChange}/>
-            </div>
-
-            <div>
-                <label>Associação:</label>
-                <input name="association" onChange={handleChange}/>
-            </div>
-
-            <div>
-                <label>Local:</label>
-                <input name="location" onChange={handleChange}/>
-            </div>
-
-            <div>
-                <label>Email:</label>
-                <input name="email" onChange={handleChange}/>
-            </div>
-
-            <div>
+            <div className="form-group-inline">
                 <label>Data Limite:</label>
-                <input name="deadline" type="date" onChange={handleChange}/>
+                <input className="deadline-input" name="deadline" type="date" onChange={handleChange}/>
             </div>
+
 
             <h3>Dias da Convocatória</h3>
             <div>
-                <label>Data</label>
-                <input
-                    type="date"
-                    value={newDay}
-                    onChange={(e) => setNewDay(e.target.value)}
-                />
-                <label>Hora</label>
-                <input
-                    type="time"
-                    value={newSessionTime}
-                    onChange={(e) => setNewSessionTime(e.target.value)}
-                />
-                <button onClick={addMatchDay}>Adicionar Dia e Hora</button>
+                <div className="form-inline-day">
+                    <div className="form-group-day">
+                        <label>Data:</label>
+                        <input
+                            type="date"
+                            value={newDay}
+                            onChange={(e) => setNewDay(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="form-group-day">
+                        <label>Hora:</label>
+                        <input
+                            type="time"
+                            value={newSessionTime}
+                            onChange={(e) => setNewSessionTime(e.target.value)}
+                        />
+                    </div>
+                </div>
+
+                <div className="add-day-button-container">
+                    <button onClick={addMatchDay}>Adicionar Dia e Hora</button>
+                </div>
             </div>
-            {/*<ul>*/}
-            {/*    {matchDaySessionsInput.map(({matchDay, sessions}) => (*/}
-            {/*        <li key={matchDay}>*/}
-            {/*            {matchDay}: {sessions.join(", ")}*/}
-            {/*        </li>*/}
-            {/*    ))}*/}
-            {/*</ul>*/}
+
+
             <ul style={{padding: 0, listStyle: "none"}}>
                 {matchDaySessionsInput.flatMap(({matchDay, sessions}) =>
                     sessions.map((session) => (
@@ -309,7 +312,7 @@ export function CreateCallList() {
                             <span>{matchDay}</span>
                             <span>{session}</span>
                             <button
-                                style={{color: "red"}}
+                                className="remove-button"
                                 onClick={() => {
                                     setMatchDaySessionsInput(prev =>
                                         prev
@@ -341,11 +344,11 @@ export function CreateCallList() {
                             >
                                 Remover
                             </button>
+
                         </li>
                     ))
                 )}
             </ul>
-
 
             <h3>Participantes</h3>
             <div style={{position: "relative"}}>
@@ -403,15 +406,17 @@ export function CreateCallList() {
                         <td>
                             <strong>{name}</strong>
                             <button
-                                style={{marginLeft: "8px", color: "red"}}
+                                className="remove-button"
+                                style={{marginLeft: "8px"}}
                                 onClick={() => removeParticipant(name)}
                             >
                                 Remover
                             </button>
+
                         </td>
                         {matchDaySessionsInput.map(({matchDay}) => (
                             <td key={matchDay}>
-                                <input
+                            <input
                                     value={roles[matchDay] || ""}
                                     onChange={(e) => handleRoleChange(name, matchDay, e.target.value)}
                                     placeholder="Função"
@@ -431,17 +436,3 @@ export function CreateCallList() {
         </div>
     );
 }
-
-// <tr key={name}>
-//     <td><strong>{name}</strong></td>
-//     {matchDaySessionsInput.map(({matchDay}) => (
-//         <td key={matchDay}>
-//             <input
-//                 value={roles[matchDay] || ""}
-//                 onChange={(e) => handleRoleChange(name, matchDay, e.target.value)}
-//                 placeholder="Função"
-//                 style={{width: "100px"}}
-//             />
-//         </td>
-//     ))}
-// </tr>
