@@ -118,14 +118,14 @@ export function SelectRole() {
             </div>
         );
     }
-
     return (
         <div className="role-selection">
             <h2>Selecione o seu perfil</h2>
+
             {loading ? (
                 <p>A carregar roles...</p>
-            ) : (
-                <>
+            ) : roles.length > 0 ? (
+                <div className="roles-container">
                     <div className="roles-list">
                         {roles.map((role) => (
                             <div
@@ -137,6 +137,7 @@ export function SelectRole() {
                             </div>
                         ))}
                     </div>
+
                     {selectedRole && (
                         <button
                             className="select-role-button"
@@ -145,8 +146,42 @@ export function SelectRole() {
                             Continuar
                         </button>
                     )}
-                </>
+                </div>
+            ) : (
+                <p>Nenhum perfil disponível.</p>
             )}
         </div>
     );
+
+
 }
+// return (
+//     <div className="role-selection">
+//         <h2>Selecione o seu perfil</h2>
+//         {loading ? (
+//             <p>A carregar roles...</p>
+//         ) : (
+//             <>
+//                 <div className="roles-list">
+//                     {roles.map((role) => (
+//                         <div
+//                             key={role.id}
+//                             className={`role-card ${selectedRole === role.id ? "selected" : ""}`}
+//                             onClick={() => setSelectedRole(role.id)}
+//                         >
+//                             <h3>{role.name}</h3>
+//                         </div>
+//                     ))}
+//                 </div>
+//                 {selectedRole && (
+//                     <button
+//                         className="select-role-button"
+//                         onClick={() => handleRoleSelect(selectedRole)}
+//                     >
+//                         Continuar
+//                     </button>
+//                 )}
+//             </>
+//         )}
+//     </div>
+// );
