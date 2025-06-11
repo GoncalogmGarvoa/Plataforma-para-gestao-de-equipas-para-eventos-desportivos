@@ -64,6 +64,8 @@ export function CreateCallList() {
 
     const [participantQuery, setParticipantQuery] = useState("");
     const [userSuggestions, setUserSuggestions] = useState<{ name: string; id: number }[]>([]);
+    const [nameToUserIdMap, setNameToUserIdMap] = useState<Record<string, number>>({});
+
 
 
     React.useEffect(() => {
@@ -162,6 +164,12 @@ export function CreateCallList() {
                 }
             ]);
 
+            setNameToUserIdMap((prev) => ({
+                ...prev,
+                [newParticipantName]: userId
+            }));
+
+
             setNewParticipantName("");
         } catch (error) {
             console.error(error);
@@ -188,9 +196,21 @@ export function CreateCallList() {
 
         const matchDaySessions: MatchDaySessionsInput[] = matchDaySessionsInput;
 
+        const updatedParticipants: ParticipantChoice[] = Object.entries(participantInputs).map(([name, rolesByDay]) => {
+            const participantAndRole = Object.entries(rolesByDay).map(([matchDay, func]) => ({
+                matchDay,
+                function: func
+            }));
+
+            return {
+                userId: nameToUserIdMap[name] ?? 0,
+                participantAndRole
+            };
+        });
+
         const fullFormData: CallListInputModel = {
             ...formData,
-            participants,
+            participants: updatedParticipants,
             matchDaySessions,
             equipmentIds: []
         };
@@ -217,6 +237,7 @@ export function CreateCallList() {
             alert(err instanceof Error ? err.message : "Erro inesperado.");
         }
     };
+
 
     const removeParticipant = (name: string) => {
         setParticipants((prev) =>
