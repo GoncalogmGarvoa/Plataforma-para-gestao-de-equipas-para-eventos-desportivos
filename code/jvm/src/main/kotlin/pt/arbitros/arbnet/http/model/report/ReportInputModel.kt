@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.http.model
+package pt.arbitros.arbnet.http.model.report
 
 import pt.arbitros.arbnet.domain.CoverSheet
 import pt.arbitros.arbnet.domain.RefereeEvaluation

@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.http.model
+package pt.arbitros.arbnet.http.model.users
 
 class UserCategoryUpdateInputModel (
     val userId: Int,

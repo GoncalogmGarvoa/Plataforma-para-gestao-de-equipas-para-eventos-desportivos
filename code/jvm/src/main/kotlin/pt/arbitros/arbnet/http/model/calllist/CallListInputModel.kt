@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.http.model
+package pt.arbitros.arbnet.http.model.calllist
 
 import java.time.LocalDate
 import java.time.LocalTime

@@ -2,7 +2,7 @@ package pt.arbitros.arbnet.domain
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
-import pt.arbitros.arbnet.http.model.ReportInputModel
+import pt.arbitros.arbnet.http.model.report.ReportInputModel
 
 @Document(collection = "Reports")
 data class ReportMongo(

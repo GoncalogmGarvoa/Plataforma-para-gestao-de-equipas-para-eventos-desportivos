@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.http.model
+package pt.arbitros.arbnet.http.model.users
 
 class UserNameId(
     val name: String,

@@ -1,7 +1,6 @@
-package pt.arbitros.arbnet.http.model
+package pt.arbitros.arbnet.http.model.calllist
 
 import pt.arbitros.arbnet.domain.MatchDay
-import pt.arbitros.arbnet.domain.Participant
 import java.time.LocalDate
 
 class EventOutputModel(

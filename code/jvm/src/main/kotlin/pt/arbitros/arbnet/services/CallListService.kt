@@ -6,10 +6,10 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.*
 import pt.arbitros.arbnet.http.ApiError
-import pt.arbitros.arbnet.http.model.CallListInputModel
-import pt.arbitros.arbnet.http.model.EquipmentOutputModel
-import pt.arbitros.arbnet.http.model.EventOutputModel
-import pt.arbitros.arbnet.http.model.ParticipantWithCategory
+import pt.arbitros.arbnet.http.model.calllist.CallListInputModel
+import pt.arbitros.arbnet.http.model.calllist.EquipmentOutputModel
+import pt.arbitros.arbnet.http.model.calllist.EventOutputModel
+import pt.arbitros.arbnet.http.model.calllist.ParticipantWithCategory
 import pt.arbitros.arbnet.repository.*
 import pt.arbitros.arbnet.repository.mongo.CallListMongoRepository
 import pt.arbitros.arbnet.transactionRepo

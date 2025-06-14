@@ -4,9 +4,9 @@ package pt.arbitros.arbnet.http
 
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import pt.arbitros.arbnet.http.model.*
-import pt.arbitros.arbnet.http.model.CallListInputModel
+import pt.arbitros.arbnet.http.model.calllist.CallListInputModel
 import pt.arbitros.arbnet.http.model.ParticipantUpdateInput
+import pt.arbitros.arbnet.http.model.calllist.CallListIdInput
 import pt.arbitros.arbnet.services.*
 
 @RestController

@@ -1,7 +1,6 @@
-package pt.arbitros.arbnet.http.model
+package pt.arbitros.arbnet.http.model.users
 
-class UserUpdateInputModel(
-    val id: Int,
+class UserInputModel(
     val name: String,
     val phoneNumber: String,
     val address: String,
