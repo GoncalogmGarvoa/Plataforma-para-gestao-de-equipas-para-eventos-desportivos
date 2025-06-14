@@ -2,6 +2,7 @@ package pt.arbitros.arbnet.repository.jdbi
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
+import org.springframework.context.annotation.ComponentScan
 import pt.arbitros.arbnet.domain.universal.Category
 import pt.arbitros.arbnet.repository.CategoryRepository
 
@@ -31,7 +32,13 @@ class CategoryRepositoryJdbi(
 
 
     override fun getAllCategories(): List<Category> {
-        TODO("Not yet implemented")
+        handle.
+            createQuery(
+                """select id, name, description from dbp.category""",
+            )
+            .mapTo<Category>()
+            .list()
+            .let { return it }
     }
 
     override fun deleteCategory(id: Int): Boolean {

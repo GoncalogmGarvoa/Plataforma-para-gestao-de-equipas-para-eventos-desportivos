@@ -14,22 +14,23 @@ import pt.arbitros.arbnet.transactionRepo
 class ReportService(
     @Qualifier(transactionRepo) private val transactionManager: TransactionManager,
     private val reportMongoRepository: ReportMongoRepository,
+    private val validationUtils: ReportServiceInputValidation,
     private val utilsDomain: UtilsDomain,
 ) {
 
-    fun createReport(
-        report: ReportInputModel,
-    ): Either<ApiError, ReportMongo> {
+    fun createReport(report: ReportInputModel): Either<ApiError, ReportMongo> {
         return transactionManager.run {
-
-            if (it.competitionRepository.getCompetitionById(report.competitionId) == null) {
-                return@run failure(ApiError.InvalidField(
-                    "Invalid competition ID",
-                    "The provided competition ID does not exist or is invalid."
-                ))
-            }
+            val competitionRepository = it.competitionRepository
+            val categoryRepository = it.categoryRepository
 
             val reportMongo = ReportMongo.fromInputModel(report)
+
+            val validationResult = validationUtils.validateReportValues(
+                reportMongo,
+                createOrUpdate = true,
+                competitionRepository,
+                categoryRepository
+            )
 
             val reportCreated = reportMongoRepository.save(reportMongo)
 
@@ -52,21 +53,19 @@ class ReportService(
 
     fun updateReport(report: ReportInputModel): Either<ApiError, ReportMongo> {
         return transactionManager.run {
-            if (report.id == null) {
-                return@run failure(ApiError.NotFound(
-                    "Report ID is required",
-                    "The report ID must be provided to update a report."
-                ))
-            }
 
-            if (it.competitionRepository.getCompetitionById(report.competitionId) == null) {
-                return@run failure(ApiError.InvalidField(
-                    "Invalid competition ID",
-                    "The provided competition ID does not exist or is invalid."
-                ))
-            }
+            val competitionRepository = it.competitionRepository
+            val categoryRepository = it.categoryRepository
+            val reportMongo = ReportMongo.fromInputModel(report)
 
-            val existingReport = reportMongoRepository.findById(report.id).orElse(null)
+            val validationResult = validationUtils.validateReportValues(
+                reportMongo,
+                createOrUpdate = false,
+                competitionRepository,
+                categoryRepository
+            )
+
+            val existingReport = reportMongoRepository.findById(report.id!!).orElse(null)
                 ?: return@run failure(ApiError.NotFound(
                     "Report not found",
                     "No report found with the provided ID."
@@ -78,8 +77,6 @@ class ReportService(
                     "Cannot update a sealed report."
                 ))
             }
-
-            val reportMongo = ReportMongo.fromInputModel(report)
 
             val updatedReport = reportMongoRepository.save(reportMongo)
             return@run success(updatedReport)

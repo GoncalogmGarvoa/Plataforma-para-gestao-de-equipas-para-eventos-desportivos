@@ -32,10 +32,10 @@ data class CoverSheet(
     val style: String,
     val councilName: String,
     val sportsSeason: String,
-    val year: Int,
-    val month: Int,
     val authorName: String,
     val location: String,
+    val year: Int,
+    val month: Int,
     val numRounds: Int,
     val numSessions: Int,
     val sessions: List<SessionReportInfo>
@@ -43,7 +43,7 @@ data class CoverSheet(
 
 data class SessionReportInfo(
     val sessionLabel: String,
-    val date: String,           // "yyyy-MM-dd"
+    val date: String,           // "DD/MM/YYYY"
     val startTime: String,      // "HH:mm"
     val endTime: String,        // "HH:mm"
     val durationMinutes: Int

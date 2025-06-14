@@ -151,9 +151,6 @@ class UsersService(
             return@run success(success)
         }
 
-
-
-
     fun getUserById(id: Int): Either<ApiError, Pair<User, List<String>>> =
         transactionManager.run {
             val usersRepository = it.usersRepository
@@ -254,9 +251,7 @@ class UsersService(
                     user.iban,
                 )
 
-            if (validateResult is Failure) {
-                return@run validateResult
-            }
+            if (validateResult is Failure) return@run validateResult
 
             usersRepository.getUserById(user.id) ?: return@run failure(userNotFoundId)
             val passwordValidationInfo = usersDomain.createPasswordValidationInformation(user.password)
@@ -386,23 +381,6 @@ class UsersService(
             return@run success(roles)
         }
 
-//    fun getAllRolesFromPlayer(userId: Int): Either<ApiError.NotFound, List<Pair<Int, String?>>> =
-//        transactionManager.run {
-//            val usersRepository = it.usersRepository
-//            val usersRolesRepository = it.usersRolesRepository
-//            val roleRepository = it.roleRepository
-//
-//            usersRepository.getUserById(userId) ?: return@run failure(userNotFoundId)
-//
-//            val rolesId = usersRolesRepository.getUserRolesId(userId)
-//            if (rolesId.isEmpty()) return@run failure(ApiError.NotFound(
-//                "No roles found",
-//                "The user does not have any roles assigned.",
-//            ))
-//            val roles = rolesId.mapNotNull { elem -> elem to roleRepository.getRoleName(elem) }
-//            return@run success(roles)
-//        }
-
     fun getAllRolesFromPlayer(userId: Int): Either<ApiError.NotFound, List<Role>> =
         transactionManager.run {
             val usersRepository = it.usersRepository
@@ -439,7 +417,6 @@ class UsersService(
 
             return@run success(roles)
         }
-
 
     private fun inUseError (field : String): ApiError =
         ApiError.InvalidField(
