@@ -1,5 +1,8 @@
 package pt.arbitros.arbnet.http.model.payment_report
 
+import pt.arbitros.arbnet.domain.PaymentCoverSheet
+import pt.arbitros.arbnet.domain.PaymentPerReferee
+
 data class PaymentReportInputModel (
     val id : String? = null,
     val reportType : String,
@@ -10,27 +13,4 @@ data class PaymentReportInputModel (
     val paymentPerReferee: List<PaymentPerReferee>
 )
 
-class PaymentPerReferee (
-    val name: String,
-    val nib: String,
-    val sessionsPresence: List<SessionsPresence>
-)
 
-class SessionsPresence (
-    val matchDay: Int,
-    val morning: Boolean,
-    val morningTime: String,
-    val afternoon: Boolean,
-    val afternoonTime: String,
-)
-
-data class PaymentCoverSheet (
-    val style: String,
-    val councilName: String,
-    val eventName: String,
-    val venue: String,
-    val eventDate: String,
-    val eventTime: String,
-    val location: String,
-    val organization: String,
-)

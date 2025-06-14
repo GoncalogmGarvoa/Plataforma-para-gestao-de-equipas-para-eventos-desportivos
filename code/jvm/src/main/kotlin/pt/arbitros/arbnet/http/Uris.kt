@@ -41,9 +41,12 @@ object Uris {
         const val SEAL_REPORT = "$PREFIX/reports/seal/{id}"
     }
 
-    object EquipmentUris {
-        const val GET_EQUIPMENT = "$PREFIX/equipment"
-        const val SELECT_EQUIPMENT = "$PREFIX/equipment/select"
+    object PaymentsUris {
+        const val GET_ALL_PAYMENT_REPORTS = "$PREFIX/payments"
+        const val CREATE_PAYMENT_REPORT = "$PREFIX/payments/create"
+        const val GET_PAYMENT_REPORT_BY_ID = "$PREFIX/payments/id/{id}"
+        const val UPDATE_PAYMENT_REPORT = "$PREFIX/payments/update"
+        const val SEAL_PAYMENT_REPORT = "$PREFIX/payments/seal/{id}"
     }
 
     object SessionUris {

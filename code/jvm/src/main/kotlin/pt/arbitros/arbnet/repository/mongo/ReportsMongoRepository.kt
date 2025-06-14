@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
+import pt.arbitros.arbnet.domain.PaymentReportMongo
 
 
 // This interface defines custom MongoDB operations that are not provided by the default MongoRepository.
@@ -29,3 +30,5 @@ class CustomMongoReportFunctionsImpl (
 // It allows us to perform CRUD operations on the Report entity without writing any boilerplate code.
 // The Report entity is expected to have a String type ID.
 interface ReportMongoRepository : MongoRepository<ReportMongo, String>, CustomMongoReportFunctions
+
+interface PaymentReportMongoRepository : MongoRepository<PaymentReportMongo, String>, CustomMongoReportFunctions

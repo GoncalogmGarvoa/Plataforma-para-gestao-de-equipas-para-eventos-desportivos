@@ -8,47 +8,52 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import pt.arbitros.arbnet.http.model.payment_report.PaymentReportInputModel
 import pt.arbitros.arbnet.http.model.report.ReportInputModel
 import pt.arbitros.arbnet.repository.mongo.ReportMongoRepository
 import pt.arbitros.arbnet.services.Failure
+import pt.arbitros.arbnet.services.PaymentReportService
 import pt.arbitros.arbnet.services.ReportService
 import pt.arbitros.arbnet.services.Success
 
 // TODO verify if useful -> @RestControllerAdvice
 @RestController
-class ReportController(private val reportService : ReportService) {
+class PaymentsController(private val paymentReportService : PaymentReportService) {
 
-    @PostMapping(Uris.ReportUris.CREATE_REPORT)
-    fun createReport(@RequestBody report: ReportInputModel): ResponseEntity<*> =
-        when (val result = reportService.createReport(report)) {
+    //TODO check errors they are not being handled,so i can test the controller
+
+    @PostMapping(Uris.PaymentsUris.CREATE_PAYMENT_REPORT)
+    fun createPaymentReport(@RequestBody report: PaymentReportInputModel): ResponseEntity<*> =
+        when (val result = paymentReportService.createPaymentReport(report)) {
             is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
-    @GetMapping(Uris.ReportUris.GET_ALL_REPORTS)
-    fun getAllReports(): ResponseEntity<*> =
-        when (val result = reportService.getAllReports()) {
+
+    @GetMapping(Uris.PaymentsUris.GET_ALL_PAYMENT_REPORTS)
+    fun getAllPaymentReports(): ResponseEntity<*> =
+        when (val result = paymentReportService.getAllPaymentReports()) {
             is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
-    @GetMapping(Uris.ReportUris.GET_REPORT_BY_ID)
-    fun getReportById(@PathVariable id: String): ResponseEntity<*> =
-        when (val result = reportService.getReportById(id)) {
+    @GetMapping(Uris.PaymentsUris.GET_PAYMENT_REPORT_BY_ID)
+    fun getPaymentReportById(@PathVariable id: String): ResponseEntity<*> =
+        when (val result = paymentReportService.getPaymentReportById(id)) {
             is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
-    @PutMapping(Uris.ReportUris.UPDATE_REPORT)
-    fun updateReport(@RequestBody report: ReportInputModel): ResponseEntity<*> =
-        when (val result = reportService.updateReport(report)) {
+    @PutMapping(Uris.PaymentsUris.UPDATE_PAYMENT_REPORT)
+    fun updatePaymentReport(@RequestBody report: PaymentReportInputModel): ResponseEntity<*> =
+        when (val result = paymentReportService.updatePaymentReport(report)) {
             is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
-    @PutMapping(Uris.ReportUris.SEAL_REPORT)
-    fun sealReport(@PathVariable id: String): ResponseEntity<*> =
-        when (val result = reportService.sealReport(id)) {
+    @PutMapping(Uris.PaymentsUris.SEAL_PAYMENT_REPORT)
+    fun sealPaymentReport(@PathVariable id: String): ResponseEntity<*> =
+        when (val result = paymentReportService.sealPaymentReport(id)) {
             is Success -> ResponseEntity.ok(result)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
