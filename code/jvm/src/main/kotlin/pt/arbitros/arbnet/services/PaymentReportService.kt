@@ -21,13 +21,13 @@ class PaymentReportService(
 
     fun createPaymentReport(report: PaymentReportInputModel): Either<ApiError, PaymentReportMongo> {
         return transactionManager.run {
-            val competitionRepository = it.competitionRepository
+            val competitionRepository = it.competitionRepository //todo use this to validate competitionId
 
             val reportMongo = PaymentReportMongo.fromInputModel(report)
 
-            val reportCreated = paymentMongoRepository.save(reportMongo)
+            val result = paymentMongoRepository.save(reportMongo)
 
-            return@run success(reportCreated)
+            return@run success(result)
         }
     }
 
@@ -39,7 +39,7 @@ class PaymentReportService(
         val result = paymentMongoRepository.findById(id)
         return if (result.isPresent) success(result.get())
         else failure(ApiError.NotFound(
-            "Report not found",
+            "Payment Report not found",
             "No report found with the provided ID."
         ))
     }
@@ -52,13 +52,13 @@ class PaymentReportService(
 
             val existingReport = paymentMongoRepository.findById(report.id!!).orElse(null)
                 ?: return@run failure(ApiError.NotFound(
-                    "Report not found",
+                    "Payment Report not found",
                     "No report found with the provided ID."
                 ))
 
             if (existingReport.sealed) {
                 return@run failure(ApiError.InvalidField(
-                    "Report is sealed",
+                    "Payment Report is sealed",
                     "Cannot update a sealed report."
                 ))
             }
@@ -72,13 +72,13 @@ class PaymentReportService(
         return transactionManager.run {
             val report = paymentMongoRepository.findById(id).orElse(null)
                 ?: return@run failure(ApiError.NotFound(
-                    "Report not found",
+                    "Payment Report not found",
                     "No report found with the provided ID."
                 ))
 
             if (report.sealed) {
                 return@run failure(ApiError.InvalidField(
-                    "Report already sealed",
+                    "Payment Report already sealed",
                     "The report with ID $id is already sealed."
                 ))
             }
@@ -87,7 +87,7 @@ class PaymentReportService(
 
             if (!success) {
                 return@run failure(ApiError.InternalServerError(
-                    "Failed to seal report",
+                    "Failed to seal payment report",
                     "An error occurred while trying to seal the report with ID $id."
                 ))
             }
@@ -100,7 +100,7 @@ class PaymentReportService(
 
             val updated = paymentMongoRepository.findById(id).orElse(null)
                 ?: return@run failure(ApiError.InternalServerError(
-                    "Failed to create report representative",
+                    "Failed to create payment report representative",
                     "An internal error occurred while trying to create the report representative for the sealed report with ID $id."
                 ))
 
