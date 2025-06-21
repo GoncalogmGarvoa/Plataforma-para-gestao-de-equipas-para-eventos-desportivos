@@ -4,7 +4,7 @@ import '../components/SelectRole.css'
 import '../components/CreateCallList.css'
 
 
-import {createBrowserRouter, Link, Outlet, RouterProvider} from 'react-router-dom'
+import {createBrowserRouter, Link, Outlet, RouterProvider, Navigate} from 'react-router-dom'
 import { AuthnContainer} from './context/Authn'
 import { CreateUser } from "../components/user/CreateUser"
 import { Login } from "../components/user/Login"
@@ -18,7 +18,16 @@ import { useCurrentRole } from "./context/Referee";
 import {useCurrentEmail, UserContainer} from "./context/Referee";
 import {SelectRole} from "../components/user/SelectRole";
 
-
+// Componente para proteger a rota de criar callList
+function RequireArbitrationCouncil({ children }: { children: React.ReactNode }) {
+    const currentRole = useCurrentRole()
+    
+    if (currentRole !== "Arbitration_Council") {
+        return <Navigate to="/" replace={true} />
+    }
+    
+    return <>{children}</>
+}
 
 const router = createBrowserRouter([
     {
@@ -52,7 +61,7 @@ const router = createBrowserRouter([
             },
             {
                 "path": "/create-calllist",
-                "element": <RequireAuthn><CreateCallList /></RequireAuthn>
+                "element": <RequireAuthn><RequireArbitrationCouncil><CreateCallList /></RequireArbitrationCouncil></RequireAuthn>
             },
             {
                 "path": "/logout",
@@ -128,7 +137,7 @@ function Home() {
 export function Header() {
     const currentUser = useCurrentUser()
     const currentEmail = useCurrentEmail()
-    const currentRole = useCurrentRole() // <-- nova linha
+    const currentRole = useCurrentRole()
 
     const isConselhoDeArbitragem = currentRole === "Arbitration_Council"
 
@@ -140,7 +149,9 @@ export function Header() {
                     {currentUser ? (
                         <>
                             <li><Link to="/me">Me</Link></li>
-                            <li><Link to="/create-calllist">Criar Convocatória</Link></li>
+                            {isConselhoDeArbitragem && (
+                                <li><Link to="/create-calllist">Criar Convocatória</Link></li>
+                            )}
                             <li><Logout /></li>
                         </>
                     ) : (
