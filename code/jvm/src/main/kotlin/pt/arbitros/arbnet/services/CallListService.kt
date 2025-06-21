@@ -21,8 +21,6 @@ class CallListService(
     private val utilsDomain: UtilsDomain,
     private val callListDomain: CallListDomain,
     private val callListUtils: CallListServiceUtils,
-    private val callListServiceUtils: CallListServiceUtils
-    // private val clock: Clock
 ) {
 
     // todo Event > callList + competition

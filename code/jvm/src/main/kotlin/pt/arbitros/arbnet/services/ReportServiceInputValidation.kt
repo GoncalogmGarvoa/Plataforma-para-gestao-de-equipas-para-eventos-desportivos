@@ -2,10 +2,11 @@ package pt.arbitros.arbnet.services
 
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.CoverSheet
+import pt.arbitros.arbnet.domain.JurySheet
 import pt.arbitros.arbnet.domain.RefereeEvaluation
 import pt.arbitros.arbnet.domain.ReportMongo
-import pt.arbitros.arbnet.domain.ReportRegister
 import pt.arbitros.arbnet.domain.SessionReportInfo
+import pt.arbitros.arbnet.domain.universal.Category
 import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.repository.CategoryRepository
 import pt.arbitros.arbnet.repository.CompetitionRepository
@@ -63,16 +64,53 @@ class ReportServiceInputValidation {
         val coverSheetValidationResult = validateReportCoverSheet(report.coverSheet)
         if (coverSheetValidationResult is Failure) return coverSheetValidationResult
 
-        val registerValidationResult = validateReportRegister(report.register, categoryRepository)
+        val registerValidationResult = validateRegisters(report.registers)
         if (registerValidationResult is Failure) return registerValidationResult
 
         val refereeEvaluationValidationResult = validateRefereeEvaluations(report.refereeEvaluations, categoryRepository)
         if (refereeEvaluationValidationResult is Failure) return refereeEvaluationValidationResult
 
+        val juryValidationResult = validateJurySheets(report.jury, categoryRepository)
+        if (juryValidationResult is Failure) return juryValidationResult
+
         return success(Unit)
     }
 
-    fun validateReportCoverSheet( coverSheet: CoverSheet) : Either<ApiError, Unit> {
+    private fun validateJurySheets(jury: List<JurySheet>, category: CategoryRepository ): Either<ApiError, Unit> {
+        if (jury.isEmpty()) {
+            return success(Unit) // No jury sheets to validate
+        }
+
+        for (sheet in jury) {
+            if (sheet.matchDayId <= 0)
+                return failure(ApiError.InvalidField(
+                    "Invalid match day ID",
+                    "The match day ID must be a positive integer."
+                ))
+            if (sheet.sessionId <= 0)
+                return failure(ApiError.InvalidField(
+                    "Invalid session ID",
+                    "The session ID must be a positive integer."
+                ))
+            if (sheet.juryMembers.isEmpty())
+                return failure(ApiError.InvalidField(
+                    "At least one jury member is required",
+                    "The jury sheet must contain at least one jury member."
+                ))
+
+            for (member in sheet.juryMembers) {
+                if (member.name.isBlank())
+                    return failure(ApiError.InvalidField(
+                        "Jury member name is required",
+                        "The jury member name must not be empty."
+                    ))
+            }
+        }
+
+        return success(Unit)
+    }
+
+    private fun validateReportCoverSheet( coverSheet: CoverSheet) : Either<ApiError, Unit> {
 
         if (coverSheet.style.isBlank())
             return failure(ApiError.InvalidField(
@@ -139,10 +177,10 @@ class ReportServiceInputValidation {
     fun validateCoverSheetSession(
         session: SessionReportInfo
     ): Either<ApiError, Unit> {
-        if (session.sessionLabel.isBlank())
+        if (session.sessionId <= 0)
             return failure(ApiError.InvalidField(
-                "Session label is required",
-                "The session label must not be empty."
+                "Invalid session ID",
+                "The session ID must be a positive integer."
             ))
         if (session.date.isBlank())
             return failure(ApiError.InvalidField(
@@ -194,36 +232,26 @@ class ReportServiceInputValidation {
         return success(Unit)
     }
 
-    fun validateReportRegister(
-        register: ReportRegister,
-        categoryRepository: CategoryRepository
+    fun validateRegisters(
+        register: Map<String, String>
     ): Either<ApiError, Unit> {
-        if (register.competitionPreparation.isBlank())
-            return failure(ApiError.InvalidField(
-                "Competition preparation is required",
-                "The competition preparation must not be empty."
-            ))
-        if (register.competitionResults.isBlank())
-            return failure(ApiError.InvalidField(
-                "Competition results are required",
-                "The competition results must not be empty."
-            ))
-        if (register.disqualifications.isBlank())
-            return failure(ApiError.InvalidField(
-                "Disqualifications are required",
-                "The disqualifications must not be empty."
-            ))
-        if (register.courseOfCompetition.isBlank())
-            return failure(ApiError.InvalidField(
-                "Course of competition is required",
-                "The course of competition must not be empty."
-            ))
-        if (register.otherObservations.isBlank())
-            return failure(ApiError.InvalidField(
-                "Other observations are required",
-                "The other observations must not be empty."
-            ))
 
+        for (entry in register) {
+            val key = entry.key
+            val value = entry.value
+
+            if (key.isBlank())
+                return failure(ApiError.InvalidField(
+                    "Register key is required",
+                    "The register key must not be empty."
+                ))
+            if (value.isBlank())
+                return failure(ApiError.InvalidField(
+                    "Register value is required",
+                    "The register value must not be empty."
+                ))
+
+        }
         return success(Unit)
     }
 

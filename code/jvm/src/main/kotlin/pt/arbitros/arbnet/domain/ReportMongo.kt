@@ -11,8 +11,9 @@ data class ReportMongo(
     val competitionId: Int,
     val sealed: Boolean = false,
     val coverSheet: CoverSheet,
-    val register: ReportRegister,
-    val refereeEvaluations: List<RefereeEvaluation>  // Lista direta de avaliações dos árbitros
+    val registers: Map<String, String> = emptyMap(), // Mapa de registros com chave como nome do registo e conteudo do registo
+    val refereeEvaluations: List<RefereeEvaluation>,  // Lista direta de avaliações dos árbitros
+    val jury : List<JurySheet> = emptyList() // Lista de folhas de júri, se aplicável
 ){
     companion object {
         fun fromInputModel(input: ReportInputModel): ReportMongo {
@@ -21,7 +22,7 @@ data class ReportMongo(
                 reportType = input.reportType,
                 competitionId = input.competitionId,
                 coverSheet = input.coverSheet,
-                register = input.register,
+                registers = input.register,
                 refereeEvaluations = input.refereeEvaluations
             )
         }
@@ -42,25 +43,29 @@ data class CoverSheet(
 )
 
 data class SessionReportInfo(
-    val sessionLabel: String,
+    val sessionId: Int,
     val date: String,           // "DD/MM/YYYY"
     val startTime: String,      // "HH:mm"
     val endTime: String,        // "HH:mm"
     val durationMinutes: Int
 )
 
-data class ReportRegister(
-    val competitionPreparation: String,
-    val competitionResults: String,
-    val disqualifications: String,
-    val courseOfCompetition: String,
-    val otherObservations: String
-)
-
 data class RefereeEvaluation(
     val name: String,            // Nome do árbitro
     val category: String,        // Categoria
     val grade: Double,           // Nota (0.0 a 5.0, pode incluir .5)
-    val notes: String            // Observações
+    val notes: String,            // Observações
+    val functionBySession: Map< Int, String> // Função por sessão, chave é o rótulo da sessão e valor é a função do árbitro naquela sessão
 )
 
+data class JurySheet (
+    val matchDayId : Int, // ‘ID’ do dia de jogo
+    val sessionId : Int, // ‘ID’ da sessão
+    val juryMembers: List<JuryMember> // Lista de membros do júri
+)
+
+data class JuryMember(
+    val function : String, // Função do membro do júri (ex: "Presidente", "Vogal")
+    val name : String, // Nome do membro do júri
+    val category : String, // Categoria do membro do júri (ex: "Árbitro", "Delegado")
+)
