@@ -1,6 +1,7 @@
 package pt.arbitros.arbnet.repository.mem
 
 import pt.arbitros.arbnet.domain.CallList
+import pt.arbitros.arbnet.domain.CallListWithUserAndCompetition
 import pt.arbitros.arbnet.repository.CallListRepository
 import java.time.LocalDate
 
@@ -32,6 +33,10 @@ class CallListRepositoryMem : CallListRepository {
         callType: String,
         competitionId: Int
     ): Int {
+        TODO("Not yet implemented")
+    }
+
+    override fun getCallListsByUserIdAndType(userId: Int, type: String): List<CallListWithUserAndCompetition> {
         TODO("Not yet implemented")
     }
 

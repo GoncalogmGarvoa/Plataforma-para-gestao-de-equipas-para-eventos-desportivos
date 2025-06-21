@@ -3,6 +3,7 @@ package pt.arbitros.arbnet.repository.jdbi
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.arbitros.arbnet.domain.CallList
+import pt.arbitros.arbnet.domain.CallListWithUserAndCompetition
 import pt.arbitros.arbnet.repository.CallListRepository
 import java.time.LocalDate
 
@@ -60,6 +61,30 @@ class CallListRepositoryJdbi(
             ).bind("id", id)
             .mapTo<CallList>()
             .singleOrNull()
+
+    override fun getCallListsByUserIdAndType(userId: Int, type: String): List<CallListWithUserAndCompetition> =
+        handle.createQuery(
+            """
+        SELECT 
+            cl.id as call_list_id,
+            cl.deadline,
+            cl.call_type,
+            u.id as user_id,
+            u.name as user_name,
+            u.email as user_email,
+            c.competition_number as competition_id,
+            c.name as competition_name
+        FROM dbp.call_list cl
+        JOIN dbp.users u ON cl.user_id = u.id
+        JOIN dbp.competition c ON cl.competition_id = c.competition_number
+        WHERE cl.user_id = :userId AND cl.call_type = :callType
+        """
+        )
+            .bind("userId", userId)
+            .bind("callType", type)
+            .mapTo<CallListWithUserAndCompetition>()
+            .list()
+
 
     override fun updateCallListStage(
         callListId: Int,

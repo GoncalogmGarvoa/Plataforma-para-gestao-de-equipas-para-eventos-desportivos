@@ -211,7 +211,7 @@ class UsersController(
 
         when (
             val userRolesUpdated =
-                usersService.updateUserRoles(
+                usersService.updateUserRoles(   //todo check with token if is admin
                     user.userId,
                     user.roleId,
                     user.addOrRemove,
@@ -236,7 +236,7 @@ class UsersController(
     ): ResponseEntity<*> =
         when (
             val result =
-                usersService.updateUserCategory(
+                usersService.updateUserCategory(   //todo check with token if is admin
                     user.userId,
                     user.categoryId,
                 )

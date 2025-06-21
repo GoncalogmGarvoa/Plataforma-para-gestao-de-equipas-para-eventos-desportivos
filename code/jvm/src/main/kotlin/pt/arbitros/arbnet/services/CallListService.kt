@@ -215,87 +215,99 @@ class CallListService(
             return@run success(event)
         }
 
-fun updateCallListStage(callListId: Int): Either<ApiError, Boolean> =
-    transactionManager.run { tx ->
-        val callListRepository = tx.callListRepository
 
-        val callList =
-            callListRepository.getCallListById(callListId)
-                ?: return@run failure(ApiError.NotFound(
-                    "CallList not found",
-                    "No call list found with the ID $callListId",
-                ))
 
-        val participants = tx.participantRepository.getParticipantsByCallList(callListId)
-
-        if (participants.isEmpty()) {
-            return@run failure(ApiError.InvalidField(
-                "No participants found",
-                "In order to seal the call list, there must be at least one participant.",
-            ))
+    fun getEventsDraft(userId: Int): Either<ApiError, List<CallListWithUserAndCompetition>> =
+        transactionManager.run { tx ->
+            val callLists = tx.callListRepository.getCallListsByUserIdAndType(userId, "callList")
+            success(callLists)
         }
 
-        val callType =
-            when (callList.callType) {
-                CallListType.CALL_LIST.callType -> {
-                    CallListType.SEALED_CALL_LIST.callType
-                }
-                CallListType.CONFIRMATION.callType -> {
-                    CallListType.FINAL_JURY.callType
-                }
-                else -> return@run failure(ApiError.InvalidField(
-                    "Invalid call list type",
-                    "Call list must either be in 'CALL_LIST' or 'CONFIRMATION' to update the stage.",
+
+
+
+
+    fun updateCallListStage(callListId: Int): Either<ApiError, Boolean> =
+        transactionManager.run { tx ->
+            val callListRepository = tx.callListRepository
+
+            val callList =
+                callListRepository.getCallListById(callListId)
+                    ?: return@run failure(ApiError.NotFound(
+                        "CallList not found",
+                        "No call list found with the ID $callListId",
+                    ))
+
+            val participants = tx.participantRepository.getParticipantsByCallList(callListId)
+
+            if (participants.isEmpty()) {
+                return@run failure(ApiError.InvalidField(
+                    "No participants found",
+                    "In order to seal the call list, there must be at least one participant.",
                 ))
             }
 
-        callListRepository.updateCallListStage(callListId, callType)
+            val callType =
+                when (callList.callType) {
+                    CallListType.CALL_LIST.callType -> {
+                        CallListType.SEALED_CALL_LIST.callType
+                    }
+                    CallListType.CONFIRMATION.callType -> {
+                        CallListType.FINAL_JURY.callType
+                    }
+                    else -> return@run failure(ApiError.InvalidField(
+                        "Invalid call list type",
+                        "Call list must either be in 'CALL_LIST' or 'CONFIRMATION' to update the stage.",
+                    ))
+                }
 
-        //TODO code below is repeated from above put all in one function
-        val callListContent = callListRepository.getCallListById(callListId)!!
+            callListRepository.updateCallListStage(callListId, callType)
 
-        val competitionInfo = tx.competitionRepository.getCompetitionById(callListContent.competitionId)
-            ?: return@run failure(ApiError.NotFound(
-                "Competition not found",
-                "No competition found with the ID ${callListContent.competitionId}",
-            ))
+            //TODO code below is repeated from above put all in one function
+            val callListContent = callListRepository.getCallListById(callListId)!!
 
-        val participantsWithCategory = participants.map{
-            val categoryId = tx.categoryDirRepository.getCategoryIdByUserId(it.userId)
-                ?: return@run failure(ApiError.InvalidField(
-                    "Participant does not have a category",
-                    "User with ID ${it.userId} does not have a category assigned",
+            val competitionInfo = tx.competitionRepository.getCompetitionById(callListContent.competitionId)
+                ?: return@run failure(ApiError.NotFound(
+                    "Competition not found",
+                    "No competition found with the ID ${callListContent.competitionId}",
                 ))
-            val category = tx.categoryRepository.getCategoryNameById(categoryId)
-                ?: return@run failure(ApiError.InvalidField(
-                    "Category not found",
-                    "No category found with ID $categoryId",
-                ))
 
-            ParticipantWithCategory(
-                callListId = it.callListId,
-                matchDayId = it.matchDayId,
-                competitionIdMatchDay = it.competitionIdMatchDay,
-                userId = it.userId,
-                functionId = it.functionId,
-                confirmationStatus = it.confirmationStatus,
-                category = category,
+            val participantsWithCategory = participants.map{
+                val categoryId = tx.categoryDirRepository.getCategoryIdByUserId(it.userId)
+                    ?: return@run failure(ApiError.InvalidField(
+                        "Participant does not have a category",
+                        "User with ID ${it.userId} does not have a category assigned",
+                    ))
+                val category = tx.categoryRepository.getCategoryNameById(categoryId)
+                    ?: return@run failure(ApiError.InvalidField(
+                        "Category not found",
+                        "No category found with ID $categoryId",
+                    ))
+
+                ParticipantWithCategory(
+                    callListId = it.callListId,
+                    matchDayId = it.matchDayId,
+                    competitionIdMatchDay = it.competitionIdMatchDay,
+                    userId = it.userId,
+                    functionId = it.functionId,
+                    confirmationStatus = it.confirmationStatus,
+                    category = category,
+                )
+            }
+
+            val matchDays = tx.matchDayRepository.getMatchDaysByCompetition(callListContent.competitionId)
+
+            val callListMongo = populateCallListMongo(
+                competition = competitionInfo,
+                callList = callListContent,
+                matchDays = matchDays,
+                participants = participantsWithCategory,
             )
+
+            callListMongoRepository.save(callListMongo)
+
+            return@run success(true)
         }
-
-        val matchDays = tx.matchDayRepository.getMatchDaysByCompetition(callListContent.competitionId)
-
-        val callListMongo = populateCallListMongo(
-            competition = competitionInfo,
-            callList = callListContent,
-            matchDays = matchDays,
-            participants = participantsWithCategory,
-        )
-
-        callListMongoRepository.save(callListMongo)
-
-        return@run success(true)
-    }
 
 
     fun populateCallListMongo(
