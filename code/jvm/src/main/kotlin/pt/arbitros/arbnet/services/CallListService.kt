@@ -217,9 +217,9 @@ class CallListService(
 
 
 
-    fun getEventsDraft(userId: Int): Either<ApiError, List<CallListWithUserAndCompetition>> =
+    fun getEventsDraft(userId: Int,callListType: String): Either<ApiError, List<CallListWithUserAndCompetition>> =
         transactionManager.run { tx ->
-            val callLists = tx.callListRepository.getCallListsByUserIdAndType(userId, "callList")
+            val callLists = tx.callListRepository.getCallListsByUserIdAndType(userId, callListType)
             success(callLists)
         }
 
