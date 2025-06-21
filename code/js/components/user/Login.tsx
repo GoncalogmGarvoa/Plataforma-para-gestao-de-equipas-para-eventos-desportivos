@@ -2,7 +2,7 @@ import * as React from 'react'
 import {useEffect, useState} from "react"
 import {Link, Navigate} from "react-router-dom"
 import {useSetUser} from "../../src/context/Authn"
-import {useSetEmail} from "../../src/context/Referee"
+import {useSetEmail, useSetRole} from "../../src/context/Referee"
 import "core-js/features/promise";
 
 
@@ -49,6 +49,7 @@ export function Login() {
     const setUser = useSetUser()
     const [locationPath, setLocationPath] = useState("/me")
     const setEmail = useSetEmail()
+    const setRole = useSetRole()
 
     useEffect(() => {
         if (document.cookie != "") {
@@ -56,12 +57,18 @@ export function Login() {
             setUser(document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1]+"=")
             // @ts-ignore
             setEmail(document.cookie.split('; ').find(row => row.startsWith('email=')).split('=')[1])
+            // @ts-ignore
+            const roleCookie = document.cookie.split('; ').find(row => row.startsWith('role='))
+            if (roleCookie) {
+                setRole(roleCookie.split('=')[1])
+            }
             setRedirect(true)
         } else {
             setUser(undefined)
             setEmail(undefined)
+            setRole(undefined)
         }
-    }, [setUser, setEmail])
+    }, [setUser, setEmail, setRole])
 
     if(redirect) {
         return <Navigate to={locationPath} replace={true}/>

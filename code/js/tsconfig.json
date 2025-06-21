@@ -4,6 +4,10 @@
     "jsx": "react",
     "target": "ES2015",
     "moduleResolution": "Node",
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "lib": ["DOM", "DOM.Iterable", "ES6"]
   }
 }
