@@ -91,10 +91,12 @@
 			<artifactId>kotlinx-datetime-jvm</artifactId>
 			<version>0.6.2</version>
 		</dependency>
+		<!-- not in use now , carefull as this automatically applies authentication to all endpoints
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
+		-->
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
