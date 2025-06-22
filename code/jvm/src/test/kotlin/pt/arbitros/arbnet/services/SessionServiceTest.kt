@@ -1,13 +1,17 @@
 package pt.arbitros.arbnet.services
 
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mock
 import org.mockito.InjectMocks
+import org.mockito.Mockito.lenient
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.kotlin.*
+import org.mockito.quality.Strictness
 import pt.arbitros.arbnet.domain.Session
 import pt.arbitros.arbnet.domain.SessionReferee
 import pt.arbitros.arbnet.domain.adaptable.Position
@@ -20,16 +24,23 @@ import pt.arbitros.arbnet.repository.auxiliary.SessionRefereesRepository
 import java.time.LocalDateTime
 import java.time.LocalTime
 
+@MockitoSettings(strictness = Strictness.LENIENT)
 @ExtendWith(MockitoExtension::class)
 class SessionServiceTest {
 
     // Mock the transaction context with all needed repositories
-    interface TransactionContext {
-        val sessionsRepository: SessionsRepository
-        val usersRepository: UsersRepository
-        val positionRepository: PositionRepository
-        val sessionRefereesRepository: SessionRefereesRepository
+    interface TransactionContext : Transaction {
+        override val sessionsRepository: SessionsRepository
+        override val usersRepository: UsersRepository
+        override val positionRepository: PositionRepository
+        override val sessionRefereesRepository: SessionRefereesRepository
     }
+
+    @Mock lateinit var sessionsRepository: SessionsRepository
+    @Mock lateinit var usersRepository: UsersRepository
+    @Mock lateinit var positionRepository: PositionRepository
+    @Mock lateinit var sessionRefereesRepository: SessionRefereesRepository
+
 
     @Mock
     lateinit var transactionManager: TransactionManager
@@ -39,6 +50,14 @@ class SessionServiceTest {
 
     @InjectMocks
     lateinit var sessionService: SessionService
+
+    @BeforeEach
+    fun setup() {
+        whenever(txContext.sessionsRepository).thenReturn(sessionsRepository)
+        whenever(txContext.usersRepository).thenReturn(usersRepository)
+        whenever(txContext.positionRepository).thenReturn(positionRepository)
+        whenever(txContext.sessionRefereesRepository).thenReturn(sessionRefereesRepository)
+    }
 
     @Test
     fun `finishSession returns success true when session exists and finishSession succeeds`() {
@@ -57,17 +76,17 @@ class SessionServiceTest {
             block(txContext)
         }
 
-        // Mock repositories inside the transaction context
-        whenever(txContext.sessionsRepository.getSessionById(sessionId)).thenReturn(session)
-        whenever(txContext.sessionsRepository.finishSession(sessionId)).thenReturn(true)
+        // Usa diretamente os mocks já configurados no setup
+        whenever(sessionsRepository.getSessionById(sessionId)).thenReturn(session)
+        whenever(sessionsRepository.finishSession(sessionId)).thenReturn(true)
 
         val result = sessionService.finishSession(sessionId)
 
         assertTrue(result is Success)
         assertEquals(true, (result as Success).value)
 
-        verify(txContext.sessionsRepository).getSessionById(sessionId)
-        verify(txContext.sessionsRepository).finishSession(sessionId)
+        verify(sessionsRepository).getSessionById(sessionId)
+        verify(sessionsRepository).finishSession(sessionId)
     }
 
     @Test
@@ -153,7 +172,5 @@ class SessionServiceTest {
         verify(txContext.positionRepository, never()).getPositionById(anyInt())
         verify(txContext.sessionRefereesRepository, never()).updateSessionReferees(any())
     }
-
-    // Similarly, you can add tests for user not found and position not found scenarios
 
 }
