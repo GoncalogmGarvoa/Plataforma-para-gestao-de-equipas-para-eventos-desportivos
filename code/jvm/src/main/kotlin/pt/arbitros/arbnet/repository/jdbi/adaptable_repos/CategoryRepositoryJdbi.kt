@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.repository.jdbi
+package pt.arbitros.arbnet.repository.jdbi.adaptable_repos
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -8,10 +8,6 @@ import pt.arbitros.arbnet.repository.adaptable_repos.CategoryRepository
 class CategoryRepositoryJdbi(
     private val handle: Handle
 ) : CategoryRepository {
-
-    override fun createCategory(category: Category): Int {
-        TODO("Not yet implemented")
-    }
 
     override fun getCategoryNameById(id: Int): String? =
         handle
@@ -40,7 +36,4 @@ class CategoryRepositoryJdbi(
             .let { return it }
     }
 
-    override fun deleteCategory(id: Int): Boolean {
-        TODO("Not yet implemented")
-    }
 }

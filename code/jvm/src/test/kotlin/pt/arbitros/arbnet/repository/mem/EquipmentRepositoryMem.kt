@@ -4,7 +4,7 @@ import pt.arbitros.arbnet.domain.universal.Equipment
 import pt.arbitros.arbnet.repository.adaptable_repos.EquipmentRepository
 
 class EquipmentRepositoryMem: EquipmentRepository {
-    override fun getEquipment(): List<Equipment> {
+    override fun getAllEquipment(): List<Equipment> {
         TODO("Not yet implemented")
     }
 

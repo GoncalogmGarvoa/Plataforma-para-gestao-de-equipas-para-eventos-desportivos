@@ -21,7 +21,7 @@ class EquipmentService (
 
     fun getEquipment(): Either<EquipmentError, List<Equipment>> {
         return transactionManager.run {
-            val equipment = it.equipmentRepository.getEquipment()
+            val equipment = it.equipmentRepository.getAllEquipment()
             if (equipment.isEmpty()) {
                 return@run failure(EquipmentError.NotFound) //TODO verify this error
             }

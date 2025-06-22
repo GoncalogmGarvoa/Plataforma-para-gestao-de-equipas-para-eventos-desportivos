@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.repository.jdbi
+package pt.arbitros.arbnet.repository.jdbi.adaptable_repos
 
 import org.jdbi.v3.core.Handle
 import pt.arbitros.arbnet.domain.universal.Equipment
@@ -8,7 +8,7 @@ class EquipmentRepositoryJdbi(
     private val handle : Handle,
 ) : EquipmentRepository {
 
-    override fun getEquipment(): List<Equipment> {
+    override fun getAllEquipment(): List<Equipment> {
         val sql =  """ select * from dbp.equipment"""
 
         return handle.createQuery(sql)

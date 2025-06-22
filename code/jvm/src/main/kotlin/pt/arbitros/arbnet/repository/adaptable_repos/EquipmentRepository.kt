@@ -4,7 +4,7 @@ import pt.arbitros.arbnet.domain.universal.Equipment
 
 interface EquipmentRepository {
 
-    fun getEquipment(): List<Equipment>
+    fun getAllEquipment(): List<Equipment>
 
     fun selectEquipment(competitionId: Int, equipmentsId : List<Int>): Boolean
 

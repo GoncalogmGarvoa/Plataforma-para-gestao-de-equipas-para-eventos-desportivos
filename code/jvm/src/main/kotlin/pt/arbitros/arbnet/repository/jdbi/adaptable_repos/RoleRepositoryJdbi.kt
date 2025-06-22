@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.repository.jdbi
+package pt.arbitros.arbnet.repository.jdbi.adaptable_repos
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -14,7 +14,7 @@ class RoleRepositoryJdbi(
                 """select name from dbp.role where id = :roleId""",
             ).bind("roleId", roleId)
             .mapTo<String>()
-            .singleOrNull() as String?
+            .singleOrNull()
 
     override fun getAllRoles(): List<Role> =
         handle

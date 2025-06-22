@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.repository.jdbi
+package pt.arbitros.arbnet.repository.jdbi.adaptable_repos
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -8,9 +8,6 @@ import pt.arbitros.arbnet.repository.adaptable_repos.PositionRepository
 class PositionRepositoryJdbi (
     private val handle: Handle
 ) : PositionRepository {
-    override fun createPosition(position: Position): Int {
-        TODO("Not yet implemented")
-    }
 
     override fun getPositionById(id: Int): Position? =
         handle
@@ -24,7 +21,4 @@ class PositionRepositoryJdbi (
         TODO("Not yet implemented")
     }
 
-    override fun deletePosition(id: Int): Boolean {
-        TODO("Not yet implemented")
-    }
 }
