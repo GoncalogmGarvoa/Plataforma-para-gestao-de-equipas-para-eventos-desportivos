@@ -14,6 +14,7 @@ class CallListController(
     private val callListService: CallListService,
     private val usersService: UsersService,
     ) {
+
     @PostMapping(Uris.CallListUris.CREATE_CALLLIST)
     fun createCallList(
         @RequestBody callList: CallListInputModel,
@@ -34,7 +35,6 @@ class CallListController(
                 ))
         }
     }
-
 
     @PutMapping(Uris.CallListUris.UPDATE_PARTICIPANT_CONFIRMATION_STATUS)
     fun updateParticipantConfirmationStatus(

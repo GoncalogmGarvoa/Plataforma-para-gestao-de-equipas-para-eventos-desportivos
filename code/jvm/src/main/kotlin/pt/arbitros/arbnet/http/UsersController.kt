@@ -167,7 +167,7 @@ class UsersController(
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
-    @PostMapping("/arbnet/users/signup")
+    @PostMapping(Uris.UsersUris.CREATE_USER)
     fun createUser(
         @RequestBody user: UserInputModel,
     ): ResponseEntity<*> =
