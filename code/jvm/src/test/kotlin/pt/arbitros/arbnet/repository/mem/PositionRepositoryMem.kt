@@ -4,9 +4,6 @@ import pt.arbitros.arbnet.domain.adaptable.Position
 import pt.arbitros.arbnet.repository.adaptable_repos.PositionRepository
 
 class PositionRepositoryMem: PositionRepository {
-    override fun createPosition(position: Position): Int {
-        TODO("Not yet implemented")
-    }
 
     override fun getPositionById(id: Int): Position? {
         TODO("Not yet implemented")
@@ -16,7 +13,12 @@ class PositionRepositoryMem: PositionRepository {
         TODO("Not yet implemented")
     }
 
-    override fun deletePosition(id: Int): Boolean {
+    override fun getPositionNameById(id: Int): String? {
         TODO("Not yet implemented")
     }
+
+    override fun verifyPositionIds(ids: List<Int>): Boolean {
+        TODO("Not yet implemented")
+    }
+
 }

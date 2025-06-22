@@ -4,10 +4,6 @@ import pt.arbitros.arbnet.domain.adaptable.Category
 import pt.arbitros.arbnet.repository.adaptable_repos.CategoryRepository
 
 class CategoryRepositoryMem: CategoryRepository {
-    override fun createCategory(category: Category): Int {
-        TODO("Not yet implemented")
-    }
-
     override fun getCategoryNameById(id: Int): String? {
         TODO("Not yet implemented")
     }
@@ -16,11 +12,12 @@ class CategoryRepositoryMem: CategoryRepository {
         TODO("Not yet implemented")
     }
 
+    override fun verifyCategoryIds(ids: List<Int>): Boolean {
+        TODO("Not yet implemented")
+    }
+
     override fun getAllCategories(): List<Category> {
         TODO("Not yet implemented")
     }
 
-    override fun deleteCategory(id: Int): Boolean {
-        TODO("Not yet implemented")
-    }
 }

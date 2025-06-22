@@ -7,6 +7,9 @@ class RoleRepositoryMem : RoleRepository {
     private val roles = mutableMapOf<Int, String>()
 
     override fun getRoleName(roleId: Int): String? = roles[roleId]
+    override fun getRoleId(roleName: String): Int? {
+        TODO("Not yet implemented")
+    }
 
     override fun getAllRoles(): List<Role> {
         TODO("Not yet implemented")

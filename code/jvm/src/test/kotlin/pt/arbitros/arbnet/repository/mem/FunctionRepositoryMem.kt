@@ -1,5 +1,6 @@
 package pt.arbitros.arbnet.repository.mem
 
+import pt.arbitros.arbnet.domain.adaptable.Function
 import pt.arbitros.arbnet.repository.adaptable_repos.FunctionRepository
 
 class FunctionRepositoryMem : FunctionRepository {
@@ -13,6 +14,10 @@ class FunctionRepositoryMem : FunctionRepository {
         val id = nextId++
         roles[id] = roleName
         return id
+    }
+
+    override fun getAllFunctions(): List<Function> {
+        TODO("Not yet implemented")
     }
 
     override fun getFunctionIdByName(roleName: String): Int =
