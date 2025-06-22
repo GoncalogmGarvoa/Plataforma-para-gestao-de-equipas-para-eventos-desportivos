@@ -13,6 +13,7 @@ import { useCurrentUser } from "./context/Authn"
 import { RequireAuthn } from './RequireAuthn'
 import { Logout } from '../components/user/Logout'
 import { CreateCallList } from "../components/callList/CreateCallList";
+import { SearchCallListDraft } from "../components/callList/SearchCallListDraft";
 import { useCurrentRole } from "./context/Referee";
 
 import {useCurrentEmail, UserContainer} from "./context/Referee";
@@ -62,6 +63,10 @@ const router = createBrowserRouter([
             {
                 "path": "/create-calllist",
                 "element": <RequireAuthn><RequireArbitrationCouncil><CreateCallList /></RequireArbitrationCouncil></RequireAuthn>
+            },
+            {
+                "path": "/search-calllist-draft",
+                "element": <RequireAuthn><RequireArbitrationCouncil><SearchCallListDraft /></RequireArbitrationCouncil></RequireAuthn>
             },
             {
                 "path": "/logout",
@@ -150,7 +155,10 @@ export function Header() {
                         <>
                             <li><Link to="/me">Me</Link></li>
                             {isConselhoDeArbitragem && (
-                                <li><Link to="/create-calllist">Criar Convocatória</Link></li>
+                                <>
+                                    <li><Link to="/create-calllist">Criar Convocatória</Link></li>
+                                    <li><Link to="/search-calllist-draft">Ver Convocatórias Draft</Link></li>
+                                </>
                             )}
                             <li><Logout /></li>
                         </>
