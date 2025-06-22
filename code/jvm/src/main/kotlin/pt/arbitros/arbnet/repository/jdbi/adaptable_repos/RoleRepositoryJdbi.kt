@@ -16,6 +16,15 @@ class RoleRepositoryJdbi(
             .mapTo<String>()
             .singleOrNull()
 
+    override fun getRoleId(roleName: String): Int? {
+        return handle
+            .createQuery(
+                """select id from dbp.role where name = :roleName""",
+            ).bind("roleName", roleName)
+            .mapTo<Int>()
+            .singleOrNull()
+    }
+
     override fun getAllRoles(): List<Role> =
         handle
             .createQuery(

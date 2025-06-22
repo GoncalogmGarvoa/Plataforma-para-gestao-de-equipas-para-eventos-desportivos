@@ -5,5 +5,7 @@ import pt.arbitros.arbnet.domain.universal.Role
 interface RoleRepository {
     fun getRoleName(roleId: Int): String?
 
+    fun getRoleId(roleName: String): Int?
+
     fun getAllRoles(): List<Role>
 }

@@ -40,7 +40,7 @@ class EquipmentService (
                 return@run failure(EquipmentError.NotFound) //TODO verify this error
             }
 
-            if (!equipmentRepository.verifyEquipmentId(equipmentSelectModel.equipmentsId))
+            if (!equipmentRepository.verifyEquipmentIds(equipmentSelectModel.equipmentsId))
                 return@run failure(EquipmentError.NotFound) //TODO verify this error
 
             return@run success(

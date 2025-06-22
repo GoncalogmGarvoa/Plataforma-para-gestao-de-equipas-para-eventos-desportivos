@@ -18,7 +18,35 @@ class PositionRepositoryJdbi (
             .singleOrNull()
 
     override fun getAllPositions(): List<Position> {
-        TODO("Not yet implemented")
+        return handle
+            .createQuery(
+                """select * from dbp.position""",
+            )
+            .mapTo<Position>()
+            .list()
+    }
+
+    override fun getPositionNameById(id: Int): String? {
+        return handle
+            .createQuery(
+                """select name from dbp.position where id = :id""",
+            ).bind("id", id)
+            .mapTo<String>()
+            .singleOrNull()
+    }
+
+    override fun verifyPositionIds(ids: List<Int>): Boolean {
+        val sql = """
+        select count(*) from dbp.position
+        where id in (<IDs>)
+        """
+
+        val count = handle.createQuery(sql)
+            .bindList("IDs", ids)
+            .mapTo(Int::class.java)
+            .one()
+
+        return count == ids.size
     }
 
 }

@@ -130,7 +130,7 @@ class CallListServiceUtils {
             callList.location,
         )
 
-        // 1. Delete existing match days + sessions
+        // 1. Delete existing match days and sessions
 
         sessionsRepository.deleteCompetitionSessions(competitionId)
         matchDayRepository.deleteCompetitionMatchDays(competitionId)
@@ -325,8 +325,7 @@ class CallListServiceUtils {
 
         // 4. Update equipments
 
-
-        if (!equipmentRepository.verifyEquipmentId(callList.equipmentIds))
+        if (!equipmentRepository.verifyEquipmentIds(callList.equipmentIds))
             return failure(ApiError.InvalidField(
                 "Invalid equipment IDs",
                 "One or more equipment IDs provided do not exist in the database",

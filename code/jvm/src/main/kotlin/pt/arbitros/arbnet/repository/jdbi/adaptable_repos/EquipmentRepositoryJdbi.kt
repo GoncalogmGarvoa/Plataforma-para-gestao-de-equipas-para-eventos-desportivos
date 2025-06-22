@@ -32,7 +32,7 @@ class EquipmentRepositoryJdbi(
         return batch.execute().isNotEmpty()
     }
 
-    override fun verifyEquipmentId(equipmentsId: List<Int>): Boolean {
+    override fun verifyEquipmentIds(equipmentsId: List<Int>): Boolean {
         val sql = """
         select count(*) from dbp.equipment
         where id in (<equipmentsId>)

@@ -25,6 +25,20 @@ class CategoryRepositoryJdbi(
             .mapTo<Int>()
             .singleOrNull()
 
+    override fun verifyCategoryIds(ids: List<Int>): Boolean {
+        val sql = """
+        select count(*) from dbp.category
+        where id in (<IDs>)
+        """
+
+        val count = handle.createQuery(sql)
+            .bindList("IDs", ids)
+            .mapTo(Int::class.java)
+            .one()
+
+        return count == ids.size
+    }
+
 
     override fun getAllCategories(): List<Category> {
         handle.

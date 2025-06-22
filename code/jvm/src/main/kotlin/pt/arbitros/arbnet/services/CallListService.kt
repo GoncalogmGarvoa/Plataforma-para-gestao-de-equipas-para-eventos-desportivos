@@ -65,7 +65,7 @@ class CallListService(
             }
 
             if (callList.equipmentIds.isNotEmpty()) {
-                it.equipmentRepository.verifyEquipmentId(callList.equipmentIds)
+                it.equipmentRepository.verifyEquipmentIds(callList.equipmentIds)
                 it.equipmentRepository.selectEquipment(competitionId, callList.equipmentIds)
             }
 

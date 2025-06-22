@@ -28,11 +28,16 @@ class FunctionRepositoryJdbi(
             .mapTo<String>()
             .single()
 
-    override fun getFunctionIds(functions: List<String>): List<Int> =
-        handle
-            .createQuery(
-                """select id from dbp.function where name in (<functions>)""",
-            ).bindList("functions", functions)
-            .mapTo<Int>()
-            .list() as List<Int>
+    override fun verifyFunctionIds(functions: List<String>): List<Int> {
+        val sql = """
+        select id from dbp.function
+        where name in (<FUNCTIONS>)
+        """
+
+        return handle.createQuery(sql)
+            .bindList("FUNCTIONS", functions)
+            .mapTo(Int::class.java)
+            .list()
+    }
+
 }

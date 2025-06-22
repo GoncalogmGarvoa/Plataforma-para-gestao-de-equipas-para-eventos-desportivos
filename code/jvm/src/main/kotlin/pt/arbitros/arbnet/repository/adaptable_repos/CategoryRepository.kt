@@ -8,5 +8,7 @@ interface CategoryRepository {
 
     fun getCategoryIdByName(name: String): Int?
 
+    fun verifyCategoryIds(ids: List<Int>): Boolean
+
     fun getAllCategories(): List<Category>
 }

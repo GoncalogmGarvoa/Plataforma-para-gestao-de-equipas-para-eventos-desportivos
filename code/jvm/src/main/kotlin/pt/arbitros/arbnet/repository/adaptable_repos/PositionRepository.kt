@@ -8,4 +8,8 @@ interface PositionRepository {
 
     fun getAllPositions(): List<Position>
 
+    fun getPositionNameById(id: Int): String?
+
+    fun verifyPositionIds(ids: List<Int>): Boolean
+
 }

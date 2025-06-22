@@ -20,7 +20,7 @@ class FunctionRepositoryMem : FunctionRepository {
             ?: throw NoSuchElementException("Role with name '$roleName' not found")
 
     override fun getFunctionNameById(roleId: Int): String = roles[roleId] ?: throw NoSuchElementException("Role with ID '$roleId' not found")
-    override fun getFunctionIds(functions: List<String>): List<Int> {
+    override fun verifyFunctionIds(functions: List<String>): List<Int> {
         val ids = mutableListOf<Int>()
         for (function in functions) {
             val id = roles.entries.find { it.value == function }?.key
