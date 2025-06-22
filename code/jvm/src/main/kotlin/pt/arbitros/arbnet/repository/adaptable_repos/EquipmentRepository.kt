@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.repository
+package pt.arbitros.arbnet.repository.adaptable_repos
 
 import pt.arbitros.arbnet.domain.universal.Equipment
 
@@ -11,5 +11,6 @@ interface EquipmentRepository {
     fun verifyEquipmentId(equipmentsId : List<Int>): Boolean
 
     fun getEquipmentByCompetitionId(competitionId: Int): List<Equipment>
+
     fun deleteEquipmentByCompetitionId(competitionId: Int): Boolean
 }

@@ -1,6 +1,6 @@
 package pt.arbitros.arbnet.repository.mem
 
-import pt.arbitros.arbnet.repository.FunctionRepository
+import pt.arbitros.arbnet.repository.adaptable_repos.FunctionRepository
 
 class FunctionRepositoryMem : FunctionRepository {
     private val roles = mutableMapOf<Int, String>()

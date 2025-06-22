@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.repository
+package pt.arbitros.arbnet.repository.adaptable_repos
 
 import pt.arbitros.arbnet.domain.universal.Category
 

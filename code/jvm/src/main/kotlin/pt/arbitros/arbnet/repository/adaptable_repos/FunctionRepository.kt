@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.repository
+package pt.arbitros.arbnet.repository.adaptable_repos
 
 interface FunctionRepository {
     fun getFunctionIdByName(roleName: String): Int?

@@ -6,9 +6,8 @@ import pt.arbitros.arbnet.domain.JurySheet
 import pt.arbitros.arbnet.domain.RefereeEvaluation
 import pt.arbitros.arbnet.domain.ReportMongo
 import pt.arbitros.arbnet.domain.SessionReportInfo
-import pt.arbitros.arbnet.domain.universal.Category
 import pt.arbitros.arbnet.http.ApiError
-import pt.arbitros.arbnet.repository.CategoryRepository
+import pt.arbitros.arbnet.repository.adaptable_repos.CategoryRepository
 import pt.arbitros.arbnet.repository.CompetitionRepository
 import java.time.LocalDate
 import java.time.LocalTime

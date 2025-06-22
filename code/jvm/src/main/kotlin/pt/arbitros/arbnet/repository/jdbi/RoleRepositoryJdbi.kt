@@ -3,7 +3,7 @@ package pt.arbitros.arbnet.repository.jdbi
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.arbitros.arbnet.domain.universal.Role
-import pt.arbitros.arbnet.repository.RoleRepository
+import pt.arbitros.arbnet.repository.adaptable_repos.RoleRepository
 
 class RoleRepositoryJdbi(
     private val handle: Handle,

@@ -1,7 +1,7 @@
 package pt.arbitros.arbnet.repository.mem
 
 import pt.arbitros.arbnet.domain.universal.Position
-import pt.arbitros.arbnet.repository.PositionRepository
+import pt.arbitros.arbnet.repository.adaptable_repos.PositionRepository
 
 class PositionRepositoryMem: PositionRepository {
     override fun createPosition(position: Position): Int {

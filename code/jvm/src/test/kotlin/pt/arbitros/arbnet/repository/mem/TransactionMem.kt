@@ -5,10 +5,11 @@ package pt.arbitros.arbnet.repository.mem
 import org.jdbi.v3.core.Handle
 import pt.arbitros.arbnet.repository.*
 import pt.arbitros.arbnet.repository.auxiliary.SessionRefereesRepository
-import pt.arbitros.arbnet.repository.jdbi.CategoryDirRepositoryJdbi
-import pt.arbitros.arbnet.repository.jdbi.CategoryRepositoryJdbi
-import pt.arbitros.arbnet.repository.jdbi.EquipmentRepositoryJdbi
-import pt.arbitros.arbnet.repository.jdbi.ReportRepositoryJdbi
+import pt.arbitros.arbnet.repository.adaptable_repos.CategoryRepository
+import pt.arbitros.arbnet.repository.adaptable_repos.EquipmentRepository
+import pt.arbitros.arbnet.repository.adaptable_repos.FunctionRepository
+import pt.arbitros.arbnet.repository.adaptable_repos.PositionRepository
+import pt.arbitros.arbnet.repository.adaptable_repos.RoleRepository
 
 class TransactionMem(
     private val handle: Handle,

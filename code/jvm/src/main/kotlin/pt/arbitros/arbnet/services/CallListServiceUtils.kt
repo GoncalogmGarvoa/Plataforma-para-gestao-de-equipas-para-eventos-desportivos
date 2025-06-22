@@ -15,8 +15,8 @@ import pt.arbitros.arbnet.http.model.calllist.CallListInputModel
 import pt.arbitros.arbnet.http.model.calllist.ParticipantChoice
 import pt.arbitros.arbnet.repository.CallListRepository
 import pt.arbitros.arbnet.repository.CompetitionRepository
-import pt.arbitros.arbnet.repository.EquipmentRepository
-import pt.arbitros.arbnet.repository.FunctionRepository
+import pt.arbitros.arbnet.repository.adaptable_repos.EquipmentRepository
+import pt.arbitros.arbnet.repository.adaptable_repos.FunctionRepository
 import pt.arbitros.arbnet.repository.MatchDayRepository
 import pt.arbitros.arbnet.repository.ParticipantRepository
 import pt.arbitros.arbnet.repository.SessionsRepository
