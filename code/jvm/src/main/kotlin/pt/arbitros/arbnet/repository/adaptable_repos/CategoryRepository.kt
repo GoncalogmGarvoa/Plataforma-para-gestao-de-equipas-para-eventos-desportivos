@@ -1,6 +1,6 @@
 package pt.arbitros.arbnet.repository.adaptable_repos
 
-import pt.arbitros.arbnet.domain.universal.Category
+import pt.arbitros.arbnet.domain.adaptable.Category
 
 interface CategoryRepository {
 

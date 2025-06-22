@@ -1,6 +1,6 @@
 package pt.arbitros.arbnet.repository.mem
 
-import pt.arbitros.arbnet.domain.universal.Role
+import pt.arbitros.arbnet.domain.adaptable.Role
 import pt.arbitros.arbnet.repository.adaptable_repos.RoleRepository
 
 class RoleRepositoryMem : RoleRepository {

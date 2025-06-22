@@ -5,7 +5,6 @@ package pt.arbitros.arbnet.http
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import pt.arbitros.arbnet.domain.users.AuthenticatedUser
-import pt.arbitros.arbnet.http.model.*
 import pt.arbitros.arbnet.http.model.users.UserCategoryUpdateInputModel
 import pt.arbitros.arbnet.http.model.users.UserCreateTokenInputModel
 import pt.arbitros.arbnet.http.model.users.UserInputModel
@@ -23,7 +22,7 @@ class UsersController(
     private val usersService: UsersService,
 ) {
     @PostMapping(Uris.UsersUris.TOKEN) // equal to logging in
-    fun token(
+    fun login(
         @RequestBody input: UserCreateTokenInputModel,
     ): ResponseEntity<*> {
         val res = usersService.createToken(input.email, input.password)

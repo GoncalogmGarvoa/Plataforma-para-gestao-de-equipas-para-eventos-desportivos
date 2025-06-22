@@ -1,6 +1,6 @@
 package pt.arbitros.arbnet.repository.adaptable_repos
 
-import pt.arbitros.arbnet.domain.universal.Equipment
+import pt.arbitros.arbnet.domain.adaptable.Equipment
 
 interface EquipmentRepository {
 

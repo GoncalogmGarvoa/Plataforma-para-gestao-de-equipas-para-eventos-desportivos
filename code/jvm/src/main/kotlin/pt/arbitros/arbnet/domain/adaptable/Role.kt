@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.domain.universal
+package pt.arbitros.arbnet.domain.adaptable
 
 class Role(
     val id: Int,

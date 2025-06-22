@@ -1,7 +1,7 @@
 package pt.arbitros.arbnet.repository.jdbi.adaptable_repos
 
 import org.jdbi.v3.core.Handle
-import pt.arbitros.arbnet.domain.universal.Equipment
+import pt.arbitros.arbnet.domain.adaptable.Equipment
 import pt.arbitros.arbnet.repository.adaptable_repos.EquipmentRepository
 
 class EquipmentRepositoryJdbi(

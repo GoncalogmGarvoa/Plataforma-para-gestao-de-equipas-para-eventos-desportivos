@@ -5,7 +5,7 @@ import kotlinx.datetime.Instant
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.UtilsDomain
-import pt.arbitros.arbnet.domain.universal.Role
+import pt.arbitros.arbnet.domain.adaptable.Role
 import pt.arbitros.arbnet.domain.users.*
 import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.http.invalidFieldError

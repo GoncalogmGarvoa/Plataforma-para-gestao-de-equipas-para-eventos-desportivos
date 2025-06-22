@@ -2,7 +2,7 @@ package pt.arbitros.arbnet.repository.jdbi.adaptable_repos
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
-import pt.arbitros.arbnet.domain.universal.Function
+import pt.arbitros.arbnet.domain.adaptable.Function
 import pt.arbitros.arbnet.repository.adaptable_repos.FunctionRepository
 
 class FunctionRepositoryJdbi(

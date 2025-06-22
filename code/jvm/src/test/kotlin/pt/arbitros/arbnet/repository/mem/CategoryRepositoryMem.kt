@@ -1,6 +1,6 @@
 package pt.arbitros.arbnet.repository.mem
 
-import pt.arbitros.arbnet.domain.universal.Category
+import pt.arbitros.arbnet.domain.adaptable.Category
 import pt.arbitros.arbnet.repository.adaptable_repos.CategoryRepository
 
 class CategoryRepositoryMem: CategoryRepository {
