@@ -24,6 +24,7 @@ class ParticipantWithCategory(
     val matchDayId: Int,
     val competitionIdMatchDay: Int,
     val userId: Int,
+    val userName: String,
     val functionId: Int,
     val confirmationStatus: String,
     val category: String

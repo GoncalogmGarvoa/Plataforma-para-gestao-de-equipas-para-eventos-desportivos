@@ -91,7 +91,7 @@ class CallListController(
         @PathVariable id: Int,
 
     ): ResponseEntity<*> =
-        when (val result = callListService.getEventById(id)) {
+        when (val result: Either<ApiError, EventOutputModel> = callListService.getEventById(id)) {
             is Success -> {
                 val value = result.value
                 ResponseEntity.ok(value)

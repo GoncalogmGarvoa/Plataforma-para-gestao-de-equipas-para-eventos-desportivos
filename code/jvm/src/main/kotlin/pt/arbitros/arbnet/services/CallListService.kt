@@ -181,12 +181,18 @@ class CallListService(
                         "Category not found",
                         "No category found with ID $categoryId",
                     ))
+                val user = tx.usersRepository.getUserById(it.userId)
+                    ?: return@run failure(ApiError.NotFound(
+                        "User not found",
+                        "No user found with ID ${it.userId}",
+                    ))
 
                 ParticipantWithCategory(
                     callListId = it.callListId,
                     matchDayId = it.matchDayId,
                     competitionIdMatchDay = it.competitionIdMatchDay,
                     userId = it.userId,
+                    userName = user.name,
                     functionId = it.functionId,
                     confirmationStatus = it.confirmationStatus,
                     category = category,
@@ -284,11 +290,18 @@ class CallListService(
                         "No category found with ID $categoryId",
                     ))
 
+                val user = tx.usersRepository.getUserById(it.userId)
+                    ?: return@run failure(ApiError.NotFound(
+                        "User not found",
+                        "No user found with ID ${it.userId}",
+                    ))
+
                 ParticipantWithCategory(
                     callListId = it.callListId,
                     matchDayId = it.matchDayId,
                     competitionIdMatchDay = it.competitionIdMatchDay,
                     userId = it.userId,
+                    userName = user.name,
                     functionId = it.functionId,
                     confirmationStatus = it.confirmationStatus,
                     category = category,
