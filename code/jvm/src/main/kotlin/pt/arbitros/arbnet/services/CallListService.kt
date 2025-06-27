@@ -37,7 +37,8 @@ class CallListService(
             )
             if (result is Failure) return@run result
 
-            val (competitionId, matchDayMap) =
+            try {
+                val (competitionId, matchDayMap) =
                 callListUtils.createCompetitionAndSessions(
                     callList,
                     it.competitionRepository,
@@ -45,33 +46,43 @@ class CallListService(
                     it.sessionsRepository,
                 )
 
-            val callListId =
-                callListUtils.createCallListOnly(
-                    callList,
-                    it.callListRepository,
-                    competitionId,
-                    userId,
-                )
-
-            if (callList.participants.isNotEmpty()) {
-                val participantsResult =
-                    callListUtils.createParticipantsOnly(
-                        callList.participants,
-                        matchDayMap,
-                        callListId,
+                val callListId =
+                    callListUtils.createCallListOnly(
+                        callList,
+                        it.callListRepository,
                         competitionId,
-                        it.functionRepository,
-                        it.participantRepository,
+                        userId,
                     )
-                if (participantsResult is Failure) return@run participantsResult
+
+                if (callList.participants.isNotEmpty()) {
+                    val participantsResult =
+                        callListUtils.createParticipantsOnly(
+                            callList.participants,
+                            matchDayMap,
+                            callListId,
+                            competitionId,
+                            it.functionRepository,
+                            it.participantRepository,
+                        )
+                    if (participantsResult is Failure)
+                        throw RuntimeException("Error Creating Participant: ${participantsResult.value}")
+
+                }
+
+                if (callList.equipmentIds.isNotEmpty()) {
+                    it.equipmentRepository.verifyEquipmentId(callList.equipmentIds)
+                    it.equipmentRepository.selectEquipment(competitionId, callList.equipmentIds)
+                }
+
+                success(callListId)}
+            catch (e: Exception) {
+                it.rollback()
+                return@run failure(ApiError.InvalidField(
+                    e.message ?: "Error creating event",
+                    e.message ?: "Unknown error"
+                ))
             }
 
-            if (callList.equipmentIds.isNotEmpty()) {
-                it.equipmentRepository.verifyEquipmentId(callList.equipmentIds)
-                it.equipmentRepository.selectEquipment(competitionId, callList.equipmentIds)
-            }
-
-            success(callListId)
         }
 
     fun updateEvent(callList: CallListInputModel,userId: Int): Either<ApiError, Int> =
@@ -399,3 +410,4 @@ class CallListService(
     }
 
 }
+
