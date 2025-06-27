@@ -61,8 +61,14 @@ export function CallListInfo() {
 
     if (!event) return <div>Erro: convocatória não encontrada.</div>
 
-    // Agrupar participantes por nome
-    const groupedParticipants: Record<string, { category: string; days: { date: string; func: string }[] }> = {}
+    const groupedParticipants: Record<
+        string,
+        {
+            category: string
+            days: { date: string; func: string; status: string }[]
+        }
+    > = {}
+
     event.participants.forEach((p) => {
         const matchDay = event.matchDaySessions.find((md) => md.id === p.matchDayId)
         if (!matchDay) return
@@ -73,9 +79,11 @@ export function CallListInfo() {
 
         groupedParticipants[p.name].days.push({
             date: new Date(matchDay.matchDate).toLocaleDateString(),
-            func: p.function
+            func: p.function,
+            status: p.status // inclui status
         })
     })
+
 
     const updateDayResponse = (dayId: number, response: "accepted" | "declined") => {
         setDayResponses((prev) => ({
@@ -130,11 +138,21 @@ export function CallListInfo() {
                     <strong>{name}</strong> <em>({category})</em>
                     <ul>
                         {days.map((day, i) => (
-                            <li key={i}>{day.date} — <em>{day.func}</em></li>
+                            <li key={i}>
+                                {day.date} — <em>{day.func}</em> —{" "}
+                                <strong>
+                                    {day.status === "accepted"
+                                        ? "Aceitou"
+                                        : day.status === "declined"
+                                            ? "Recusou"
+                                            : "À espera"}
+                                </strong>
+                            </li>
                         ))}
                     </ul>
                 </div>
             ))}
+
 
             {/* Equipamentos */}
             <hr />

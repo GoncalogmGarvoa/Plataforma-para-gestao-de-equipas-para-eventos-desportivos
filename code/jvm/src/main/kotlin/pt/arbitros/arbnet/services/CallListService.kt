@@ -319,10 +319,6 @@ class CallListService(
         }
     }
 
-
-
-
-
     fun updateCallListStage(callListId: Int): Either<ApiError, Boolean> =
         transactionManager.run { tx ->
             val callListRepository = tx.callListRepository
