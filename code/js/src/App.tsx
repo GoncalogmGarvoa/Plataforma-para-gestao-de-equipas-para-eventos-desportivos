@@ -19,6 +19,8 @@ import { useCurrentRole } from "./context/Referee";
 import {useCurrentEmail, UserContainer} from "./context/Referee";
 import {SelectRole} from "../components/user/SelectRole";
 import { EditCallList } from "../components/callList/EditCallList";
+import {CheckCallLists} from "../components/callList/CheckCallLists";
+import {CallListInfo} from "../components/callList/CallListInfo";
 
 // Componente para proteger a rota de criar callList
 function RequireArbitrationCouncil({ children }: { children: React.ReactNode }) {
@@ -28,6 +30,16 @@ function RequireArbitrationCouncil({ children }: { children: React.ReactNode }) 
         return <Navigate to="/" replace={true} />
     }
     
+    return <>{children}</>
+}
+
+function RequireReferee({ children }: { children: React.ReactNode }) {
+    const currentRole = useCurrentRole()
+
+    if (currentRole !== "Referee") {
+        return <Navigate to="/" replace={true} />
+    }
+
     return <>{children}</>
 }
 
@@ -62,12 +74,20 @@ const router = createBrowserRouter([
                 "element": <RequireAuthn><Me /></RequireAuthn>
             },
             {
-                "path": "/create-calllist",
+                "path": "/create-callList",
                 "element": <RequireAuthn><RequireArbitrationCouncil><CreateCallList /></RequireArbitrationCouncil></RequireAuthn>
             },
             {
-                "path": "/search-calllist-draft",
+                "path": "/search-callList-draft",
                 "element": <RequireAuthn><RequireArbitrationCouncil><SearchCallListDraft /></RequireArbitrationCouncil></RequireAuthn>
+            },
+            {
+                "path": "/check-callLists",
+                "element": <RequireAuthn><RequireReferee><CheckCallLists /></RequireReferee></RequireAuthn>
+            },
+            {
+                "path": "/callList-info",
+                "element": <RequireAuthn><CallListInfo /></RequireAuthn>
             },
             {
                 "path": "/edit-calllist/:id",
@@ -150,6 +170,7 @@ export function Header() {
     const currentRole = useCurrentRole()
 
     const isConselhoDeArbitragem = currentRole === "Arbitration_Council"
+    const isReferee = currentRole === "Referee"
 
     return (
         <header>
@@ -163,6 +184,11 @@ export function Header() {
                                 <>
                                     <li><Link to="/create-calllist">Criar Convocatória</Link></li>
                                     <li><Link to="/search-calllist-draft">Ver Convocatórias Draft</Link></li>
+                                </>
+                            )}
+                            {isReferee && (
+                                <>
+                                    <li><Link to="/check-callLists">Ver Convocações</Link></li>
                                 </>
                             )}
                             <li><Logout /></li>

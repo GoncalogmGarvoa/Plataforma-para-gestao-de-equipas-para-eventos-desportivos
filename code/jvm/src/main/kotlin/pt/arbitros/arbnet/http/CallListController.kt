@@ -89,7 +89,6 @@ class CallListController(
     @GetMapping(Uris.CallListUris.GET_CALLLIST)
     fun getCallList(
         @PathVariable id: Int,
-
     ): ResponseEntity<*> =
         when (val result: Either<ApiError, EventOutputModel> = callListService.getEventById(id)) {
             is Success -> {
@@ -123,6 +122,17 @@ class CallListController(
         }
     }
 
+    @GetMapping(Uris.CallListUris.GET_CALLLISTS_WITH_REFEREE)
+    fun getAllCallListsWithReferee(
+        @PathVariable refereeId: Int,
+    ): ResponseEntity<*> =
+        when (val result = callListService.getCallListsWithReferee(refereeId)) {
+            is Success -> {
+                val value = result.value
+                ResponseEntity.ok(value)
+            }
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
 
 
     @GetMapping(Uris.CallListUris.GET_SEALED_CALLLIST)
