@@ -187,6 +187,9 @@ class CallListService(
                         "No user found with ID ${it.userId}",
                     ))
 
+                val function = tx.functionRepository.getFunctionNameById(it.functionId)
+
+
                 ParticipantWithCategory(
                     callListId = it.callListId,
                     matchDayId = it.matchDayId,
@@ -194,6 +197,7 @@ class CallListService(
                     userId = it.userId,
                     userName = user.name,
                     functionId = it.functionId,
+                    functionName = function,
                     confirmationStatus = it.confirmationStatus,
                     category = category,
                 )
@@ -296,6 +300,9 @@ class CallListService(
                         "No user found with ID ${it.userId}",
                     ))
 
+                val function = tx.functionRepository.getFunctionNameById(it.functionId)
+
+
                 ParticipantWithCategory(
                     callListId = it.callListId,
                     matchDayId = it.matchDayId,
@@ -303,6 +310,7 @@ class CallListService(
                     userId = it.userId,
                     userName = user.name,
                     functionId = it.functionId,
+                    functionName = function,
                     confirmationStatus = it.confirmationStatus,
                     category = category,
                 )

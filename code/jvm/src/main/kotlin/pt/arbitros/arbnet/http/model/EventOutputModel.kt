@@ -26,6 +26,7 @@ class ParticipantWithCategory(
     val userId: Int,
     val userName: String,
     val functionId: Int,
+    val functionName: String,
     val confirmationStatus: String,
     val category: String
 )
