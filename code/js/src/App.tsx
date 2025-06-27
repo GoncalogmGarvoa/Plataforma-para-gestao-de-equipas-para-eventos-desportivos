@@ -18,6 +18,7 @@ import { useCurrentRole } from "./context/Referee";
 
 import {useCurrentEmail, UserContainer} from "./context/Referee";
 import {SelectRole} from "../components/user/SelectRole";
+import { EditCallList } from "../components/callList/EditCallList";
 
 // Componente para proteger a rota de criar callList
 function RequireArbitrationCouncil({ children }: { children: React.ReactNode }) {
@@ -67,6 +68,10 @@ const router = createBrowserRouter([
             {
                 "path": "/search-calllist-draft",
                 "element": <RequireAuthn><RequireArbitrationCouncil><SearchCallListDraft /></RequireArbitrationCouncil></RequireAuthn>
+            },
+            {
+                "path": "/edit-calllist/:id",
+                "element": <RequireAuthn><RequireArbitrationCouncil><EditCallList /></RequireArbitrationCouncil></RequireAuthn>
             },
             {
                 "path": "/logout",

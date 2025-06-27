@@ -130,12 +130,6 @@ export function SearchCallListDraft() {
             {callLists.length === 0 ? (
                 <div className="no-call-lists">
                     <p>Nenhuma convocatória draft encontrada.</p>
-                    <button
-                        className="btn btn-primary"
-                        onClick={() => navigate("/create-calllist")}
-                    >
-                        Criar Nova Convocatória
-                    </button>
                 </div>
             ) : (
                 <div className="call-lists-grid">
@@ -147,9 +141,6 @@ export function SearchCallListDraft() {
                             </div>
 
                             <div className="call-list-details">
-                                <div className="detail-item">
-                                    <strong>Tipo:</strong> {callList.callType}
-                                </div>
                                 <div className="detail-item">
                                     <strong>Nome da Competição:</strong> {callList.competitionName}
                                 </div>
@@ -168,32 +159,11 @@ export function SearchCallListDraft() {
                                 >
                                     Editar
                                 </button>
-                                <button
-                                    className="btn btn-primary"
-                                    onClick={() => navigate(`/view-calllist/${callList.callListId}`)}
-                                >
-                                    Ver Detalhes
-                                </button>
                             </div>
                         </div>
                     ))}
                 </div>
             )}
-
-            <div className="actions-container">
-                <button
-                    className="btn btn-primary"
-                    onClick={() => navigate("/create-calllist")}
-                >
-                    Criar Nova Convocatória
-                </button>
-                <button
-                    className="btn btn-secondary"
-                    onClick={() => navigate("/")}
-                >
-                    Voltar ao Início
-                </button>
-            </div>
         </div>
     );
 }
