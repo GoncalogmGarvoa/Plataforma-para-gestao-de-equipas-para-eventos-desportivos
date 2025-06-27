@@ -4,6 +4,9 @@ import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.arbitros.arbnet.domain.CallList
 import pt.arbitros.arbnet.domain.CallListWithUserAndCompetition
+import pt.arbitros.arbnet.http.model.EventOutputModel
+import pt.arbitros.arbnet.http.model.RefereeCallLists
+import pt.arbitros.arbnet.http.model.RefereeCallListsOutputModel
 import pt.arbitros.arbnet.repository.CallListRepository
 import java.time.LocalDate
 
@@ -84,6 +87,30 @@ class CallListRepositoryJdbi(
             .bind("callType", type)
             .mapTo<CallListWithUserAndCompetition>()
             .list()
+
+    override fun getCallListsWithReferee(userId: Int): List<RefereeCallLists> =
+        handle.createQuery(
+            """
+        SELECT DISTINCT
+            cl.id AS call_list_id,
+            c.competition_number AS competition_id,
+            c.name AS competition_name,
+            c.address,
+            c.phone_number, 
+            c.email, 
+            c.association,
+            c.location,
+            cl.deadline
+        FROM dbp.call_list cl
+        JOIN dbp.competition c ON cl.competition_id = c.competition_number
+        JOIN dbp.participant p ON cl.id = p.call_list_id
+        WHERE p.user_id = :userId
+        """
+        )
+            .bind("userId", userId)
+            .mapTo<RefereeCallLists>()
+            .list()
+
 
 
     override fun updateCallListStage(

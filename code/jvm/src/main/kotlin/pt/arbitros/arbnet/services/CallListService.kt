@@ -9,7 +9,10 @@ import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.http.model.CallListInputModel
 import pt.arbitros.arbnet.http.model.EquipmentOutputModel
 import pt.arbitros.arbnet.http.model.EventOutputModel
+import pt.arbitros.arbnet.http.model.ParticipantInfo
 import pt.arbitros.arbnet.http.model.ParticipantWithCategory
+import pt.arbitros.arbnet.http.model.RefereeCallLists
+import pt.arbitros.arbnet.http.model.RefereeCallListsOutputModel
 import pt.arbitros.arbnet.repository.*
 import pt.arbitros.arbnet.repository.mongo.CallListMongoRepository
 import pt.arbitros.arbnet.transactionRepo
@@ -232,7 +235,6 @@ class CallListService(
                     matchDaySessions = matchDays,
                     equipments = equipments,
                 )
-
             return@run success(event)
         }
 
@@ -243,6 +245,79 @@ class CallListService(
             val callLists = tx.callListRepository.getCallListsByUserIdAndType(userId, callListType)
             success(callLists)
         }
+
+    fun getCallListsWithReferee(refereeId: Int): Either<ApiError, List<RefereeCallListsOutputModel>> {
+        return transactionManager.run { tx ->
+            val callLists: List<RefereeCallLists> = tx.callListRepository.getCallListsWithReferee(refereeId)
+            if (callLists.isEmpty()) {
+                return@run failure(ApiError.NotFound(
+                    "No call lists found for referee with ID $refereeId",
+                    "The referee with ID $refereeId has no associated call lists."
+                ))
+            }
+
+
+            val final = callLists.map {
+
+                val participants = tx.participantRepository.getParticipantsByCallList(it.callListId)
+
+                val participantsInfo = participants.map { participant ->
+                    val categoryId = tx.categoryDirRepository.getCategoryIdByUserId(participant.userId)
+                        ?: return@run failure(
+                            ApiError.InvalidField(
+                                "Participant does not have a category",
+                                "User with ID ${participant.userId} does not have a category assigned",
+                            )
+                        )
+                    val category = tx.categoryRepository.getCategoryNameById(categoryId)
+                        ?: return@run failure(
+                            ApiError.InvalidField(
+                                "Category not found",
+                                "No category found with ID $categoryId",
+                            )
+                        )
+                    val user = tx.usersRepository.getUserById(participant.userId)
+                        ?: return@run failure(
+                            ApiError.NotFound(
+                                "User not found",
+                                "No user found with ID ${participant.userId}",
+                            )
+                        )
+
+                    val function = tx.functionRepository.getFunctionNameById(participant.functionId)
+
+                    ParticipantInfo(
+                        user.name,
+                        category,
+                        function,
+                        participant.confirmationStatus,
+                        participant.userId,
+                        participant.matchDayId
+                    )
+                }
+
+                val matchDays = tx.matchDayRepository.getMatchDaysByCompetition(it.competitionId)
+                val equipments = tx.equipmentRepository.getEquipmentByCompetitionId(it.competitionId)
+                    .map { equipment -> EquipmentOutputModel(id = equipment.id, name = equipment.name,)}
+
+
+                RefereeCallListsOutputModel(
+                    it.callListId,
+                    it.competitionName,
+                    it.address,
+                    it.phoneNumber,
+                    it.email,
+                    it.association,
+                    it.location,
+                    it.deadline.toString(),
+                    participantsInfo,
+                    matchDays,
+                    equipments
+                )
+            }
+            return@run success(final)
+        }
+    }
 
 
 

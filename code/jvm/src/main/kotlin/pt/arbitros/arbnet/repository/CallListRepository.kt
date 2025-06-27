@@ -2,6 +2,9 @@ package pt.arbitros.arbnet.repository
 
 import pt.arbitros.arbnet.domain.CallList
 import pt.arbitros.arbnet.domain.CallListWithUserAndCompetition
+import pt.arbitros.arbnet.http.model.EventOutputModel
+import pt.arbitros.arbnet.http.model.RefereeCallLists
+import pt.arbitros.arbnet.http.model.RefereeCallListsOutputModel
 import java.time.LocalDate
 
 interface CallListRepository {
@@ -25,6 +28,8 @@ interface CallListRepository {
     ): List<CallListWithUserAndCompetition>
 
     fun updateCallListStatus(callListId: Int): Boolean
+
+    fun getCallListsWithReferee(userId: Int): List<RefereeCallLists>
 
     fun getCallListById(id: Int): CallList?
 
