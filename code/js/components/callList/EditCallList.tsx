@@ -302,38 +302,58 @@ export function EditCallList() {
                     <thead>
                     <tr>
                         <th>Nome</th>
-                        {matchDaySessionsInput.map(({matchDay}) => (
-                            <th key={matchDay}>{matchDay}</th>
-                        ))}
+                        <th>Função</th>
+                        <th>Data</th>
+                        <th>Ações</th>
                     </tr>
                     </thead>
-                    <tbody>
-                    {Object.entries(participantInputs).map(([name, roles]) => (
-                        <tr key={name}>
-                            <td>
-                                <strong>{name}</strong>
-                                <button
-                                    className="remove-button"
-                                    style={{marginLeft: "8px"}}
-                                    type="button"
-                                    onClick={() => removeParticipant(name)}
-                                >
-                                    Remover
-                                </button>
-                            </td>
-                            {matchDaySessionsInput.map(({matchDay}) => (
-                                <td key={matchDay}>
+                        <tbody>
+                        {form.participants && form.matchDaySessions && form.participants.map((participant: any, index: number) => {
+                        const matchDay = form.matchDaySessions.find((md: any) => md.id === participant.matchDayId);
+                        const dataDia = matchDay?.matchDate || '';
+
+                        return (
+                            <tr key={`${participant.userId}-${participant.matchDayId}-${index}`}>
+                                <td>{participant.userName}</td>
+                                <td>
                                     <input
-                                        value={roles[matchDay] || ""}
-                                        onChange={(e) => handleRoleChange(name, matchDay, e.target.value)}
+                                        value={participant.functionName || ''}
+                                        onChange={e => {
+                                            const newValue = e.target.value;
+                                            setForm((prev: any) => ({
+                                                ...prev,
+                                                participants: prev.participants.map((p: any, i: number) =>
+                                                    i === index ? { ...p, functionName: newValue } : p
+                                                )
+                                            }));
+                                        }}
                                         placeholder="Função"
-                                        style={{width: "100px"}}
+                                        style={{ width: "100px" }}
                                     />
                                 </td>
-                            ))}
-                        </tr>
-                    ))}
+                                <td>{new Date(dataDia).toLocaleDateString('pt-PT')}</td>
+                                <td>
+                                    <button
+                                        className="remove-button"
+                                        type="button"
+                                        onClick={() => {
+                                            setForm((prev: any) => ({
+                                                ...prev,
+                                                participants: prev.participants.filter((_: any, i: number) => i !== index)
+                                            }));
+                                        }}
+                                    >
+                                        Remover
+                                    </button>
+                                </td>
+                            </tr>
+                        );
+                    })}
+
+
+
                     </tbody>
+
                 </table>
                 <button type="submit" disabled={submitting}>{submitting ? "Salvando..." : "Salvar Alterações"}</button>
             </form>
