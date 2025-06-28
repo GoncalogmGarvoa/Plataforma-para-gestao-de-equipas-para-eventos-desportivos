@@ -18,3 +18,16 @@ enum class CallListType(
     CONFIRMATION("confirmation"),
     FINAL_JURY("finalJury"),
 }
+
+
+
+data class CallListWithUserAndCompetition(
+    val callListId: Int,
+    val deadline: LocalDate,
+    val callType: String,
+    val userId: Int,
+    val userName: String,
+    val userEmail: String,
+    val competitionId: Int,
+    val competitionName: String
+)

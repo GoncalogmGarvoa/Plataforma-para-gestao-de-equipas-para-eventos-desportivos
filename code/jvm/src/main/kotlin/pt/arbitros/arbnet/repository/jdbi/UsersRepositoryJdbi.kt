@@ -245,11 +245,14 @@ class UsersRepositoryJdbi(
 
     override fun getUsersByName(name: String): List<User> =
         handle
-            .createQuery("""select * from dbp.users where name like :name""")
+            .createQuery("""
+            SELECT * FROM dbp.users 
+            WHERE LOWER(name) LIKE LOWER(:name)
+        """)
             .bind("name", "%$name%")
-            .map { rs, _ ->
-                usersMap(rs)
-            }.list()
+            .map { rs, _ -> usersMap(rs) }
+            .list()
+
 
     private fun usersMap(rs: ResultSet) =
         User(

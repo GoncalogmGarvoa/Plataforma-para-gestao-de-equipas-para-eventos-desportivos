@@ -64,17 +64,6 @@ class CallListController(
         }
     }
 
-    @GetMapping(Uris.CallListUris.GET_CALLLIST)
-    fun getCallList(
-        @PathVariable id: Int,
-    ): ResponseEntity<*> =
-        when (val result = callListService.getEventById(id)) {
-            is Success -> {
-                val value = result.value
-                ResponseEntity.ok(value)
-            }
-            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
-        }
 
     @PutMapping(Uris.CallListUris.UPDATE_CALLLIST)
     fun updateCallList(
@@ -96,6 +85,54 @@ class CallListController(
                 ))
         }
     }
+
+    @GetMapping(Uris.CallListUris.GET_CALLLIST)
+    fun getCallList(
+        @PathVariable id: Int,
+    ): ResponseEntity<*> =
+        when (val result: Either<ApiError, EventOutputModel> = callListService.getEventById(id)) {
+            is Success -> {
+                val value = result.value
+                ResponseEntity.ok(value)
+            }
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
+
+    @GetMapping(Uris.CallListUris.GET_CALLLIST_DRAFT)
+    fun getCallListDraft(
+        @RequestHeader token: String,
+    ): ResponseEntity<*> {
+
+        val userResult = usersService.getUserByToken(token)
+        return if (userResult is Success) {
+            when (val result = callListService.getEventsDraft(userResult.value.id,"callList")) {
+                is Success -> {
+                    val value = result.value
+                    ResponseEntity.ok(value)
+                }
+
+                is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+            }
+        } else {
+            Problem.fromApiErrorToProblemResponse(
+                ApiError.NotFound(
+                    "User not found or not authorized to get call list draft",
+                )
+            )
+        }
+    }
+
+    @GetMapping(Uris.CallListUris.GET_CALLLISTS_WITH_REFEREE)
+    fun getAllCallListsWithReferee(
+        @PathVariable refereeId: Int,
+    ): ResponseEntity<*> =
+        when (val result = callListService.getCallListsWithReferee(refereeId)) {
+            is Success -> {
+                val value = result.value
+                ResponseEntity.ok(value)
+            }
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
 
 
     @GetMapping(Uris.CallListUris.GET_SEALED_CALLLIST)

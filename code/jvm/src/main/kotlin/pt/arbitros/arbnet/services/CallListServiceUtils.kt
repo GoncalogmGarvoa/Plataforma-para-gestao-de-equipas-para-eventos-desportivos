@@ -60,6 +60,15 @@ class CallListServiceUtils {
                 "The user must have a council role to create or update a call list"
             ))
 
+        callList.matchDaySessions.forEach { md ->
+            if(md.matchDay.isBefore(LocalDate.now()) || md.matchDay.isBefore(callList.deadline)) {
+                return failure(ApiError.InvalidField(
+                    "Invalid match day",
+                    "Match day cannot be in the past or before the deadline: ${md.matchDay}",
+                ))
+            }
+        }
+
 
         val participants = callList.participants
         if (participants.isEmpty()) {
@@ -239,6 +248,7 @@ class CallListServiceUtils {
         if (!utilsDomain.validEmail(email)) return failure(invalidFieldError("email"))
         if (!utilsDomain.validName(association)) return failure(invalidFieldError("association"))
         if (!utilsDomain.validName(location)) return failure(invalidFieldError("location"))
+
 
         return success(Unit)
     }

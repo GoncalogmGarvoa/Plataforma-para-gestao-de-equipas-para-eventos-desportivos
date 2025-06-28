@@ -4,7 +4,7 @@ import '../components/SelectRole.css'
 import '../components/CreateCallList.css'
 
 
-import {createBrowserRouter, Link, Outlet, RouterProvider} from 'react-router-dom'
+import {createBrowserRouter, Link, Outlet, RouterProvider, Navigate} from 'react-router-dom'
 import { AuthnContainer} from './context/Authn'
 import { CreateUser } from "../components/user/CreateUser"
 import { Login } from "../components/user/Login"
@@ -13,12 +13,35 @@ import { useCurrentUser } from "./context/Authn"
 import { RequireAuthn } from './RequireAuthn'
 import { Logout } from '../components/user/Logout'
 import { CreateCallList } from "../components/callList/CreateCallList";
+import { SearchCallListDraft } from "../components/callList/SearchCallListDraft";
 import { useCurrentRole } from "./context/Referee";
 
 import {useCurrentEmail, UserContainer} from "./context/Referee";
 import {SelectRole} from "../components/user/SelectRole";
+import { EditCallList } from "../components/callList/EditCallList";
+import {CheckCallLists} from "../components/callList/CheckCallLists";
+import {CallListInfo} from "../components/callList/CallListInfo";
 
+// Componente para proteger a rota de criar callList
+function RequireArbitrationCouncil({ children }: { children: React.ReactNode }) {
+    const currentRole = useCurrentRole()
+    
+    if (currentRole !== "Arbitration_Council") {
+        return <Navigate to="/" replace={true} />
+    }
+    
+    return <>{children}</>
+}
 
+function RequireReferee({ children }: { children: React.ReactNode }) {
+    const currentRole = useCurrentRole()
+
+    if (currentRole !== "Referee") {
+        return <Navigate to="/" replace={true} />
+    }
+
+    return <>{children}</>
+}
 
 const router = createBrowserRouter([
     {
@@ -51,8 +74,24 @@ const router = createBrowserRouter([
                 "element": <RequireAuthn><Me /></RequireAuthn>
             },
             {
-                "path": "/create-calllist",
-                "element": <RequireAuthn><CreateCallList /></RequireAuthn>
+                "path": "/create-callList",
+                "element": <RequireAuthn><RequireArbitrationCouncil><CreateCallList /></RequireArbitrationCouncil></RequireAuthn>
+            },
+            {
+                "path": "/search-callList-draft",
+                "element": <RequireAuthn><RequireArbitrationCouncil><SearchCallListDraft /></RequireArbitrationCouncil></RequireAuthn>
+            },
+            {
+                "path": "/check-callLists",
+                "element": <RequireAuthn><RequireReferee><CheckCallLists /></RequireReferee></RequireAuthn>
+            },
+            {
+                "path": "/callList-info",
+                "element": <RequireAuthn><CallListInfo /></RequireAuthn>
+            },
+            {
+                "path": "/edit-calllist/:id",
+                "element": <RequireAuthn><RequireArbitrationCouncil><EditCallList /></RequireArbitrationCouncil></RequireAuthn>
             },
             {
                 "path": "/logout",
@@ -128,9 +167,10 @@ function Home() {
 export function Header() {
     const currentUser = useCurrentUser()
     const currentEmail = useCurrentEmail()
-    const currentRole = useCurrentRole() // <-- nova linha
+    const currentRole = useCurrentRole()
 
     const isConselhoDeArbitragem = currentRole === "Arbitration_Council"
+    const isReferee = currentRole === "Referee"
 
     return (
         <header>
@@ -140,7 +180,17 @@ export function Header() {
                     {currentUser ? (
                         <>
                             <li><Link to="/me">Me</Link></li>
-                            <li><Link to="/create-calllist">Criar Convocatória</Link></li>
+                            {isConselhoDeArbitragem && (
+                                <>
+                                    <li><Link to="/create-calllist">Criar Convocatória</Link></li>
+                                    <li><Link to="/search-calllist-draft">Ver Convocatórias Draft</Link></li>
+                                </>
+                            )}
+                            {isReferee && (
+                                <>
+                                    <li><Link to="/check-callLists">Ver Convocações</Link></li>
+                                </>
+                            )}
                             <li><Logout /></li>
                         </>
                     ) : (

@@ -97,9 +97,18 @@ export function SelectRole() {
                 throw new Error(errorData.title || "Erro ao definir role");
             }
 
+            // Encontrar a role selecionada para obter o nome
+            const selectedRoleData = roles.find((r: Role) => r.id === roleId);
+            const roleName = selectedRoleData?.name || "";
+
+            // Adicionar a role à cookie com a mesma expiração das outras cookies
+            const expirationDate = new Date();
+            expirationDate.setHours(expirationDate.getHours() + 1);
+            document.cookie = `role=${roleName}; expires=${expirationDate.toUTCString()}; path=/;`;
+
             setUser("authenticated");
             setEmail(getCookie("email") || "");
-            //setRole(roles.find(r => r.id === roleId)?.name || "");
+            setRole(roleName);
 
             navigate("/");
         } catch (err) {
