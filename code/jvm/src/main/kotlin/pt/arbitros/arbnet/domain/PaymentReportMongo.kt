@@ -10,7 +10,7 @@ data class PaymentReportMongo(
     val reportType : String,
     val competitionId : Int,
     val sealed: Boolean = false,
-    val juryRefere: String,
+    val juryRefere: String, //na folha de pagamento é necessário indicar o nome do JÁ
     val paymentCoverSheet: PaymentCoverSheet,
     val paymentPerReferee: List<PaymentPerReferee>
 ){

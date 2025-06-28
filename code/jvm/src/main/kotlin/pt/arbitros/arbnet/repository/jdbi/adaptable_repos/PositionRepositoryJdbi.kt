@@ -26,14 +26,13 @@ class PositionRepositoryJdbi (
             .list()
     }
 
-    override fun getPositionNameById(id: Int): String? {
-        return handle
+    override fun getPositionIdByName(name: String): Int? =
+        handle
             .createQuery(
-                """select name from dbp.position where id = :id""",
-            ).bind("id", id)
-            .mapTo<String>()
+                """select id from dbp.position where name = :name""",
+            ).bind("name", name)
+            .mapTo<Int>()
             .singleOrNull()
-    }
 
     override fun verifyPositionIds(ids: List<Int>): Boolean {
         val sql = """

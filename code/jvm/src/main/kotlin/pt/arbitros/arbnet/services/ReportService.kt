@@ -22,6 +22,10 @@ class ReportService(
         return transactionManager.run {
             val competitionRepository = it.competitionRepository
             val categoryRepository = it.categoryRepository
+            val functionRepository = it.functionRepository
+            val sessionRepository = it.sessionsRepository
+            val matchDayRepository = it.matchDayRepository
+            val positionRepository = it.positionRepository
 
             val reportMongo = ReportMongo.fromInputModel(report)
 
@@ -29,8 +33,16 @@ class ReportService(
                 reportMongo,
                 createOrUpdate = true,
                 competitionRepository,
-                categoryRepository
+                categoryRepository,
+                functionRepository,
+                sessionRepository,
+                matchDayRepository,
+                positionRepository
             )
+
+            if (validationResult is Failure) {
+                return@run failure(validationResult.value)
+            }
 
             val reportCreated = reportMongoRepository.save(reportMongo)
 
@@ -56,27 +68,32 @@ class ReportService(
 
             val competitionRepository = it.competitionRepository
             val categoryRepository = it.categoryRepository
+            val functionRepository = it.functionRepository
+            val sessionRepository = it.sessionsRepository
+            val matchDayRepository = it.matchDayRepository
+
             val reportMongo = ReportMongo.fromInputModel(report)
 
             val validationResult = validationUtils.validateReportValues(
                 reportMongo,
                 createOrUpdate = false,
                 competitionRepository,
-                categoryRepository
+                categoryRepository,
+                functionRepository,
+                sessionRepository,
+                matchDayRepository,
+                it.positionRepository
             )
+
+            if (validationResult is Failure) {
+                return@run failure(validationResult.value)
+            }
 
             val existingReport = reportMongoRepository.findById(report.id!!).orElse(null)
                 ?: return@run failure(ApiError.NotFound(
                     "Report not found",
                     "No report found with the provided ID."
                 ))
-
-            if (existingReport.sealed) {
-                return@run failure(ApiError.InvalidField(
-                    "Report is sealed",
-                    "Cannot update a sealed report."
-                ))
-            }
 
             val updatedReport = reportMongoRepository.save(reportMongo)
             return@run success(updatedReport)
@@ -98,7 +115,7 @@ class ReportService(
                 ))
             }
 
-            val success = reportMongoRepository.seal(id) // assumes returns Boolean
+            val success = reportMongoRepository.seal(id,true) // assumes returns Boolean
 
             if (!success) {
                 return@run failure(ApiError.InternalServerError(

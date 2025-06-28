@@ -13,7 +13,7 @@ class PositionRepositoryMem: PositionRepository {
         TODO("Not yet implemented")
     }
 
-    override fun getPositionNameById(id: Int): String? {
+    override fun getPositionIdByName(name: String): Int? {
         TODO("Not yet implemented")
     }
 

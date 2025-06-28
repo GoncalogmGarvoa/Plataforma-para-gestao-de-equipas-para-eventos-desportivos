@@ -8,8 +8,13 @@ import pt.arbitros.arbnet.repository.adaptable_repos.FunctionRepository
 class FunctionRepositoryJdbi(
     private val handle: Handle,
 ) : FunctionRepository {
+
     override fun getAllFunctions(): List<Function> {
-        TODO("Not yet implemented")
+        return handle
+            .createQuery(
+                "select id, name from dbp.function",
+            ).mapTo<Function>()
+            .list()
     }
 
     override fun getFunctionIdByName(functionName: String): Int? =

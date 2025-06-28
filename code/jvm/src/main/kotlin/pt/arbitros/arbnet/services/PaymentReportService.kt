@@ -15,7 +15,6 @@ import pt.arbitros.arbnet.transactionRepo
 class PaymentReportService(
     @Qualifier(transactionRepo) private val transactionManager: TransactionManager,
     private val paymentMongoRepository: PaymentReportMongoRepository,
-    private val validationUtils: ReportServiceInputValidation,
     private val utilsDomain: UtilsDomain,
 ) {
 
@@ -83,7 +82,7 @@ class PaymentReportService(
                 ))
             }
 
-            val success = paymentMongoRepository.seal(id) // assumes returns Boolean
+            val success = paymentMongoRepository.seal(id,false) // assumes returns Boolean
 
             if (!success) {
                 return@run failure(ApiError.InternalServerError(

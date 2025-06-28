@@ -10,14 +10,14 @@ class SessionsRepositoryMem : SessionsRepository {
 
     override fun createSession(
         competitionId: Int,
-        matchDate: Int,
+        matchDateId: Int,
         startTime: LocalTime,
     ): Boolean {
         val session =
             Session(
                 id = nextId++,
                 competitionIdMatchDay = competitionId,
-                matchDayId = matchDate,
+                matchDayId = matchDateId,
                 startTime = startTime,
                 endTime = null,
             )
@@ -43,6 +43,10 @@ class SessionsRepositoryMem : SessionsRepository {
     }
 
     override fun finishSession(id: Int): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun getSessionsByCompetitionId(competitionId: Int): List<Session> {
         TODO("Not yet implemented")
     }
 

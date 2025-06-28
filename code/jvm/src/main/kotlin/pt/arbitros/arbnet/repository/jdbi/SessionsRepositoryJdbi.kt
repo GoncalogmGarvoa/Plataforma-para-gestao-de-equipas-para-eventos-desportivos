@@ -70,6 +70,17 @@ class SessionsRepositoryJdbi(
             ).bind("id", id)
             .execute() > 0
 
+    override fun getSessionsByCompetitionId(competitionId: Int): List<Session> =
+        handle
+            .createQuery(
+                """
+                    SELECT * FROM dbp.session 
+                    WHERE competition_id_match_day = :competitionId
+                    """.trimIndent(),
+            ).bind("competitionId", competitionId)
+            .mapTo(Session::class.java)
+            .list()
+
     override fun deleteCompetitionSessions(competitionId: Int): Boolean =
         handle
             .createUpdate(

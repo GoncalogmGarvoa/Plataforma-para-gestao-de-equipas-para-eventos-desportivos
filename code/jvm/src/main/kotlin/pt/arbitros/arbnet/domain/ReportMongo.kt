@@ -11,9 +11,9 @@ data class ReportMongo(
     val competitionId: Int,
     val sealed: Boolean = false,
     val coverSheet: CoverSheet,
-    val registers: Map<String, String> = emptyMap(), // Mapa de registros com chave como nome do registo e conteudo do registo
+    val registers: Map<String, String>, // Mapa de registros com chave como nome do registo e conteudo do registo
     val refereeEvaluations: List<RefereeEvaluation>,  // Lista direta de avaliações dos árbitros
-    val jury : List<JurySheet> = emptyList() // Lista de folhas de júri, se aplicável
+    val jury : List<JurySheet>// Lista de folhas de júri, se aplicável
 ){
     companion object {
         fun fromInputModel(input: ReportInputModel): ReportMongo {
@@ -23,7 +23,8 @@ data class ReportMongo(
                 competitionId = input.competitionId,
                 coverSheet = input.coverSheet,
                 registers = input.register,
-                refereeEvaluations = input.refereeEvaluations
+                refereeEvaluations = input.refereeEvaluations,
+                jury = input.jury
             )
         }
     }
@@ -37,7 +38,7 @@ data class CoverSheet(
     val location: String,
     val year: Int,
     val month: Int,
-    val numRounds: Int,
+    val numMatchDays: Int,
     val numSessions: Int,
     val sessions: List<SessionReportInfo>
 )
@@ -53,9 +54,9 @@ data class SessionReportInfo(
 data class RefereeEvaluation(
     val name: String,            // Nome do árbitro
     val category: String,        // Categoria
-    val grade: Double,           // Nota (0.0 a 5.0, pode incluir .5)
+    val grade: Int,           // Nota (0.0 a 5.0)
     val notes: String,            // Observações
-    val functionBySession: Map< Int, String> // Função por sessão, chave é o rótulo da sessão e valor é a função do árbitro naquela sessão
+    val functionBySession: Map< Int, String>? // Função por sessão, chave é o rótulo da sessão e valor é a função do árbitro naquela sessão
 )
 
 data class JurySheet (
@@ -65,7 +66,7 @@ data class JurySheet (
 )
 
 data class JuryMember(
-    val function : String, // Função do membro do júri (ex: "Presidente", "Vogal")
+    val position : String, // Função do membro do júri (ex: "Presidente", "Vogal")
     val name : String, // Nome do membro do júri
     val category : String, // Categoria do membro do júri (ex: "Árbitro", "Delegado")
 )
