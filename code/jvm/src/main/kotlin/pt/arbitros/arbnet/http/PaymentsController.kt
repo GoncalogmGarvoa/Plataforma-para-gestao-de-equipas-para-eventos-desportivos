@@ -12,8 +12,8 @@ import pt.arbitros.arbnet.http.model.payment_report.PaymentReportInputModel
 import pt.arbitros.arbnet.http.model.report.ReportInputModel
 import pt.arbitros.arbnet.repository.mongo.ReportMongoRepository
 import pt.arbitros.arbnet.services.Failure
-import pt.arbitros.arbnet.services.PaymentReportService
-import pt.arbitros.arbnet.services.ReportService
+import pt.arbitros.arbnet.services.payment.PaymentReportService
+import pt.arbitros.arbnet.services.report.ReportService
 import pt.arbitros.arbnet.services.Success
 
 // TODO verify if useful -> @RestControllerAdvice
