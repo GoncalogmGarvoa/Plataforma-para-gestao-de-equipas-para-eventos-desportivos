@@ -2,7 +2,6 @@ package pt.arbitros.arbnet.repository
 
 import pt.arbitros.arbnet.domain.CallList
 import pt.arbitros.arbnet.domain.CallListWithUserAndCompetition
-import pt.arbitros.arbnet.http.model.EventOutputModel
 import pt.arbitros.arbnet.http.model.RefereeCallLists
 import pt.arbitros.arbnet.http.model.RefereeCallListsOutputModel
 import java.time.LocalDate
