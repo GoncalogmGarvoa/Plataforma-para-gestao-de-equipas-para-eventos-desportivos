@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import pt.arbitros.arbnet.http.model.ReportInputModel
+import pt.arbitros.arbnet.http.model.report.ReportInputModel
 import pt.arbitros.arbnet.repository.mongo.ReportMongoRepository
 import pt.arbitros.arbnet.services.Failure
 import pt.arbitros.arbnet.services.ReportService
@@ -16,9 +16,7 @@ import pt.arbitros.arbnet.services.Success
 
 // TODO verify if useful -> @RestControllerAdvice
 @RestController
-class ReportController(private val reportService : ReportService, private val reportRepository: ReportMongoRepository) {
-
-    //TODO check errors they are not being handled,so i can test the controller
+class ReportController(private val reportService : ReportService) {
 
     @PostMapping(Uris.ReportUris.CREATE_REPORT)
     fun createReport(@RequestBody report: ReportInputModel): ResponseEntity<*> =
@@ -26,7 +24,6 @@ class ReportController(private val reportService : ReportService, private val re
             is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
-
 
     @GetMapping(Uris.ReportUris.GET_ALL_REPORTS)
     fun getAllReports(): ResponseEntity<*> =

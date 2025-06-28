@@ -5,7 +5,16 @@ package pt.arbitros.arbnet.http
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import pt.arbitros.arbnet.domain.users.AuthenticatedUser
-import pt.arbitros.arbnet.http.model.*
+import pt.arbitros.arbnet.http.model.users.UserCategoryUpdateInputModel
+import pt.arbitros.arbnet.http.model.users.UserCreateTokenInputModel
+import pt.arbitros.arbnet.http.model.users.UserInputModel
+import pt.arbitros.arbnet.http.model.users.UserNameId
+import pt.arbitros.arbnet.http.model.users.UserOutputModel
+import pt.arbitros.arbnet.http.model.users.UserOutputPassValModel
+import pt.arbitros.arbnet.http.model.users.UserRolesUpdateInputModel
+import pt.arbitros.arbnet.http.model.users.UserTokenCreateOutputModel
+import pt.arbitros.arbnet.http.model.users.UserUpdateInputModel
+import pt.arbitros.arbnet.http.model.users.UsersEmailInput
 import pt.arbitros.arbnet.services.*
 
 @RestController
@@ -13,7 +22,7 @@ class UsersController(
     private val usersService: UsersService,
 ) {
     @PostMapping(Uris.UsersUris.TOKEN) // equal to logging in
-    fun token(
+    fun login(
         @RequestBody input: UserCreateTokenInputModel,
     ): ResponseEntity<*> {
         val res = usersService.createToken(input.email, input.password)
@@ -158,7 +167,7 @@ class UsersController(
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
-    @PostMapping("/arbnet/users/signup")
+    @PostMapping(Uris.UsersUris.CREATE_USER)
     fun createUser(
         @RequestBody user: UserInputModel,
     ): ResponseEntity<*> =

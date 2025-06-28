@@ -11,19 +11,17 @@ import pt.arbitros.arbnet.domain.UtilsDomain
 import pt.arbitros.arbnet.domain.users.User
 import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.http.invalidFieldError
-import pt.arbitros.arbnet.http.model.CallListInputModel
-import pt.arbitros.arbnet.http.model.ParticipantChoice
+import pt.arbitros.arbnet.http.model.calllist.CallListInputModel
+import pt.arbitros.arbnet.http.model.calllist.ParticipantChoice
 import pt.arbitros.arbnet.repository.CallListRepository
 import pt.arbitros.arbnet.repository.CompetitionRepository
-import pt.arbitros.arbnet.repository.EquipmentRepository
-import pt.arbitros.arbnet.repository.FunctionRepository
+import pt.arbitros.arbnet.repository.adaptable_repos.EquipmentRepository
+import pt.arbitros.arbnet.repository.adaptable_repos.FunctionRepository
 import pt.arbitros.arbnet.repository.MatchDayRepository
 import pt.arbitros.arbnet.repository.ParticipantRepository
 import pt.arbitros.arbnet.repository.SessionsRepository
 import pt.arbitros.arbnet.repository.Transaction
 import pt.arbitros.arbnet.repository.UsersRepository
-import pt.arbitros.arbnet.services.Failure
-import pt.arbitros.arbnet.services.Success
 import java.time.LocalDate
 
 @Component
@@ -141,7 +139,7 @@ class CallListServiceUtils {
             callList.location,
         )
 
-        // 1. Delete existing match days + sessions
+        // 1. Delete existing match days and sessions
 
         sessionsRepository.deleteCompetitionSessions(competitionId)
         matchDayRepository.deleteCompetitionMatchDays(competitionId)
@@ -337,8 +335,7 @@ class CallListServiceUtils {
 
         // 4. Update equipments
 
-
-        if (!equipmentRepository.verifyEquipmentId(callList.equipmentIds))
+        if (!equipmentRepository.verifyEquipmentIds(callList.equipmentIds))
             return failure(ApiError.InvalidField(
                 "Invalid equipment IDs",
                 "One or more equipment IDs provided do not exist in the database",

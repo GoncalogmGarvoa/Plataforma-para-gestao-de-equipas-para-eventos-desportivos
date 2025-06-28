@@ -2,12 +2,13 @@ package pt.arbitros.arbnet.repository
 
 import pt.arbitros.arbnet.domain.CallList
 import pt.arbitros.arbnet.domain.CallListWithUserAndCompetition
-import pt.arbitros.arbnet.http.model.EventOutputModel
 import pt.arbitros.arbnet.http.model.RefereeCallLists
 import pt.arbitros.arbnet.http.model.RefereeCallListsOutputModel
 import java.time.LocalDate
 
 interface CallListRepository {
+
+
     fun createCallList(
         deadline: LocalDate,
         userId: Int,
@@ -38,19 +39,10 @@ interface CallListRepository {
         callType: String,
     ): CallList
 
-//    fun findCallListById(id: Int): CallList?
-//
+
 //    fun getCallListsByCouncil(councilId: Int): List<CallList>
 //
 //    fun deleteCallList(id: Int): Boolean
-//
-//    fun updateCallList(
-//        id: Int,
-//        deadline: LocalDate,
-//        callType: String,
-//        userId: Int,
-//        competitionId: Int,
-//    ): Boolean
-//
-//    fun getCallListReferees(callListId: Int): List<Referee>
+
+
 }
