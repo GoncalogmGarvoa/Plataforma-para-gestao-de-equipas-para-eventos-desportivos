@@ -21,8 +21,7 @@ import pt.arbitros.arbnet.transactionRepo
 class ReportService(
     @Qualifier(transactionRepo) private val transactionManager: TransactionManager,
     private val reportMongoRepository: ReportMongoRepository,
-    private val validationUtils: ReportServiceInputValidation,
-    private val vali : ReportValidator,
+    private val validationUtils: ReportValidator,
     private val utilsDomain: UtilsDomain,
 ) {
 
@@ -31,18 +30,7 @@ class ReportService(
 
             val reportMongo = ReportMongo.Companion.fromInputModel(report)
 
-            /*val valid = vali.validate(
-                reportMongo,
-                createOrUpdate = true,
-                it.competitionRepository,
-                it.categoryRepository,
-                it.functionRepository,
-                it.sessionsRepository,
-                it.matchDayRepository,
-                it.positionRepository
-            )*/
-
-            val validationResult = validationUtils.validateReportValues(
+            val validationResult = validationUtils.validate(
                 reportMongo,
                 createOrUpdate = true,
                 it.competitionRepository,
@@ -83,7 +71,7 @@ class ReportService(
 
             val reportMongo = ReportMongo.Companion.fromInputModel(report)
 
-            val validationResult = validationUtils.validateReportValues(
+            val validationResult = validationUtils.validate(
                 reportMongo,
                 createOrUpdate = false,
                 it.competitionRepository,
@@ -154,6 +142,8 @@ class ReportService(
                         "An internal error occurred while trying to create the report representative for the sealed report with ID $id."
                     )
                 )
+
+            
 
             success(updated)
         }

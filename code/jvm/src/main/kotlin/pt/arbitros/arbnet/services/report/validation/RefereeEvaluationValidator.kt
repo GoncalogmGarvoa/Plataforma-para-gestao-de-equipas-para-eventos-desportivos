@@ -29,9 +29,6 @@ object RefereeEvaluationValidator {
             if (evaluation.grade !in 0..5)
                 return failure(ApiError.InvalidField("Invalid referee grade", "The referee grade must be an integer between 0 and 5."))
 
-            if (evaluation.notes.isBlank())
-                return failure(ApiError.InvalidField("Referee notes are required", "The referee notes must not be empty."))
-
             evaluation.functionBySession?.forEach { (sessionId, function) ->
                 if (sessionId <= 0)
                     return failure(ApiError.InvalidField("Invalid session ID in function by session", "The session ID must be a positive integer for session $sessionId in referee evaluation."))
