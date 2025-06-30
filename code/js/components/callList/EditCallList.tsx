@@ -305,12 +305,27 @@ export function EditCallList() {
                 body: JSON.stringify(fullFormData),
             });
             if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.title || "Erro ao atualizar convocatória");
+                const errorData = await response.json();
+
+                // Check for specific 'CallList not found' error to redirect
+                if (errorData.title === "Not Found" && errorData.detail && errorData.detail.includes("CallList")) {
+                    alert(errorData.title + ": " + errorData.detail);
+                    navigate("/search-calllist-draft");
+                    return; // Exit the function after redirection
+                }
+
+                // For other errors from the backend, display alert and set error state without throwing
+                const backendErrorMessage = errorData.title || "Erro ao atualizar convocatória.";
+                alert("Erro ao salvar: " + backendErrorMessage);
+                setError(backendErrorMessage); // Set error state for display on page
+                return; // Exit the function after handling the error
             }
             alert("Convocatória atualizada com sucesso!");
         } catch (err: any) {
-            setError(err.message || "Erro inesperado");
+            // This catch block will primarily handle network errors or unexpected issues
+            const errorMessage = err.message || "Erro inesperado.";
+            alert("Erro ao salvar: " + errorMessage);
+            setError(errorMessage);
         } finally {
             setSubmitting(false);
         }
