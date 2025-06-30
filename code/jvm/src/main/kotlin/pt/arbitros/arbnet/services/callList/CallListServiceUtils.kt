@@ -354,16 +354,16 @@ class CallListServiceUtils {
         }
 
         // 4. Update equipments
-
-        if (!equipmentRepository.verifyEquipmentIds(callList.equipmentIds))
-            return failure(
-                ApiError.InvalidField(
-                    "Invalid equipment IDs",
-                    "One or more equipment IDs provided do not exist in the database",
-                )
-            )
-        equipmentRepository.deleteEquipmentByCompetitionId(competitionId)
-        equipmentRepository.selectEquipment(competitionId, callList.equipmentIds)
+        //todo uncomment when equipment is implemented
+//        if (!equipmentRepository.verifyEquipmentIds(callList.equipmentIds))
+//            return failure(
+//                ApiError.InvalidField(
+//                    "Invalid equipment IDs",
+//                    "One or more equipment IDs provided do not exist in the database",
+//                )
+//            )
+//        equipmentRepository.deleteEquipmentByCompetitionId(competitionId)
+//        equipmentRepository.selectEquipment(competitionId, callList.equipmentIds)
 
         return success(callListId)
     }
