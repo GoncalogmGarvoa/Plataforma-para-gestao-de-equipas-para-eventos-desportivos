@@ -308,7 +308,7 @@ export function EditCallList() {
                 const err = await response.json();
                 throw new Error(err.title || "Erro ao atualizar convocatória");
             }
-            navigate("/search-calllist-draft");
+            alert("Convocatória atualizada com sucesso!");
         } catch (err: any) {
             setError(err.message || "Erro inesperado");
         } finally {
