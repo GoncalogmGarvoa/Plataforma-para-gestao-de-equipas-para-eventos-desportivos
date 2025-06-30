@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import {useNavigate} from "react-router-dom";
 
 interface ParticipantChoice {
@@ -66,7 +66,30 @@ export function CreateCallList() {
     const [userSuggestions, setUserSuggestions] = useState<{ name: string; id: number }[]>([]);
     const [nameToUserIdMap, setNameToUserIdMap] = useState<Record<string, number>>({});
 
+    // Equipment state
+    const [equipmentOptions, setEquipmentOptions] = useState<{id: number, name: string}[]>([]);
+    const [selectedEquipmentIds, setSelectedEquipmentIds] = useState<number[]>([]);
 
+    // Dropdown state
+    const [equipmentDropdownOpen, setEquipmentDropdownOpen] = useState(false);
+    const equipmentDropdownRef = React.useRef<HTMLDivElement>(null);
+
+    // Fechar dropdown ao clicar fora
+    React.useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (equipmentDropdownRef.current && !equipmentDropdownRef.current.contains(event.target as Node)) {
+                setEquipmentDropdownOpen(false);
+            }
+        }
+        if (equipmentDropdownOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [equipmentDropdownOpen]);
 
     React.useEffect(() => {
         const fetchUsers = async () => {
@@ -95,6 +118,23 @@ export function CreateCallList() {
         fetchUsers();
     }, [participantQuery]);
 
+    // Fetch equipment options on mount
+    React.useEffect(() => {
+        const fetchEquipment = async () => {
+            try {
+                const token = getCookie("token");
+                const res = await fetch("/arbnet/equipment", {
+                    headers: token ? { token } : undefined
+                });
+                if (!res.ok) throw new Error("Erro ao buscar equipamentos");
+                const data = await res.json();
+                setEquipmentOptions(data);
+            } catch (err) {
+                setEquipmentOptions([]);
+            }
+        };
+        fetchEquipment();
+    }, []);
 
     const [participantInputs, setParticipantInputs] = useState<Record<string, Record<string, string>>>({}); // name -> { date -> function }
 
@@ -212,7 +252,7 @@ export function CreateCallList() {
             ...formData,
             participants: updatedParticipants,
             matchDaySessions,
-            equipmentIds: []
+            equipmentIds: selectedEquipmentIds,
         };
 
         try {
@@ -259,7 +299,6 @@ export function CreateCallList() {
         });
     };
 
-
     return (
         <div className="create-call-list-container">
             <h2>Criar Convocatória</h2>
@@ -296,6 +335,70 @@ export function CreateCallList() {
                 <input className="deadline-input" name="deadline" type="date" onChange={handleChange}/>
             </div>
 
+            {/* Equipment Dropdown */}
+            <div className="form-group-inline">
+                <label>Equipamentos:</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <div ref={equipmentDropdownRef} style={{ position: 'relative', width: 220 }}>
+                        <button
+                            type="button"
+                            style={{ width: '100%', padding: '6px 10px', borderRadius: 4, border: '1px solid #ccc', background: '#fff', textAlign: 'left', cursor: 'pointer' }}
+                            onClick={() => setEquipmentDropdownOpen(open => !open)}
+                        >
+                            {selectedEquipmentIds.length === 0 ? 'Selecione equipamento(s)' : `${selectedEquipmentIds.length} selecionado(s)`}
+                            <span style={{ float: 'right' }}>▼</span>
+                        </button>
+                        {equipmentDropdownOpen && (
+                            <div style={{
+                                position: 'absolute',
+                                top: '110%',
+                                left: 0,
+                                width: '100%',
+                                background: '#fff',
+                                border: '1px solid #ccc',
+                                borderRadius: 4,
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                                zIndex: 20,
+                                maxHeight: 180,
+                                overflowY: 'auto',
+                            }}>
+                                {equipmentOptions.filter(eq => !selectedEquipmentIds.includes(eq.id)).length === 0 ? (
+                                    <div style={{ padding: 8, color: '#888' }}>Sem opções</div>
+                                ) : equipmentOptions.filter(eq => !selectedEquipmentIds.includes(eq.id)).map(eq => (
+                                    <div
+                                        key={eq.id}
+                                        style={{ padding: '8px 12px', cursor: 'pointer', borderBottom: '1px solid #f0f0f0' }}
+                                        onClick={() => {
+                                            setSelectedEquipmentIds(prev => [...prev, eq.id]);
+                                            setEquipmentDropdownOpen(false);
+                                        }}
+                                    >
+                                        {eq.name}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                        {selectedEquipmentIds.map(id => {
+                            const eq = equipmentOptions.find(e => e.id === id);
+                            if (!eq) return null;
+                            return (
+                                <span key={id} style={{ background: '#e6f0ff', border: '1px solid #007bff', borderRadius: 4, padding: '2px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                    {eq.name}
+                                    <button
+                                        type="button"
+                                        style={{ marginLeft: 4, color: 'red', border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}
+                                        onClick={() => setSelectedEquipmentIds(prev => prev.filter(eid => eid !== id))}
+                                    >
+                                        ×
+                                    </button>
+                                </span>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
 
             <h3>Dias da Convocatória</h3>
             <div>

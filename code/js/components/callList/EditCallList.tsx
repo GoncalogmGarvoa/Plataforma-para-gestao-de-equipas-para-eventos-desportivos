@@ -30,6 +30,12 @@ export function EditCallList() {
     // MATCH DAYS
     const [matchDaySessionsInput, setMatchDaySessionsInput] = useState<any[]>([]); // [{matchDay, sessions: [hora]}]
 
+    // Equipment dropdown state
+    const [equipmentOptions, setEquipmentOptions] = useState<{id: number, name: string}[]>([]);
+    const [selectedEquipmentIds, setSelectedEquipmentIds] = useState<number[]>([]);
+    const [equipmentDropdownOpen, setEquipmentDropdownOpen] = useState(false);
+    const equipmentDropdownRef = React.useRef<HTMLDivElement>(null);
+
     // Carregar dados iniciais
     useEffect(() => {
         const fetchCallList = async () => {
@@ -47,6 +53,10 @@ export function EditCallList() {
                     data.callListId = data.id;
                 }
                 setForm(data);
+                // Popular equipamentos selecionados
+                if (data.equipmentIds) {
+                    setSelectedEquipmentIds(data.equipmentIds);
+                }
                 // Converter participantes para o formato de edição
                 if (data.participants) {
                     const nameMap: Record<string, number> = {};
@@ -279,11 +289,11 @@ export function EditCallList() {
                 })
             }));
             
-            const updatedForm = {
+            const fullFormData: any = {
                 ...form,
                 participants: updatedParticipants,
                 matchDaySessions: matchDaySessions,
-                equipmentIds: form.equipmentIds || [],
+                equipmentIds: selectedEquipmentIds,
                 callListId: form.callListId || form.id || id
             };
             const response = await fetch("/arbnet/callList/update", {
@@ -292,7 +302,7 @@ export function EditCallList() {
                     "Content-Type": "application/json",
                     token,
                 },
-                body: JSON.stringify(updatedForm),
+                body: JSON.stringify(fullFormData),
             });
             if (!response.ok) {
                 const err = await response.json();
@@ -305,6 +315,59 @@ export function EditCallList() {
             setSubmitting(false);
         }
     };
+
+    // Fetch equipment options on mount
+    useEffect(() => {
+        const fetchEquipment = async () => {
+            try {
+                const token = getCookie("token");
+                const res = await fetch("/arbnet/equipment", {
+                    headers: token ? { token } : undefined
+                });
+                if (!res.ok) throw new Error("Erro ao buscar equipamentos");
+                const data = await res.json();
+                setEquipmentOptions(data);
+            } catch (err) {
+                setEquipmentOptions([]);
+            }
+        };
+        fetchEquipment();
+    }, []);
+
+    // Sync selectedEquipmentIds with form.equipmentIds ou form.equipment
+    useEffect(() => {
+        if (form) {
+            if (Array.isArray(form.equipmentIds)) {
+                setSelectedEquipmentIds(form.equipmentIds);
+            } else if (Array.isArray(form.equipment)) {
+                setSelectedEquipmentIds(form.equipment.map((eq: any) => eq.id));
+            }
+        }
+        // eslint-disable-next-line
+    }, [form]);
+
+    // Fechar dropdown ao clicar fora
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (equipmentDropdownRef.current && !equipmentDropdownRef.current.contains(event.target as Node)) {
+                setEquipmentDropdownOpen(false);
+            }
+        }
+        if (equipmentDropdownOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [equipmentDropdownOpen]);
+
+    useEffect(() => {
+        if (form) {
+            console.log('EditCallList form:', form);
+        }
+    }, [form]);
 
     if (loading) return <div>Carregando...</div>;
     if (error) return <div>Erro: {error}</div>;
@@ -341,6 +404,70 @@ export function EditCallList() {
                 <div className="form-group-inline">
                     <label>Data Limite:</label>
                     <input className="deadline-input" name="deadline" type="date" value={form.deadline || ''} onChange={handleChange} />
+                </div>
+                {/* Equipment Dropdown */}
+                <div className="form-group-inline">
+                    <label>Equipamentos:</label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <div ref={equipmentDropdownRef} style={{ position: 'relative', width: 220 }}>
+                            <button
+                                type="button"
+                                style={{ width: '100%', padding: '6px 10px', borderRadius: 4, border: '1px solid #ccc', background: '#fff', textAlign: 'left', cursor: 'pointer' }}
+                                onClick={() => setEquipmentDropdownOpen(open => !open)}
+                            >
+                                {selectedEquipmentIds.length === 0 ? 'Selecione equipamento(s)' : `${selectedEquipmentIds.length} selecionado(s)`}
+                                <span style={{ float: 'right' }}>▼</span>
+                            </button>
+                            {equipmentDropdownOpen && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '110%',
+                                    left: 0,
+                                    width: '100%',
+                                    background: '#fff',
+                                    border: '1px solid #ccc',
+                                    borderRadius: 4,
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                                    zIndex: 20,
+                                    maxHeight: 180,
+                                    overflowY: 'auto',
+                                }}>
+                                    {equipmentOptions.filter(eq => !selectedEquipmentIds.includes(eq.id)).length === 0 ? (
+                                        <div style={{ padding: 8, color: '#888' }}>Sem opções</div>
+                                    ) : equipmentOptions.filter(eq => !selectedEquipmentIds.includes(eq.id)).map(eq => (
+                                        <div
+                                            key={eq.id}
+                                            style={{ padding: '8px 12px', cursor: 'pointer', borderBottom: '1px solid #f0f0f0' }}
+                                            onClick={() => {
+                                                setSelectedEquipmentIds(prev => [...prev, eq.id]);
+                                                setEquipmentDropdownOpen(false);
+                                            }}
+                                        >
+                                            {eq.name}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                            {selectedEquipmentIds.map(id => {
+                                const eq = equipmentOptions.find(e => e.id === id);
+                                if (!eq) return null;
+                                return (
+                                    <span key={id} style={{ background: '#e6f0ff', border: '1px solid #007bff', borderRadius: 4, padding: '2px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                        {eq.name}
+                                        <button
+                                            type="button"
+                                            style={{ marginLeft: 4, color: 'red', border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}
+                                            onClick={() => setSelectedEquipmentIds(prev => prev.filter(eid => eid !== id))}
+                                        >
+                                            ×
+                                        </button>
+                                    </span>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
                 {/* PARTICIPANTES */}
                 <h3>Participantes</h3>
