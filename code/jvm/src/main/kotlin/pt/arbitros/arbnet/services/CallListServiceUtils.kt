@@ -11,12 +11,12 @@ import pt.arbitros.arbnet.domain.UtilsDomain
 import pt.arbitros.arbnet.domain.users.User
 import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.http.invalidFieldError
-import pt.arbitros.arbnet.http.model.CallListInputModel
-import pt.arbitros.arbnet.http.model.ParticipantChoice
+import pt.arbitros.arbnet.http.model.calllist.CallListInputModel
+import pt.arbitros.arbnet.http.model.calllist.ParticipantChoice
 import pt.arbitros.arbnet.repository.CallListRepository
 import pt.arbitros.arbnet.repository.CompetitionRepository
-import pt.arbitros.arbnet.repository.EquipmentRepository
-import pt.arbitros.arbnet.repository.FunctionRepository
+import pt.arbitros.arbnet.repository.adaptable_repos.EquipmentRepository
+import pt.arbitros.arbnet.repository.adaptable_repos.FunctionRepository
 import pt.arbitros.arbnet.repository.MatchDayRepository
 import pt.arbitros.arbnet.repository.ParticipantRepository
 import pt.arbitros.arbnet.repository.SessionsRepository
@@ -61,6 +61,15 @@ class CallListServiceUtils {
                 "User does not have the required role",
                 "The user must have a council role to create or update a call list"
             ))
+
+        callList.matchDaySessions.forEach { md ->
+            if(md.matchDay.isBefore(LocalDate.now()) || md.matchDay.isBefore(callList.deadline)) {
+                return failure(ApiError.InvalidField(
+                    "Invalid match day",
+                    "Match day cannot be in the past or before the deadline: ${md.matchDay}",
+                ))
+            }
+        }
 
 
         val participants = callList.participants
@@ -132,7 +141,7 @@ class CallListServiceUtils {
             callList.location,
         )
 
-        // 1. Delete existing match days + sessions
+        // 1. Delete existing match days and sessions
 
         sessionsRepository.deleteCompetitionSessions(competitionId)
         matchDayRepository.deleteCompetitionMatchDays(competitionId)
@@ -242,6 +251,7 @@ class CallListServiceUtils {
         if (!utilsDomain.validName(association)) return failure(invalidFieldError("association"))
         if (!utilsDomain.validName(location)) return failure(invalidFieldError("location"))
 
+
         return success(Unit)
     }
 
@@ -327,14 +337,13 @@ class CallListServiceUtils {
 
         // 4. Update equipments
 
-        //todo uncomment this when the equipment feature is implemented
-//        if (!equipmentRepository.verifyEquipmentId(callList.equipmentIds))
-//            return failure(ApiError.InvalidField(
-//                "Invalid equipment IDs",
-//                "One or more equipment IDs provided do not exist in the database",
-//            ))
-//        equipmentRepository.deleteEquipmentByCompetitionId(competitionId)
-//        equipmentRepository.selectEquipment(competitionId, callList.equipmentIds)
+        if (!equipmentRepository.verifyEquipmentIds(callList.equipmentIds))
+            return failure(ApiError.InvalidField(
+                "Invalid equipment IDs",
+                "One or more equipment IDs provided do not exist in the database",
+            ))
+        equipmentRepository.deleteEquipmentByCompetitionId(competitionId)
+        equipmentRepository.selectEquipment(competitionId, callList.equipmentIds)
 
         return success(callListId)
     }

@@ -4,9 +4,10 @@ package pt.arbitros.arbnet.http
 
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import pt.arbitros.arbnet.http.model.*
-import pt.arbitros.arbnet.http.model.CallListInputModel
+import pt.arbitros.arbnet.http.model.calllist.CallListInputModel
 import pt.arbitros.arbnet.http.model.ParticipantUpdateInput
+import pt.arbitros.arbnet.http.model.calllist.CallListIdInput
+import pt.arbitros.arbnet.http.model.calllist.EventOutputModel
 import pt.arbitros.arbnet.services.*
 
 @RestController
@@ -14,6 +15,7 @@ class CallListController(
     private val callListService: CallListService,
     private val usersService: UsersService,
     ) {
+
     @PostMapping(Uris.CallListUris.CREATE_CALLLIST)
     fun createCallList(
         @RequestBody callList: CallListInputModel,
@@ -34,7 +36,6 @@ class CallListController(
                 ))
         }
     }
-
 
     @PutMapping(Uris.CallListUris.UPDATE_PARTICIPANT_CONFIRMATION_STATUS)
     fun updateParticipantConfirmationStatus(
@@ -89,7 +90,6 @@ class CallListController(
     @GetMapping(Uris.CallListUris.GET_CALLLIST)
     fun getCallList(
         @PathVariable id: Int,
-
     ): ResponseEntity<*> =
         when (val result: Either<ApiError, EventOutputModel> = callListService.getEventById(id)) {
             is Success -> {
@@ -123,6 +123,17 @@ class CallListController(
         }
     }
 
+    @GetMapping(Uris.CallListUris.GET_CALLLISTS_WITH_REFEREE)
+    fun getAllCallListsWithReferee(
+        @PathVariable refereeId: Int,
+    ): ResponseEntity<*> =
+        when (val result = callListService.getCallListsWithReferee(refereeId)) {
+            is Success -> {
+                val value = result.value
+                ResponseEntity.ok(value)
+            }
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
 
 
     @GetMapping(Uris.CallListUris.GET_SEALED_CALLLIST)

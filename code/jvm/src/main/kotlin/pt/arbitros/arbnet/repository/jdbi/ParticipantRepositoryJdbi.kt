@@ -45,22 +45,38 @@ class ParticipantRepositoryJdbi(
         days: List<Int>,
         participantId: Int,
         callListId: Int,
-    ): Boolean =
-        handle
-            .createUpdate(
-                """
+    ): Boolean {
+        if (days.isEmpty()) {
+            return handle
+                .createUpdate(
+                    """
                 update dbp.participant
-                set confirmation_status = case 
-                    when match_day_id in (<days>) then 'accepted'
-                    else 'declined'
-                end
+                set confirmation_status = 'declined'
                 where call_list_id = :callListId
                   and user_id = :participantId
                 """.trimIndent(),
+                ).bind("callListId", callListId)
+                .bind("participantId", participantId)
+                .execute() > 0
+        }
+
+        return handle
+            .createUpdate(
+                """
+            update dbp.participant
+            set confirmation_status = case 
+                when match_day_id in (<days>) then 'accepted'
+                else 'declined'
+            end
+            where call_list_id = :callListId
+              and user_id = :participantId
+            """.trimIndent(),
             ).bind("callListId", callListId)
             .bind("participantId", participantId)
             .bindList("days", days)
             .execute() > 0
+    }
+
 
     override fun getParticipantsByCallList(callListId: Int): List<Participant> =
         handle

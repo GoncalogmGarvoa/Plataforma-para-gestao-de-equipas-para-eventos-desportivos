@@ -6,10 +6,13 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.*
 import pt.arbitros.arbnet.http.ApiError
-import pt.arbitros.arbnet.http.model.CallListInputModel
-import pt.arbitros.arbnet.http.model.EquipmentOutputModel
-import pt.arbitros.arbnet.http.model.EventOutputModel
-import pt.arbitros.arbnet.http.model.ParticipantWithCategory
+import pt.arbitros.arbnet.http.model.ParticipantInfo
+import pt.arbitros.arbnet.http.model.RefereeCallLists
+import pt.arbitros.arbnet.http.model.RefereeCallListsOutputModel
+import pt.arbitros.arbnet.http.model.calllist.CallListInputModel
+import pt.arbitros.arbnet.http.model.calllist.EquipmentOutputModel
+import pt.arbitros.arbnet.http.model.calllist.EventOutputModel
+import pt.arbitros.arbnet.http.model.calllist.ParticipantWithCategory
 import pt.arbitros.arbnet.repository.*
 import pt.arbitros.arbnet.repository.mongo.CallListMongoRepository
 import pt.arbitros.arbnet.transactionRepo
@@ -70,7 +73,7 @@ class CallListService(
                 }
 
                 if (callList.equipmentIds.isNotEmpty()) {
-                    it.equipmentRepository.verifyEquipmentId(callList.equipmentIds)
+                    it.equipmentRepository.verifyEquipmentIds(callList.equipmentIds)
                     it.equipmentRepository.selectEquipment(competitionId, callList.equipmentIds)
                 }
 
@@ -199,6 +202,10 @@ class CallListService(
                     ))
 
                 val function = tx.functionRepository.getFunctionNameById(it.functionId)
+                    ?: return@run failure(ApiError.NotFound(
+                        "Function not found",
+                        "No function found with ID ${it.functionId}",
+                    ))
 
 
                 ParticipantWithCategory(
@@ -215,7 +222,7 @@ class CallListService(
             }
 
             val equipments = tx.equipmentRepository.getEquipmentByCompetitionId(callList.competitionId)
-                .map { equipment -> EquipmentOutputModel(id = equipment.id, name = equipment.name,)}
+                .map { equipment -> EquipmentOutputModel(id = equipment.id, name = equipment.name,) }
 
             val event =
                 EventOutputModel(
@@ -232,7 +239,6 @@ class CallListService(
                     matchDaySessions = matchDays,
                     equipments = equipments,
                 )
-
             return@run success(event)
         }
 
@@ -244,9 +250,84 @@ class CallListService(
             success(callLists)
         }
 
+    fun getCallListsWithReferee(refereeId: Int): Either<ApiError, List<RefereeCallListsOutputModel>> {
+        return transactionManager.run { tx ->
+            val callLists: List<RefereeCallLists> = tx.callListRepository.getCallListsWithReferee(refereeId)
+            if (callLists.isEmpty()) {
+                return@run failure(ApiError.NotFound(
+                    "No call lists found for referee with ID $refereeId",
+                    "The referee with ID $refereeId has no associated call lists."
+                ))
+            }
 
 
+            val final = callLists.map {
 
+                val participants = tx.participantRepository.getParticipantsByCallList(it.callListId)
+
+                val participantsInfo = participants.map { participant ->
+                    val categoryId = tx.categoryDirRepository.getCategoryIdByUserId(participant.userId)
+                        ?: return@run failure(
+                            ApiError.InvalidField(
+                                "Participant does not have a category",
+                                "User with ID ${participant.userId} does not have a category assigned",
+                            )
+                        )
+                    val category = tx.categoryRepository.getCategoryNameById(categoryId)
+                        ?: return@run failure(
+                            ApiError.InvalidField(
+                                "Category not found",
+                                "No category found with ID $categoryId",
+                            )
+                        )
+                    val user = tx.usersRepository.getUserById(participant.userId)
+                        ?: return@run failure(
+                            ApiError.NotFound(
+                                "User not found",
+                                "No user found with ID ${participant.userId}",
+                            )
+                        )
+
+                    val function = tx.functionRepository.getFunctionNameById(participant.functionId)
+                        ?: return@run failure(
+                            ApiError.NotFound(
+                                "Function not found",
+                                "No function found with ID ${participant.functionId}",
+                            )
+                        )
+
+                    ParticipantInfo(
+                        user.name,
+                        category,
+                        function,
+                        participant.confirmationStatus,
+                        participant.userId,
+                        participant.matchDayId
+                    )
+                }
+
+                val matchDays = tx.matchDayRepository.getMatchDaysByCompetition(it.competitionId)
+                val equipments = tx.equipmentRepository.getEquipmentByCompetitionId(it.competitionId)
+                    .map { equipment -> EquipmentOutputModel(id = equipment.id, name = equipment.name,)}
+
+
+                RefereeCallListsOutputModel(
+                    it.callListId,
+                    it.competitionName,
+                    it.address,
+                    it.phoneNumber,
+                    it.email,
+                    it.association,
+                    it.location,
+                    it.deadline.toString(),
+                    participantsInfo,
+                    matchDays,
+                    equipments
+                )
+            }
+            return@run success(final)
+        }
+    }
 
     fun updateCallListStage(callListId: Int): Either<ApiError, Boolean> =
         transactionManager.run { tx ->
@@ -311,7 +392,11 @@ class CallListService(
                         "No user found with ID ${it.userId}",
                     ))
 
-                val function = tx.functionRepository.getFunctionNameById(it.functionId)
+                val function = tx.functionRepository.getFunctionNameById(it.functionId)?:
+                    return@run failure(ApiError.NotFound(
+                        "Function not found",
+                        "No function found with ID ${it.functionId}",
+                    ))
 
 
                 ParticipantWithCategory(

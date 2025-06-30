@@ -49,21 +49,49 @@ export function EditCallList() {
                     const idToName: Record<number, string> = {};
                     const partInputs: Record<string, Record<string, string>> = {};
                     const partArr: any[] = [];
-                    data.participants.forEach((p: any) => {
-                        const name = p.name || p.userName || p.userId?.toString() || "";
-                        nameMap[name] = p.userId;
-                        idToName[p.userId] = name;
+                    
+                    // Criar um mapa de participantes por userId para facilitar o acesso
+                    const participantsByUserId = data.participants.reduce((acc: any, p: any) => {
+                        if (!acc[p.userId]) {
+                            acc[p.userId] = [];
+                        }
+                        acc[p.userId].push(p);
+                        return acc;
+                    }, {});
+                    
+                    // Para cada participante único, criar entradas para todos os dias disponíveis
+                    Object.keys(participantsByUserId).forEach((userId) => {
+                        const participantEntries = participantsByUserId[userId];
+                        const firstParticipant = participantEntries[0];
+                        const name = firstParticipant.userName || firstParticipant.name || userId;
+                        
+                        nameMap[name] = parseInt(userId);
+                        idToName[parseInt(userId)] = name;
                         partInputs[name] = {};
-                        if (p.participantAndRole) {
-                            p.participantAndRole.forEach((pr: any) => {
-                                partInputs[name][pr.matchDay] = pr.function;
+                        
+                        // Para cada dia disponível, verificar se o participante tem função atribuída
+                        if (data.matchDaySessions) {
+                            data.matchDaySessions.forEach((md: any) => {
+                                const dateKey = md.matchDate || md.day || md.date || md.matchDay;
+                                
+                                // Procurar se este participante tem função para este dia específico
+                                const participantForThisDay = participantEntries.find((p: any) => p.matchDayId === md.id);
+                                
+                                if (participantForThisDay) {
+                                    partInputs[name][dateKey] = participantForThisDay.functionName || "";
+                                } else {
+                                    // Se não tem função atribuída para este dia, deixar vazio
+                                    partInputs[name][dateKey] = "";
+                                }
                             });
                         }
+                        
                         partArr.push({
-                            userId: p.userId,
-                            participantAndRole: p.participantAndRole || []
+                            userId: parseInt(userId),
+                            participantAndRole: participantEntries
                         });
                     });
+                    
                     setNameToUserIdMap(nameMap);
                     setUserIdToNameMap(idToName);
                     setParticipantInputs(partInputs);
@@ -111,7 +139,7 @@ export function EditCallList() {
             const token = getCookie("token");
             const res = await fetch(`/arbnet/users/name?name=${encodeURIComponent(newParticipantName)}`, {
                 method: "GET",
-                headers: {token},
+                headers: { token },
             });
             if (!res.ok) throw new Error("Utilizador não foi encontrado.");
             const users: { name: string, id: number }[] = await res.json();
@@ -121,20 +149,28 @@ export function EditCallList() {
                 return;
             }
             const userId = foundUser.id;
+    
             setParticipantInputs((prev) => ({
                 ...prev,
-                [newParticipantName]: Object.fromEntries(matchDaySessionsInput.map(({matchDay}) => [matchDay, "DEFAULT"]))
+                [newParticipantName]: Object.fromEntries(
+                    form.matchDaySessions.map((md: any) => {
+                        const dateKey = md.matchDate || md.day || md.date || md.matchDay;
+                        return [dateKey, "DEFAULT"];
+                    })
+                )
             }));
+    
             setParticipants((prev) => [
                 ...prev,
                 {
                     userId,
-                    participantAndRole: matchDaySessionsInput.map(({matchDay}) => ({
-                        matchDay: matchDay,
+                    participantAndRole: form.matchDaySessions.map((md: any) => ({
+                        matchDay: md.matchDay,
                         function: "DEFAULT"
                     }))
                 }
             ]);
+    
             setNameToUserIdMap((prev) => ({
                 ...prev,
                 [newParticipantName]: userId
@@ -144,6 +180,7 @@ export function EditCallList() {
             alert("Erro ao buscar utilizador.");
         }
     };
+    
 
     const handleRoleChange = (name: string, day: string, func: string) => {
         setParticipantInputs((prev) => ({
@@ -187,19 +224,28 @@ export function EditCallList() {
             if (!token) throw new Error("Token não encontrado. Faça login novamente.");
             // Montar participantes para envio
             const updatedParticipants = Object.entries(participantInputs).map(([name, rolesByDay]) => {
-                const participantAndRole = Object.entries(rolesByDay).map(([matchDay, func]) => ({
-                    matchDay,
-                    function: func
-                }));
-                return {
-                    userId: nameToUserIdMap[name] ?? 0,
-                    participantAndRole
-                };
-            });
+                const userId = nameToUserIdMap[name] ?? 0;
+                
+                // Para cada data/função, criar um participante
+                return Object.entries(rolesByDay).map(([date, functionName]) => {
+                    // Encontrar o matchDayId correspondente à data
+                    const matchDay = form.matchDaySessions.find((md: any) => 
+                        md.matchDate === date || md.day === date || md.date === date || md.matchDay === date
+                    );
+                    
+                    return {
+                        userId: userId,
+                        matchDayId: matchDay?.id,
+                        functionName: functionName,
+                        userName: name
+                    };
+                });
+            }).flat(); // Flatten para ter uma lista simples de participantes
+            
             const updatedForm = {
                 ...form,
                 participants: updatedParticipants,
-                matchDaySessions: matchDaySessionsInput
+                matchDaySessions: form.matchDaySessions
             };
             const response = await fetch("/arbnet/callList/update", {
                 method: "PUT",
@@ -298,43 +344,44 @@ export function EditCallList() {
                     )}
                 </div>
                 <button type="button" onClick={addParticipant}>Adicionar Participante</button>
-                <table border={1} cellPadding={5} style={{borderCollapse: "collapse", marginTop: "1rem"}}>
+                <table border={1} cellPadding={5} style={{ borderCollapse: "collapse", marginTop: "1rem", width: "100%" }}>
                     <thead>
-                    <tr>
+                        <tr>
                         <th>Nome</th>
-                        {matchDaySessionsInput.map(({matchDay}) => (
-                            <th key={matchDay}>{matchDay}</th>
+                        {form.matchDaySessions.map((md: any) => (
+                            <th key={md.id}>{new Date(md.matchDate).toLocaleDateString("pt-PT")}</th>
                         ))}
-                    </tr>
+                        </tr>
                     </thead>
                     <tbody>
-                    {Object.entries(participantInputs).map(([name, roles]) => (
-                        <tr key={name}>
+                        {Object.entries(participantInputs).map(([name, rolesByDay], index) => (
+                        <tr key={index}>
                             <td>
-                                <strong>{name}</strong>
-                                <button
-                                    className="remove-button"
-                                    style={{marginLeft: "8px"}}
-                                    type="button"
-                                    onClick={() => removeParticipant(name)}
-                                >
-                                    Remover
-                                </button>
+                            {name}
+                            <button
+                                style={{ marginLeft: "0.5rem", color: "red" }}
+                                type="button"
+                                onClick={() => removeParticipant(name)}
+                            >
+                                Remover
+                            </button>
                             </td>
-                            {matchDaySessionsInput.map(({matchDay}) => (
-                                <td key={matchDay}>
-                                    <input
-                                        value={roles[matchDay] || ""}
-                                        onChange={(e) => handleRoleChange(name, matchDay, e.target.value)}
-                                        placeholder="Função"
-                                        style={{width: "100px"}}
-                                    />
-                                </td>
+                            {form.matchDaySessions.map((md: any) => (
+                            <td key={md.id}>
+                                <input
+                                type="text"
+                                value={rolesByDay[md.matchDate] || ""}
+                                onChange={(e) => handleRoleChange(name, md.matchDate, e.target.value)}
+                                placeholder="Função"
+                                style={{ width: "100%" }}
+                                />
+                            </td>
                             ))}
                         </tr>
-                    ))}
+                        ))}
                     </tbody>
-                </table>
+                    </table>
+
                 <button type="submit" disabled={submitting}>{submitting ? "Salvando..." : "Salvar Alterações"}</button>
             </form>
         </div>
