@@ -1,6 +1,7 @@
 package pt.arbitros.arbnet.services.payment
 
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.PaymentReportMongo
 import pt.arbitros.arbnet.domain.UtilsDomain
@@ -121,6 +122,11 @@ class PaymentReportService(
 
             success(updated)
         }
+    }
+
+    fun getPaymentReportByCompetition(competitionId: Int): Either<ApiError, List<PaymentReportMongo>> {
+        val payments = paymentMongoRepository.findByCompetitionId(competitionId, false).filterIsInstance<PaymentReportMongo>()
+        return success(payments)
     }
 
 }

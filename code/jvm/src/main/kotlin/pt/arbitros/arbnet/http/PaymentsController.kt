@@ -1,6 +1,5 @@
 package pt.arbitros.arbnet.http
 
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -9,11 +8,8 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import pt.arbitros.arbnet.http.model.payment_report.PaymentReportInputModel
-import pt.arbitros.arbnet.http.model.report.ReportInputModel
-import pt.arbitros.arbnet.repository.mongo.ReportMongoRepository
 import pt.arbitros.arbnet.services.Failure
 import pt.arbitros.arbnet.services.payment.PaymentReportService
-import pt.arbitros.arbnet.services.report.ReportService
 import pt.arbitros.arbnet.services.Success
 
 // TODO verify if useful -> @RestControllerAdvice
@@ -33,6 +29,13 @@ class PaymentsController(private val paymentReportService : PaymentReportService
     @GetMapping(Uris.PaymentsUris.GET_ALL_PAYMENT_REPORTS)
     fun getAllPaymentReports(): ResponseEntity<*> =
         when (val result = paymentReportService.getAllPaymentReports()) {
+            is Success -> ResponseEntity.ok(result.value)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
+
+    @GetMapping(Uris.PaymentsUris.GET_PAYMENT_REPORTS_BY_COMPETITION)
+    fun getPaymentReportByCompetition(@PathVariable competitionId: Int): ResponseEntity<*> =
+        when (val result = paymentReportService.getPaymentReportByCompetition(competitionId)) {
             is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }

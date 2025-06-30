@@ -1,6 +1,7 @@
 package pt.arbitros.arbnet.services.report
 
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.ReportMongo
 import pt.arbitros.arbnet.domain.UtilsDomain
@@ -143,6 +144,11 @@ class ReportService(
 
             success(updated)
         }
+    }
+
+    fun getAllReportsByCompetition(competitionId: Int): Either<ApiError, List<ReportMongo>> {
+        val reports = reportMongoRepository.findByCompetitionId(competitionId, true).filterIsInstance<ReportMongo>()
+        return success(reports)
     }
 
 }

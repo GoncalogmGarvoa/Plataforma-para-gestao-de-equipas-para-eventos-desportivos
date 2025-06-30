@@ -32,6 +32,13 @@ class ReportController(private val reportService : ReportService) {
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
+    @GetMapping(Uris.ReportUris.GET_ALL_REPORTS_BY_COMPETITION)
+    fun getAllReportsByCompetition(@PathVariable competitionId: Int): ResponseEntity<*> =
+        when (val result = reportService.getAllReportsByCompetition(competitionId)) {
+            is Success -> ResponseEntity.ok(result.value)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
+
     @GetMapping(Uris.ReportUris.GET_REPORT_BY_ID)
     fun getReportById(@PathVariable id: String): ResponseEntity<*> =
         when (val result = reportService.getReportById(id)) {
