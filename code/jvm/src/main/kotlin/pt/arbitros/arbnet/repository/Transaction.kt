@@ -1,10 +1,7 @@
 package pt.arbitros.arbnet.repository
 
-import pt.arbitros.arbnet.repository.adaptable_repos.CategoryRepository
+import pt.arbitros.arbnet.repository.adaptable_repos.*
 import pt.arbitros.arbnet.repository.auxiliary.SessionRefereesRepository
-import pt.arbitros.arbnet.repository.adaptable_repos.FunctionRepository
-import pt.arbitros.arbnet.repository.adaptable_repos.PositionRepository
-import pt.arbitros.arbnet.repository.adaptable_repos.RoleRepository
 
 interface Transaction {
     val usersRolesRepository: UsersRolesRepository

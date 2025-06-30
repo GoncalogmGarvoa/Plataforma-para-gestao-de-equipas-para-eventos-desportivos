@@ -1,16 +1,14 @@
 package pt.arbitros.arbnet.repository.mem
 
 import pt.arbitros.arbnet.domain.adaptable.Equipment
+import pt.arbitros.arbnet.repository.adaptable_repos.EquipmentRepository
 
 class EquipmentRepositoryMem: EquipmentRepository {
     override fun getAllEquipment(): List<Equipment> {
         TODO("Not yet implemented")
     }
 
-    override fun selectEquipment(
-        competitionId: Int,
-        equipmentsId: List<Int>
-    ): Boolean {
+    override fun selectEquipment(competitionId: Int, equipmentsId: List<Int>): Boolean {
         TODO("Not yet implemented")
     }
 
@@ -25,4 +23,5 @@ class EquipmentRepositoryMem: EquipmentRepository {
     override fun deleteEquipmentByCompetitionId(competitionId: Int): Boolean {
         TODO("Not yet implemented")
     }
+
 }
