@@ -1,4 +1,4 @@
-package pt.arbitros.arbnet.services
+package pt.arbitros.arbnet.services.callList
 
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.CallList
@@ -15,16 +15,20 @@ import pt.arbitros.arbnet.http.model.calllist.CallListInputModel
 import pt.arbitros.arbnet.http.model.calllist.ParticipantChoice
 import pt.arbitros.arbnet.repository.CallListRepository
 import pt.arbitros.arbnet.repository.CompetitionRepository
-import pt.arbitros.arbnet.repository.adaptable_repos.EquipmentRepository
-import pt.arbitros.arbnet.repository.adaptable_repos.FunctionRepository
 import pt.arbitros.arbnet.repository.MatchDayRepository
 import pt.arbitros.arbnet.repository.ParticipantRepository
 import pt.arbitros.arbnet.repository.SessionsRepository
 import pt.arbitros.arbnet.repository.Transaction
 import pt.arbitros.arbnet.repository.UsersRepository
+import pt.arbitros.arbnet.repository.adaptable_repos.EquipmentRepository
+import pt.arbitros.arbnet.repository.adaptable_repos.FunctionRepository
+import pt.arbitros.arbnet.services.Either
 import pt.arbitros.arbnet.services.Failure
 import pt.arbitros.arbnet.services.Success
+import pt.arbitros.arbnet.services.failure
+import pt.arbitros.arbnet.services.success
 import java.time.LocalDate
+import kotlin.collections.plusAssign
 
 @Component
 class CallListServiceUtils {
@@ -51,23 +55,29 @@ class CallListServiceUtils {
         if (validateResult is Failure) return validateResult
 
         usersRepository.getUserById(userId)
-            ?: return failure(ApiError.NotFound(
-                "User not found",
-                "No user found with the provided ID",
-            ))
+            ?: return failure(
+                ApiError.NotFound(
+                    "User not found",
+                    "No user found with the provided ID",
+                )
+            )
 
         if(!usersRepository.userHasCouncilRole(userId))
-            return failure(ApiError.InvalidField(
-                "User does not have the required role",
-                "The user must have a council role to create or update a call list"
-            ))
+            return failure(
+                ApiError.InvalidField(
+                    "User does not have the required role",
+                    "The user must have a council role to create or update a call list"
+                )
+            )
 
         callList.matchDaySessions.forEach { md ->
             if(md.matchDay.isBefore(LocalDate.now()) || md.matchDay.isBefore(callList.deadline)) {
-                return failure(ApiError.InvalidField(
-                    "Invalid match day",
-                    "Match day cannot be in the past or before the deadline: ${md.matchDay}",
-                ))
+                return failure(
+                    ApiError.InvalidField(
+                        "Invalid match day",
+                        "Match day cannot be in the past or before the deadline: ${md.matchDay}",
+                    )
+                )
             }
         }
 
@@ -81,10 +91,12 @@ class CallListServiceUtils {
         val foundReferees = usersRepository.getUsersAndCheckIfReferee(participantIds)
 
         if (foundReferees.size != participants.size) { //todo check
-            return failure(ApiError.InvalidField(
-                "Invalid participants",
-                "Some participants are not referees or do not exist in the system",
-            ))
+            return failure(
+                ApiError.InvalidField(
+                    "Invalid participants",
+                    "Some participants are not referees or do not exist in the system",
+                )
+            )
         }
         return success(foundReferees)
     }
@@ -127,7 +139,7 @@ class CallListServiceUtils {
         competitionRepository: CompetitionRepository,
         matchDayRepository: MatchDayRepository,
         sessionsRepository: SessionsRepository,
-    ): Either< ApiError,Pair<Int, Map<LocalDate, Int>>> {// TODO review this the pair should be a data class
+    ): Either<ApiError, Pair<Int, Map<LocalDate, Int>>> {// TODO review this the pair should be a data class
 
         val competitionId = competitionRepository.getCompetitionIdByCallListId(callList.callListId!!)
 
@@ -203,27 +215,31 @@ class CallListServiceUtils {
 
                     val funcId =
                         functionRepository.getFunctionIdByName(funcName)
-                            ?: return failure(ApiError.NotFound(
-                                "Function not found",
-                                "No function found with the name '$funcName'",
-                            ))
+                            ?: return failure(
+                                ApiError.NotFound(
+                                    "Function not found",
+                                    "No function found with the name '$funcName'",
+                                )
+                            )
 
                     val mdId =
                         matchDayMap[day]
-                            ?: return failure(ApiError.NotFound(
-                                "Match day not found",
-                                "No match day found for the date '$day'",
-                            ))
+                            ?: return failure(
+                                ApiError.NotFound(
+                                    "Match day not found",
+                                    "No match day found for the date '$day'",
+                                )
+                            )
 
                     participantsToInsert +=
-                        Participant(
-                            callListId = callListId,
-                            matchDayId = mdId,
-                            competitionIdMatchDay = competitionId,
-                            userId = p.userId,
-                            functionId = funcId,
-                            confirmationStatus = ConfirmationStatus.WAITING.value,
-                        )
+                            Participant(
+                                callListId = callListId,
+                                matchDayId = mdId,
+                                competitionIdMatchDay = competitionId,
+                                userId = p.userId,
+                                functionId = funcId,
+                                confirmationStatus = ConfirmationStatus.WAITING.value,
+                            )
                 }
             }
             participantRepository.batchAddParticipants(participantsToInsert)
@@ -286,10 +302,12 @@ class CallListServiceUtils {
 
         val competition =
             competitionRepository.getCompetitionById(competitionId)
-                ?: return failure(ApiError.NotFound(
-                    "Competition not found",
-                    "No competition found with the ID $competitionId"
-                ))
+                ?: return failure(
+                    ApiError.NotFound(
+                        "Competition not found",
+                        "No competition found with the ID $competitionId"
+                    )
+                )
 
         return success(competition)
     }
@@ -336,14 +354,16 @@ class CallListServiceUtils {
         }
 
         // 4. Update equipments
-        //todo uncomment when equipment is implemented
-//        if (!equipmentRepository.verifyEquipmentIds(callList.equipmentIds))
-//            return failure(ApiError.InvalidField(
-//                "Invalid equipment IDs",
-//                "One or more equipment IDs provided do not exist in the database",
-//            ))
-//        equipmentRepository.deleteEquipmentByCompetitionId(competitionId)
-//        equipmentRepository.selectEquipment(competitionId, callList.equipmentIds)
+
+        if (!equipmentRepository.verifyEquipmentIds(callList.equipmentIds))
+            return failure(
+                ApiError.InvalidField(
+                    "Invalid equipment IDs",
+                    "One or more equipment IDs provided do not exist in the database",
+                )
+            )
+        equipmentRepository.deleteEquipmentByCompetitionId(competitionId)
+        equipmentRepository.selectEquipment(competitionId, callList.equipmentIds)
 
         return success(callListId)
     }

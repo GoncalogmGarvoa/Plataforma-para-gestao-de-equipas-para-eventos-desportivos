@@ -42,6 +42,10 @@ export function EditCallList() {
                     throw new Error(err.title || "Erro ao buscar convocatória");
                 }
                 const data = await response.json();
+                // Garante que callListId está presente
+                if (!data.callListId && data.id) {
+                    data.callListId = data.id;
+                }
                 setForm(data);
                 // Converter participantes para o formato de edição
                 if (data.participants) {
@@ -225,27 +229,62 @@ export function EditCallList() {
             // Montar participantes para envio
             const updatedParticipants = Object.entries(participantInputs).map(([name, rolesByDay]) => {
                 const userId = nameToUserIdMap[name] ?? 0;
-                
-                // Para cada data/função, criar um participante
-                return Object.entries(rolesByDay).map(([date, functionName]) => {
-                    // Encontrar o matchDayId correspondente à data
-                    const matchDay = form.matchDaySessions.find((md: any) => 
+                const participantAndRole = Object.entries(rolesByDay).map(([date, functionName]) => {
+                    const matchDay = form.matchDaySessions.find((md: any) =>
                         md.matchDate === date || md.day === date || md.date === date || md.matchDay === date
                     );
-                    
                     return {
-                        userId: userId,
-                        matchDayId: matchDay?.id,
-                        functionName: functionName,
-                        userName: name
+                        matchDay: matchDay?.matchDate,
+                        function: functionName
                     };
                 });
-            }).flat(); // Flatten para ter uma lista simples de participantes
+                // Garante que participantAndRole é sempre array (mesmo vazio)
+                return {
+                    userId,
+                    participantAndRole: participantAndRole || []
+                };
+            });
+            
+            const matchDaySessions = (form.matchDaySessions || []).map((md: any) => ({
+                ...md,
+                matchDay: md.matchDate, // ou o campo correto de data
+                sessions: (md.sessions || []).map((s: any) => {
+                    if (typeof s === "string") {
+                        // Verifica se já está no formato HH:mm:ss
+                        if (/^\d{2}:\d{2}(:\d{2})?$/.test(s)) {
+                            return s.length === 5 ? s + ":00" : s;
+                        }
+                        const d = new Date(`1970-01-01T${s}`);
+                        if (!isNaN(d.getTime())) {
+                            return d.toTimeString().slice(0, 8);
+                        }
+                        throw new Error(`Formato de hora inválido: ${s}`);
+                    }
+                    if (s instanceof Date) {
+                        return s.toTimeString().slice(0, 8);
+                    }
+                    if (typeof s === "object" && s.startTime) {
+                        // Usa o startTime do objeto
+                        if (/^\d{2}:\d{2}(:\d{2})?$/.test(s.startTime)) {
+                            return s.startTime.length === 5 ? s.startTime + ":00" : s.startTime;
+                        }
+                        // Se vier como string mas não está no formato, tenta converter
+                        const d = new Date(`1970-01-01T${s.startTime}`);
+                        if (!isNaN(d.getTime())) {
+                            return d.toTimeString().slice(0, 8);
+                        }
+                        throw new Error(`Formato de hora inválido em startTime: ${s.startTime}`);
+                    }
+                    throw new Error(`Formato de sessão inválido: ${JSON.stringify(s)}`);
+                })
+            }));
             
             const updatedForm = {
                 ...form,
                 participants: updatedParticipants,
-                matchDaySessions: form.matchDaySessions
+                matchDaySessions: matchDaySessions,
+                equipmentIds: form.equipmentIds || [],
+                callListId: form.callListId || form.id || id
             };
             const response = await fetch("/arbnet/callList/update", {
                 method: "PUT",
