@@ -37,7 +37,6 @@ class UsersService(
         "No user found with the provided ID",
     )
 
-
     fun createToken(
         email: String,
         password: String,

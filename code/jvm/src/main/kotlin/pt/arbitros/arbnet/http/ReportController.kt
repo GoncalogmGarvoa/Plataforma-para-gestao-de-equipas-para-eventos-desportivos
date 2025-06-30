@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController
 import pt.arbitros.arbnet.http.model.report.ReportInputModel
 import pt.arbitros.arbnet.repository.mongo.ReportMongoRepository
 import pt.arbitros.arbnet.services.Failure
-import pt.arbitros.arbnet.services.ReportService
+import pt.arbitros.arbnet.services.report.ReportService
 import pt.arbitros.arbnet.services.Success
 
 // TODO verify if useful -> @RestControllerAdvice
@@ -28,6 +28,13 @@ class ReportController(private val reportService : ReportService) {
     @GetMapping(Uris.ReportUris.GET_ALL_REPORTS)
     fun getAllReports(): ResponseEntity<*> =
         when (val result = reportService.getAllReports()) {
+            is Success -> ResponseEntity.ok(result.value)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
+
+    @GetMapping(Uris.ReportUris.GET_ALL_REPORTS_BY_COMPETITION)
+    fun getAllReportsByCompetition(@PathVariable competitionId: Int): ResponseEntity<*> =
+        when (val result = reportService.getAllReportsByCompetition(competitionId)) {
             is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }

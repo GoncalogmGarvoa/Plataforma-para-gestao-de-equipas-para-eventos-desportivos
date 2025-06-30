@@ -21,6 +21,7 @@ import pt.arbitros.arbnet.services.*
 class UsersController(
     private val usersService: UsersService,
 ) {
+
     @PostMapping(Uris.UsersUris.TOKEN) // equal to logging in
     fun login(
         @RequestBody input: UserCreateTokenInputModel,
@@ -36,8 +37,6 @@ class UsersController(
     fun logout(user: AuthenticatedUser) {
         usersService.revokeToken(user.token) // .also { removeCookies(response) }
     }
-
-
 
     data class RoleSelectionRequest(val id: Int)
     @PostMapping(Uris.UsersUris.SET_ROLE)
