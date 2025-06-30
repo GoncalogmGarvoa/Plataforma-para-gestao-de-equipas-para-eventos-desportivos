@@ -94,7 +94,12 @@ class ReportServiceInputValidation {
                 )
             )
 
-        val coverSheetValidationResult = validateReportCoverSheet(report.competitionId,report.coverSheet, matchDayRepository, sessionRepository)
+        val coverSheetValidationResult = validateReportCoverSheet(
+            report.competitionId,
+            report.coverSheet,
+            matchDayRepository,
+            sessionRepository
+        )
         if (coverSheetValidationResult is Failure) return coverSheetValidationResult
 
         val registerValidationResult = validateRegisters(report.registers)

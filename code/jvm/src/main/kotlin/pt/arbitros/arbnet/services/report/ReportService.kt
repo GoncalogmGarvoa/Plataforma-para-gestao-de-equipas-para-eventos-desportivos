@@ -13,6 +13,7 @@ import pt.arbitros.arbnet.services.Either
 import pt.arbitros.arbnet.services.Failure
 import pt.arbitros.arbnet.services.report.ReportServiceInputValidation
 import pt.arbitros.arbnet.services.failure
+import pt.arbitros.arbnet.services.report.validation.ReportValidator
 import pt.arbitros.arbnet.services.success
 import pt.arbitros.arbnet.transactionRepo
 
@@ -21,6 +22,7 @@ class ReportService(
     @Qualifier(transactionRepo) private val transactionManager: TransactionManager,
     private val reportMongoRepository: ReportMongoRepository,
     private val validationUtils: ReportServiceInputValidation,
+    private val vali : ReportValidator,
     private val utilsDomain: UtilsDomain,
 ) {
 
@@ -28,6 +30,17 @@ class ReportService(
         return transactionManager.run {
 
             val reportMongo = ReportMongo.Companion.fromInputModel(report)
+
+            /*val valid = vali.validate(
+                reportMongo,
+                createOrUpdate = true,
+                it.competitionRepository,
+                it.categoryRepository,
+                it.functionRepository,
+                it.sessionsRepository,
+                it.matchDayRepository,
+                it.positionRepository
+            )*/
 
             val validationResult = validationUtils.validateReportValues(
                 reportMongo,

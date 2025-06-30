@@ -7,7 +7,7 @@ import pt.arbitros.arbnet.http.model.payment_report.PaymentReportInputModel
 @Document(collection = "payment_reports")
 data class PaymentReportMongo(
     @Id val id : String? = null,
-    val reportType : String,
+    val reportType : String = "Payment",
     val competitionId : Int,
     val sealed: Boolean = false,
     val juryRefere: String, //na folha de pagamento é necessário indicar o nome do JÁ
@@ -18,7 +18,6 @@ data class PaymentReportMongo(
         fun fromInputModel(input: PaymentReportInputModel): PaymentReportMongo {
             return PaymentReportMongo(
                 id = input.id, // pode ser null (criação) ou presente (‘update’)
-                reportType = input.reportType,
                 competitionId = input.competitionId,
                 sealed = input.sealed,
                 juryRefere = input.juryRefere,
