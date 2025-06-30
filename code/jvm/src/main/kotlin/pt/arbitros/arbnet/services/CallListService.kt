@@ -6,13 +6,13 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.*
 import pt.arbitros.arbnet.http.ApiError
-import pt.arbitros.arbnet.http.model.CallListInputModel
-import pt.arbitros.arbnet.http.model.EquipmentOutputModel
-import pt.arbitros.arbnet.http.model.EventOutputModel
 import pt.arbitros.arbnet.http.model.ParticipantInfo
-import pt.arbitros.arbnet.http.model.ParticipantWithCategory
 import pt.arbitros.arbnet.http.model.RefereeCallLists
 import pt.arbitros.arbnet.http.model.RefereeCallListsOutputModel
+import pt.arbitros.arbnet.http.model.calllist.CallListInputModel
+import pt.arbitros.arbnet.http.model.calllist.EquipmentOutputModel
+import pt.arbitros.arbnet.http.model.calllist.EventOutputModel
+import pt.arbitros.arbnet.http.model.calllist.ParticipantWithCategory
 import pt.arbitros.arbnet.repository.*
 import pt.arbitros.arbnet.repository.mongo.CallListMongoRepository
 import pt.arbitros.arbnet.transactionRepo
@@ -73,7 +73,7 @@ class CallListService(
                 }
 
                 if (callList.equipmentIds.isNotEmpty()) {
-                    it.equipmentRepository.verifyEquipmentId(callList.equipmentIds)
+                    it.equipmentRepository.verifyEquipmentIds(callList.equipmentIds)
                     it.equipmentRepository.selectEquipment(competitionId, callList.equipmentIds)
                 }
 
@@ -202,6 +202,10 @@ class CallListService(
                     ))
 
                 val function = tx.functionRepository.getFunctionNameById(it.functionId)
+                    ?: return@run failure(ApiError.NotFound(
+                        "Function not found",
+                        "No function found with ID ${it.functionId}",
+                    ))
 
 
                 ParticipantWithCategory(
@@ -218,7 +222,7 @@ class CallListService(
             }
 
             val equipments = tx.equipmentRepository.getEquipmentByCompetitionId(callList.competitionId)
-                .map { equipment -> EquipmentOutputModel(id = equipment.id, name = equipment.name,)}
+                .map { equipment -> EquipmentOutputModel(id = equipment.id, name = equipment.name,) }
 
             val event =
                 EventOutputModel(
@@ -285,6 +289,12 @@ class CallListService(
                         )
 
                     val function = tx.functionRepository.getFunctionNameById(participant.functionId)
+                        ?: return@run failure(
+                            ApiError.NotFound(
+                                "Function not found",
+                                "No function found with ID ${participant.functionId}",
+                            )
+                        )
 
                     ParticipantInfo(
                         user.name,
@@ -318,10 +328,6 @@ class CallListService(
             return@run success(final)
         }
     }
-
-
-
-
 
     fun updateCallListStage(callListId: Int): Either<ApiError, Boolean> =
         transactionManager.run { tx ->
@@ -386,7 +392,11 @@ class CallListService(
                         "No user found with ID ${it.userId}",
                     ))
 
-                val function = tx.functionRepository.getFunctionNameById(it.functionId)
+                val function = tx.functionRepository.getFunctionNameById(it.functionId)?:
+                    return@run failure(ApiError.NotFound(
+                        "Function not found",
+                        "No function found with ID ${it.functionId}",
+                    ))
 
 
                 ParticipantWithCategory(

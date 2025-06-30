@@ -12,8 +12,7 @@ import pt.arbitros.arbnet.transactionRepo
 
 @Component
 class SessionService(
-    @Qualifier(transactionRepo) private val transactionManager: TransactionManager,
-    private val utilsDomain: UtilsDomain
+    @Qualifier(transactionRepo) private val transactionManager: TransactionManager
 ) {
 
     fun finishSession(

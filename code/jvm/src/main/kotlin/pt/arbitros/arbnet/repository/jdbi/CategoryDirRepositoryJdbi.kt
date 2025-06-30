@@ -3,7 +3,6 @@ package pt.arbitros.arbnet.repository.jdbi
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.arbitros.arbnet.domain.CategoryDir
-import pt.arbitros.arbnet.domain.universal.Category
 import pt.arbitros.arbnet.repository.CategoryDirRepository
 
 class CategoryDirRepositoryJdbi(

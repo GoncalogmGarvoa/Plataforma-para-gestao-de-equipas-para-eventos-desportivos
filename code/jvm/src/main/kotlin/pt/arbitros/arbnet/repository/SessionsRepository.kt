@@ -6,7 +6,7 @@ import java.time.LocalTime
 interface SessionsRepository {
     fun createSession(
         competitionId: Int,
-        matchDate: Int,
+        matchDateId: Int,
         startTime: LocalTime,
     ): Boolean
 
@@ -22,5 +22,8 @@ interface SessionsRepository {
     fun getSessionById(id: Int): Session?
 
     fun finishSession(id: Int): Boolean
+
+    fun getSessionsByCompetitionId(competitionId: Int): List<Session>
+
     fun deleteCompetitionSessions(competitionId: Int): Boolean
 }
