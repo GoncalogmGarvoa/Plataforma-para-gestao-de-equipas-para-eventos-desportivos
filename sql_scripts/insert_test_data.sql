@@ -49,7 +49,8 @@ VALUES
 
 -- EQUIPMENT
 INSERT INTO dbp.equipment (name)
-VALUES ('Bola Oficial'), ('Apito'), ('Cartões'), ('Uniformes');
+VALUES ('Pólo Azul ANL ou Preto Meeting Lisboa'), ('Calças Brancas e Ténis Brancos'),
+       ('Pólo / T-Shirt Azul Escuro'), ('Calças Brancas e Ténis Brancos');
 
 -- COMPETITION_EQUIPMENT
 INSERT INTO dbp.competition_equipment (competition_id, equipment_id)

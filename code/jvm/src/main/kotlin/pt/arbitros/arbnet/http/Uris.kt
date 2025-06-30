@@ -58,4 +58,8 @@ object Uris {
         const val FINISH_SESSION = "$PREFIX/session/finish/{id}"
         const val UPDATE_SESSION_REFEREES = "$PREFIX/session/updateReferees"
     }
+
+    object EquipmentUris {
+        const val GET_ALL_EQUIPMENT = "$PREFIX/equipment"
+    }
 }

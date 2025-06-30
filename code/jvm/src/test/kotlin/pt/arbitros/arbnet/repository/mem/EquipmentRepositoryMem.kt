@@ -1,7 +1,6 @@
 package pt.arbitros.arbnet.repository.mem
 
 import pt.arbitros.arbnet.domain.adaptable.Equipment
-import pt.arbitros.arbnet.repository.adaptable_repos.EquipmentRepository
 
 class EquipmentRepositoryMem: EquipmentRepository {
     override fun getAllEquipment(): List<Equipment> {

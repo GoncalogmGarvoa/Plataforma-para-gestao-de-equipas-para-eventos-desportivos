@@ -20,7 +20,6 @@ import pt.arbitros.arbnet.repository.ParticipantRepository
 import pt.arbitros.arbnet.repository.SessionsRepository
 import pt.arbitros.arbnet.repository.Transaction
 import pt.arbitros.arbnet.repository.UsersRepository
-import pt.arbitros.arbnet.repository.adaptable_repos.EquipmentRepository
 import pt.arbitros.arbnet.repository.adaptable_repos.FunctionRepository
 import pt.arbitros.arbnet.services.Either
 import pt.arbitros.arbnet.services.Failure
