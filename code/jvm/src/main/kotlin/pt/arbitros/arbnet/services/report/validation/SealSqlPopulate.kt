@@ -11,13 +11,14 @@ object SealSqlPopulate {
 
     fun reportSealSqlPopulate(report: ReportMongo, transaction: Transaction): Boolean {
 
-        transaction.reportRepository.createReport(
-            report.id!!, //Will not be null, as this is called after the report is created
-            report.reportType,
-            report.competitionId
-        )
+        if (!transaction.reportRepository.createReport(
+                report.id!!, //Will not be null, as this is called after the report is created
+                report.reportType,
+                report.competitionId
+            )
+        ) return false
 
-        return true
+        return completeSessionsEndTime(report, transaction)
     }
 
     private fun completeSessionsEndTime(
@@ -30,7 +31,7 @@ object SealSqlPopulate {
         sessions.forEach { session ->
             sessionRepository.setEndTime(
                 session.id,
-                LocalTime.parse(report.coverSheet.sessions.find { it.sessionId == session.id }!!.endTime))
+                LocalTime.parse(report.coverSheet.sessions.find { it.sessionId == session.id }?.endTime ?: return false))
         }
 
         return true

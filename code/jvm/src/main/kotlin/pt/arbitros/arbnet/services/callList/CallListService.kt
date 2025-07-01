@@ -510,10 +510,12 @@ class CallListService(
             val participantEntries = participants
                 .filter { it.matchDayId == matchDay.id }
                 .map { participant ->
+
                     ParticipantWithFunction(
                         userId = participant.userId,
+                        userName = participant.userName,
                         category = participant.category,
-                        function = participant.functionId.toString() //TODO: change to function name
+                        function = participant.functionName
                     )
                 }
 

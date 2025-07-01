@@ -9,8 +9,6 @@ import pt.arbitros.arbnet.domain.adaptable.Role
 import pt.arbitros.arbnet.domain.users.*
 import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.http.invalidFieldError
-import pt.arbitros.arbnet.http.model.UserInputModel
-import pt.arbitros.arbnet.http.model.UserUpdateInputModel
 import pt.arbitros.arbnet.http.model.UsersParametersOutputModel
 import pt.arbitros.arbnet.http.model.users.UserInputModel
 import pt.arbitros.arbnet.http.model.users.UserUpdateInputModel

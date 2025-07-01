@@ -40,6 +40,7 @@ data class SessionInfo(
 
 data class ParticipantWithFunction(
     val userId: Int,
+    val userName: String,
     val category: String,
     val function: String
 )
