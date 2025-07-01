@@ -30,6 +30,12 @@ export function EditCallList() {
     // MATCH DAYS
     const [matchDaySessionsInput, setMatchDaySessionsInput] = useState<any[]>([]); // [{matchDay, sessions: [hora]}]
 
+    // Equipment dropdown state
+    const [equipmentOptions, setEquipmentOptions] = useState<{id: number, name: string}[]>([]);
+    const [selectedEquipmentIds, setSelectedEquipmentIds] = useState<number[]>([]);
+    const [equipmentDropdownOpen, setEquipmentDropdownOpen] = useState(false);
+    const equipmentDropdownRef = React.useRef<HTMLDivElement>(null);
+
     // Carregar dados iniciais
     useEffect(() => {
         const fetchCallList = async () => {
@@ -42,7 +48,15 @@ export function EditCallList() {
                     throw new Error(err.title || "Erro ao buscar convocatória");
                 }
                 const data = await response.json();
+                // Garante que callListId está presente
+                if (!data.callListId && data.id) {
+                    data.callListId = data.id;
+                }
                 setForm(data);
+                // Popular equipamentos selecionados
+                if (data.equipmentIds) {
+                    setSelectedEquipmentIds(data.equipmentIds);
+                }
                 // Converter participantes para o formato de edição
                 if (data.participants) {
                     const nameMap: Record<string, number> = {};
@@ -225,27 +239,62 @@ export function EditCallList() {
             // Montar participantes para envio
             const updatedParticipants = Object.entries(participantInputs).map(([name, rolesByDay]) => {
                 const userId = nameToUserIdMap[name] ?? 0;
-                
-                // Para cada data/função, criar um participante
-                return Object.entries(rolesByDay).map(([date, functionName]) => {
-                    // Encontrar o matchDayId correspondente à data
-                    const matchDay = form.matchDaySessions.find((md: any) => 
+                const participantAndRole = Object.entries(rolesByDay).map(([date, functionName]) => {
+                    const matchDay = form.matchDaySessions.find((md: any) =>
                         md.matchDate === date || md.day === date || md.date === date || md.matchDay === date
                     );
-                    
                     return {
-                        userId: userId,
-                        matchDayId: matchDay?.id,
-                        functionName: functionName,
-                        userName: name
+                        matchDay: matchDay?.matchDate,
+                        function: functionName
                     };
                 });
-            }).flat(); // Flatten para ter uma lista simples de participantes
+                // Garante que participantAndRole é sempre array (mesmo vazio)
+                return {
+                    userId,
+                    participantAndRole: participantAndRole || []
+                };
+            });
             
-            const updatedForm = {
+            const matchDaySessions = (form.matchDaySessions || []).map((md: any) => ({
+                ...md,
+                matchDay: md.matchDate, // ou o campo correto de data
+                sessions: (md.sessions || []).map((s: any) => {
+                    if (typeof s === "string") {
+                        // Verifica se já está no formato HH:mm:ss
+                        if (/^\d{2}:\d{2}(:\d{2})?$/.test(s)) {
+                            return s.length === 5 ? s + ":00" : s;
+                        }
+                        const d = new Date(`1970-01-01T${s}`);
+                        if (!isNaN(d.getTime())) {
+                            return d.toTimeString().slice(0, 8);
+                        }
+                        throw new Error(`Formato de hora inválido: ${s}`);
+                    }
+                    if (s instanceof Date) {
+                        return s.toTimeString().slice(0, 8);
+                    }
+                    if (typeof s === "object" && s.startTime) {
+                        // Usa o startTime do objeto
+                        if (/^\d{2}:\d{2}(:\d{2})?$/.test(s.startTime)) {
+                            return s.startTime.length === 5 ? s.startTime + ":00" : s.startTime;
+                        }
+                        // Se vier como string mas não está no formato, tenta converter
+                        const d = new Date(`1970-01-01T${s.startTime}`);
+                        if (!isNaN(d.getTime())) {
+                            return d.toTimeString().slice(0, 8);
+                        }
+                        throw new Error(`Formato de hora inválido em startTime: ${s.startTime}`);
+                    }
+                    throw new Error(`Formato de sessão inválido: ${JSON.stringify(s)}`);
+                })
+            }));
+            
+            const fullFormData: any = {
                 ...form,
                 participants: updatedParticipants,
-                matchDaySessions: form.matchDaySessions
+                matchDaySessions: matchDaySessions,
+                equipmentIds: selectedEquipmentIds,
+                callListId: form.callListId || form.id || id
             };
             const response = await fetch("/arbnet/callList/update", {
                 method: "PUT",
@@ -253,19 +302,87 @@ export function EditCallList() {
                     "Content-Type": "application/json",
                     token,
                 },
-                body: JSON.stringify(updatedForm),
+                body: JSON.stringify(fullFormData),
             });
             if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.title || "Erro ao atualizar convocatória");
+                const errorData = await response.json();
+
+                // Check for specific 'CallList not found' error to redirect
+                if (errorData.title === "Not Found" && errorData.detail && errorData.detail.includes("CallList")) {
+                    alert(errorData.title + ": " + errorData.detail);
+                    navigate("/search-calllist-draft");
+                    return; // Exit the function after redirection
+                }
+
+                // For other errors from the backend, display alert and set error state without throwing
+                const backendErrorMessage = errorData.title || "Erro ao atualizar convocatória.";
+                alert("Erro ao salvar: " + backendErrorMessage);
+                setError(backendErrorMessage); // Set error state for display on page
+                return; // Exit the function after handling the error
             }
-            navigate("/search-calllist-draft");
+            alert("Convocatória atualizada com sucesso!");
         } catch (err: any) {
-            setError(err.message || "Erro inesperado");
+            // This catch block will primarily handle network errors or unexpected issues
+            const errorMessage = err.message || "Erro inesperado.";
+            alert("Erro ao salvar: " + errorMessage);
+            setError(errorMessage);
         } finally {
             setSubmitting(false);
         }
     };
+
+    // Fetch equipment options on mount
+    useEffect(() => {
+        const fetchEquipment = async () => {
+            try {
+                const token = getCookie("token");
+                const res = await fetch("/arbnet/equipment", {
+                    headers: token ? { token } : undefined
+                });
+                if (!res.ok) throw new Error("Erro ao buscar equipamentos");
+                const data = await res.json();
+                setEquipmentOptions(data);
+            } catch (err) {
+                setEquipmentOptions([]);
+            }
+        };
+        fetchEquipment();
+    }, []);
+
+    // Sync selectedEquipmentIds with form.equipmentIds ou form.equipment
+    useEffect(() => {
+        if (form) {
+            if (Array.isArray(form.equipmentIds)) {
+                setSelectedEquipmentIds(form.equipmentIds);
+            } else if (Array.isArray(form.equipment)) {
+                setSelectedEquipmentIds(form.equipment.map((eq: any) => eq.id));
+            }
+        }
+        // eslint-disable-next-line
+    }, [form]);
+
+    // Fechar dropdown ao clicar fora
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (equipmentDropdownRef.current && !equipmentDropdownRef.current.contains(event.target as Node)) {
+                setEquipmentDropdownOpen(false);
+            }
+        }
+        if (equipmentDropdownOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [equipmentDropdownOpen]);
+
+    useEffect(() => {
+        if (form) {
+            console.log('EditCallList form:', form);
+        }
+    }, [form]);
 
     if (loading) return <div>Carregando...</div>;
     if (error) return <div>Erro: {error}</div>;
@@ -302,6 +419,70 @@ export function EditCallList() {
                 <div className="form-group-inline">
                     <label>Data Limite:</label>
                     <input className="deadline-input" name="deadline" type="date" value={form.deadline || ''} onChange={handleChange} />
+                </div>
+                {/* Equipment Dropdown */}
+                <div className="form-group-inline">
+                    <label>Equipamentos:</label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <div ref={equipmentDropdownRef} style={{ position: 'relative', width: 220 }}>
+                            <button
+                                type="button"
+                                style={{ width: '100%', padding: '6px 10px', borderRadius: 4, border: '1px solid #ccc', background: '#fff', textAlign: 'left', cursor: 'pointer' }}
+                                onClick={() => setEquipmentDropdownOpen(open => !open)}
+                            >
+                                {selectedEquipmentIds.length === 0 ? 'Selecione equipamento(s)' : `${selectedEquipmentIds.length} selecionado(s)`}
+                                <span style={{ float: 'right' }}>▼</span>
+                            </button>
+                            {equipmentDropdownOpen && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '110%',
+                                    left: 0,
+                                    width: '100%',
+                                    background: '#fff',
+                                    border: '1px solid #ccc',
+                                    borderRadius: 4,
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                                    zIndex: 20,
+                                    maxHeight: 180,
+                                    overflowY: 'auto',
+                                }}>
+                                    {equipmentOptions.filter(eq => !selectedEquipmentIds.includes(eq.id)).length === 0 ? (
+                                        <div style={{ padding: 8, color: '#888' }}>Sem opções</div>
+                                    ) : equipmentOptions.filter(eq => !selectedEquipmentIds.includes(eq.id)).map(eq => (
+                                        <div
+                                            key={eq.id}
+                                            style={{ padding: '8px 12px', cursor: 'pointer', borderBottom: '1px solid #f0f0f0' }}
+                                            onClick={() => {
+                                                setSelectedEquipmentIds(prev => [...prev, eq.id]);
+                                                setEquipmentDropdownOpen(false);
+                                            }}
+                                        >
+                                            {eq.name}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                            {selectedEquipmentIds.map(id => {
+                                const eq = equipmentOptions.find(e => e.id === id);
+                                if (!eq) return null;
+                                return (
+                                    <span key={id} style={{ background: '#e6f0ff', border: '1px solid #007bff', borderRadius: 4, padding: '2px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                        {eq.name}
+                                        <button
+                                            type="button"
+                                            style={{ marginLeft: 4, color: 'red', border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}
+                                            onClick={() => setSelectedEquipmentIds(prev => prev.filter(eid => eid !== id))}
+                                        >
+                                            ×
+                                        </button>
+                                    </span>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
                 {/* PARTICIPANTES */}
                 <h3>Participantes</h3>

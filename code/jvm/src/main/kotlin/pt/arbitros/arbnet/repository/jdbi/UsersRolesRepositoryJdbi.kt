@@ -7,6 +7,7 @@ import pt.arbitros.arbnet.repository.UsersRolesRepository
 class UsersRolesRepositoryJdbi(
     private val handle: Handle,
 ) : UsersRolesRepository {
+
     override fun userHasRole(
         userId: Int,
         roleId: Int,

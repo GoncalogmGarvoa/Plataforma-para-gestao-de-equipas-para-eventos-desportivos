@@ -29,7 +29,7 @@ object Uris {
     object CallListUris {
         const val CREATE_CALLLIST = "$PREFIX/callList/creation"
         const val UPDATE_PARTICIPANT_CONFIRMATION_STATUS = "$PREFIX/callList/updateParticipant"
-        const val UPDATE_CALLLISTSTAGE = "$PREFIX/callList/updateCallList"
+        const val UPDATE_CALLLISTSTAGE = "$PREFIX/callList/updateCallListStage"
         const val GET_CALLLIST = "$PREFIX/callList/get/{id}"
         const val UPDATE_CALLLIST = "$PREFIX/callList/update"
         const val GET_SEALED_CALLLIST = "$PREFIX/callList/sealed/{id}"
@@ -44,15 +44,24 @@ object Uris {
         const val GET_REPORT_BY_ID = "$PREFIX/reports/id/{id}"
         const val UPDATE_REPORT = "$PREFIX/reports/update"
         const val SEAL_REPORT = "$PREFIX/reports/seal/{id}"
+        const val GET_ALL_REPORTS_BY_COMPETITION = "$PREFIX/reports/competition/{competitionId}"
     }
 
-    object EquipmentUris {
-        const val GET_EQUIPMENT = "$PREFIX/equipment"
-        const val SELECT_EQUIPMENT = "$PREFIX/equipment/select"
+    object PaymentsUris {
+        const val GET_ALL_PAYMENT_REPORTS = "$PREFIX/payments"
+        const val CREATE_PAYMENT_REPORT = "$PREFIX/payments/create"
+        const val GET_PAYMENT_REPORTS_BY_COMPETITION = "$PREFIX/payments/competition/{competitionId}"
+        const val GET_PAYMENT_REPORT_BY_ID = "$PREFIX/payments/id/{id}"
+        const val UPDATE_PAYMENT_REPORT = "$PREFIX/payments/update"
+        const val SEAL_PAYMENT_REPORT = "$PREFIX/payments/seal/{id}"
     }
 
     object SessionUris {
         const val FINISH_SESSION = "$PREFIX/session/finish/{id}"
         const val UPDATE_SESSION_REFEREES = "$PREFIX/session/updateReferees"
+    }
+
+    object EquipmentUris {
+        const val GET_ALL_EQUIPMENT = "$PREFIX/equipment"
     }
 }

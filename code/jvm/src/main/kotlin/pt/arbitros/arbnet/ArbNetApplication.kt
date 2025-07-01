@@ -48,13 +48,19 @@ class ArbNetApplication {
         )
 }
 
+/*
+@Configuration
+@EnableMethodSecurity
+class SecurityConfig
+*/
+
 @Configuration
 class PipelineConfigurer(
     val authenticationInterceptor: AuthenticationInterceptor,
     val authenticatedUserArgumentResolver: AuthenticatedUserArgumentResolver,
 ) : WebMvcConfigurer {
     override fun addInterceptors(registry: InterceptorRegistry) {
-        registry.addInterceptor(authenticationInterceptor)
+        //registry.addInterceptor(authenticationInterceptor)
     }
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {

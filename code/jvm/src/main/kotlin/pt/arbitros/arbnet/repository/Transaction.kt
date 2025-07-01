@@ -1,7 +1,6 @@
 package pt.arbitros.arbnet.repository
 
-import pt.arbitros.arbnet.repository.CategoryDirRepository
-import pt.arbitros.arbnet.repository.CategoryRepository
+import pt.arbitros.arbnet.repository.adaptable_repos.*
 import pt.arbitros.arbnet.repository.auxiliary.SessionRefereesRepository
 
 interface Transaction {

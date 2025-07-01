@@ -3,6 +3,7 @@ package pt.arbitros.arbnet.http.model
 import pt.arbitros.arbnet.domain.MatchDay
 import pt.arbitros.arbnet.domain.Participant
 import pt.arbitros.arbnet.domain.Session
+import pt.arbitros.arbnet.http.model.calllist.EquipmentOutputModel
 import java.time.LocalDate
 
 class RefereeCallListsOutputModel(

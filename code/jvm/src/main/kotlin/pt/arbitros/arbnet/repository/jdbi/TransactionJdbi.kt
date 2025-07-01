@@ -5,8 +5,13 @@ package pt.arbitros.arbnet.repository.jdbi
 import org.jdbi.v3.core.Handle
 import pt.arbitros.arbnet.repository.*
 import pt.arbitros.arbnet.repository.CategoryDirRepository
-import pt.arbitros.arbnet.repository.CategoryRepository
+import pt.arbitros.arbnet.repository.adaptable_repos.*
 import pt.arbitros.arbnet.repository.auxiliary.SessionRefereesRepository
+import pt.arbitros.arbnet.repository.jdbi.adaptable_repos.CategoryRepositoryJdbi
+import pt.arbitros.arbnet.repository.jdbi.adaptable_repos.EquipmentRepositoryJdbi
+import pt.arbitros.arbnet.repository.jdbi.adaptable_repos.FunctionRepositoryJdbi
+import pt.arbitros.arbnet.repository.jdbi.adaptable_repos.PositionRepositoryJdbi
+import pt.arbitros.arbnet.repository.jdbi.adaptable_repos.RoleRepositoryJdbi
 
 class TransactionJdbi(
     private val handle: Handle,

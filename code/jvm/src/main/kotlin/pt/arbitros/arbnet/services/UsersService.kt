@@ -5,13 +5,15 @@ import kotlinx.datetime.Instant
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.UtilsDomain
-import pt.arbitros.arbnet.domain.universal.Role
+import pt.arbitros.arbnet.domain.adaptable.Role
 import pt.arbitros.arbnet.domain.users.*
 import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.http.invalidFieldError
 import pt.arbitros.arbnet.http.model.UserInputModel
 import pt.arbitros.arbnet.http.model.UserUpdateInputModel
 import pt.arbitros.arbnet.http.model.UsersParametersOutputModel
+import pt.arbitros.arbnet.http.model.users.UserInputModel
+import pt.arbitros.arbnet.http.model.users.UserUpdateInputModel
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.transactionRepo
 import java.time.LocalDate
@@ -152,9 +154,6 @@ class UsersService(
             return@run success(success)
         }
 
-
-
-
     fun getUserById(id: Int): Either<ApiError, Pair<User, List<String>>> =
         transactionManager.run {
             val usersRepository = it.usersRepository
@@ -255,9 +254,7 @@ class UsersService(
                     user.iban,
                 )
 
-            if (validateResult is Failure) {
-                return@run validateResult
-            }
+            if (validateResult is Failure) return@run validateResult
 
             usersRepository.getUserById(user.id) ?: return@run failure(userNotFoundId)
             val passwordValidationInfo = usersDomain.createPasswordValidationInformation(user.password)
@@ -483,7 +480,6 @@ class UsersService(
 
             return@run success(roles)
         }
-
 
     private fun inUseError (field : String): ApiError =
         ApiError.InvalidField(
