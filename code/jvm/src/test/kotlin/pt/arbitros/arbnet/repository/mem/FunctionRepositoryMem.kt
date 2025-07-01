@@ -35,4 +35,8 @@ class FunctionRepositoryMem : FunctionRepository {
         }
         return ids
     }
+
+    override fun verifyFunctionNames(functions: List<String>): Boolean {
+        TODO("Not yet implemented")
+    }
 }

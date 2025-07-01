@@ -21,4 +21,8 @@ class PositionRepositoryMem: PositionRepository {
         TODO("Not yet implemented")
     }
 
+    override fun verifyPositionNames(names: List<String>): Boolean {
+        TODO("Not yet implemented")
+    }
+
 }

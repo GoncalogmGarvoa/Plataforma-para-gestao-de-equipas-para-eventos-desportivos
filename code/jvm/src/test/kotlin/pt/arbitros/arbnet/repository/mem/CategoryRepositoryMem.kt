@@ -20,4 +20,8 @@ class CategoryRepositoryMem: CategoryRepository {
         TODO("Not yet implemented")
     }
 
+    override fun verifyCategoryNames(names: List<String>): Boolean {
+        TODO("Not yet implemented")
+    }
+
 }
