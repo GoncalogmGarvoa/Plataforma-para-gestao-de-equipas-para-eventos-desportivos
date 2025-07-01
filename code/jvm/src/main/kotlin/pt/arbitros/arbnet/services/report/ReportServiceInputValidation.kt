@@ -264,8 +264,6 @@ class ReportServiceInputValidation {
                 )
             )
 
-        //TODO add endtime to sessions sql
-
         val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
             .withResolverStyle(ResolverStyle.STRICT)
         try {

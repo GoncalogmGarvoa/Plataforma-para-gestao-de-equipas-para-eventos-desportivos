@@ -1,7 +1,6 @@
 package pt.arbitros.arbnet.services.report
 
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.ReportMongo
 import pt.arbitros.arbnet.domain.UtilsDomain
@@ -11,9 +10,9 @@ import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.repository.mongo.ReportMongoRepository
 import pt.arbitros.arbnet.services.Either
 import pt.arbitros.arbnet.services.Failure
-import pt.arbitros.arbnet.services.report.ReportServiceInputValidation
 import pt.arbitros.arbnet.services.failure
 import pt.arbitros.arbnet.services.report.validation.ReportValidator
+import pt.arbitros.arbnet.services.report.validation.SealSqlPopulate
 import pt.arbitros.arbnet.services.success
 import pt.arbitros.arbnet.transactionRepo
 
@@ -22,6 +21,7 @@ class ReportService(
     @Qualifier(transactionRepo) private val transactionManager: TransactionManager,
     private val reportMongoRepository: ReportMongoRepository,
     private val validationUtils: ReportValidator,
+    private val sqlPopulator : SealSqlPopulate,
     private val utilsDomain: UtilsDomain,
 ) {
 
@@ -33,12 +33,7 @@ class ReportService(
             val validationResult = validationUtils.validate(
                 reportMongo,
                 createOrUpdate = true,
-                it.competitionRepository,
-                it.categoryRepository,
-                it.functionRepository,
-                it.sessionsRepository,
-                it.matchDayRepository,
-                it.positionRepository
+                it
             )
 
             if (validationResult is Failure) {
@@ -74,12 +69,7 @@ class ReportService(
             val validationResult = validationUtils.validate(
                 reportMongo,
                 createOrUpdate = false,
-                it.competitionRepository,
-                it.categoryRepository,
-                it.functionRepository,
-                it.sessionsRepository,
-                it.matchDayRepository,
-                it.positionRepository
+                it
             )
 
             if (validationResult is Failure) {
@@ -111,7 +101,7 @@ class ReportService(
 
             if (report.sealed) {
                 return@run failure(
-                    ApiError.InvalidField(
+                    ApiError.NotFound(
                         "Report already sealed",
                         "The report with ID $id is already sealed."
                     )
@@ -143,7 +133,7 @@ class ReportService(
                     )
                 )
 
-            
+            sqlPopulator.reportSealSqlPopulate(updated, it)
 
             success(updated)
         }

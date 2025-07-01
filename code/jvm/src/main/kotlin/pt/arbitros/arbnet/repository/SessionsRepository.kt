@@ -26,4 +26,9 @@ interface SessionsRepository {
     fun getSessionsByCompetitionId(competitionId: Int): List<Session>
 
     fun deleteCompetitionSessions(competitionId: Int): Boolean
+
+    fun setEndTime(
+        sessionId: Int,
+        endTime: LocalTime,
+    ): Boolean
 }

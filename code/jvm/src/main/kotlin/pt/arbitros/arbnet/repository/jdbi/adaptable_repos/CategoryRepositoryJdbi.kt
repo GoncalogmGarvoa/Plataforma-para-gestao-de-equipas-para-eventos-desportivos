@@ -50,4 +50,18 @@ class CategoryRepositoryJdbi(
             .let { return it }
     }
 
+    override fun verifyCategoryNames(names: List<String>): Boolean {
+        val sql = """
+        select count(*) from dbp.category
+        where name in (<NAMES>)
+        """
+
+        val count = handle.createQuery(sql)
+            .bindList("NAMES", names)
+            .mapTo(Int::class.java)
+            .one()
+
+        return count == names.size
+    }
+
 }

@@ -48,4 +48,18 @@ class PositionRepositoryJdbi (
         return count == ids.size
     }
 
+    override fun verifyPositionNames(names: List<String>): Boolean {
+        val sql = """
+        select count(*) from dbp.position
+        where name in (<Names>)
+        """
+
+        val count = handle.createQuery(sql)
+            .bindList("Names", names)
+            .mapTo(Int::class.java)
+            .one()
+
+        return count == names.size
+    }
+
 }

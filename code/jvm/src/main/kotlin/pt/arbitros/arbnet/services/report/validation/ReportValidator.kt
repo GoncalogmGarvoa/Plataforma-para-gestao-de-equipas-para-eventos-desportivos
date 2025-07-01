@@ -6,6 +6,7 @@ import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.repository.CompetitionRepository
 import pt.arbitros.arbnet.repository.MatchDayRepository
 import pt.arbitros.arbnet.repository.SessionsRepository
+import pt.arbitros.arbnet.repository.Transaction
 import pt.arbitros.arbnet.repository.adaptable_repos.CategoryRepository
 import pt.arbitros.arbnet.repository.adaptable_repos.FunctionRepository
 import pt.arbitros.arbnet.repository.adaptable_repos.PositionRepository
@@ -19,13 +20,17 @@ object ReportValidator {
     fun validate(
         report: ReportMongo,
         createOrUpdate: Boolean,
-        competitionRepository: CompetitionRepository,
-        categoryRepository: CategoryRepository,
-        functionRepository: FunctionRepository,
-        sessionRepository: SessionsRepository,
-        matchDayRepository: MatchDayRepository,
-        positionRepository: PositionRepository
+        jdbiTransaction: Transaction
     ): Either<ApiError, Unit> {
+
+        val competitionRepository = jdbiTransaction.competitionRepository
+        val matchDayRepository = jdbiTransaction.matchDayRepository
+        val sessionRepository = jdbiTransaction.sessionsRepository
+        val categoryRepository = jdbiTransaction.categoryRepository
+        val functionRepository = jdbiTransaction.functionRepository
+        val positionRepository = jdbiTransaction.positionRepository
+        val usersRepository = jdbiTransaction.usersRepository
+
 
         if (competitionRepository.getCompetitionById(report.competitionId) == null) {
             return failure(
@@ -79,7 +84,12 @@ object ReportValidator {
                 )
             )
 
-        CoverSheetValidator.validate(report.competitionId, report.coverSheet, matchDayRepository, sessionRepository).let {
+        CoverSheetValidator.validate(
+            report.competitionId,
+            report.coverSheet,
+            matchDayRepository,
+            sessionRepository
+        ).let {
             if (it is Failure) return it
         }
 
@@ -87,11 +97,23 @@ object ReportValidator {
             if (it is Failure) return it
         }
 
-        RefereeEvaluationValidator.validate(report.refereeEvaluations, categoryRepository, functionRepository, sessionRepository).let {
+        RefereeEvaluationValidator.validate(
+            report.refereeEvaluations,
+            categoryRepository,
+            functionRepository,
+            sessionRepository
+        ).let {
             if (it is Failure) return it
         }
 
-        JurySheetValidator.validate(report.jury, categoryRepository, matchDayRepository, sessionRepository, positionRepository).let {
+        JurySheetValidator.validate(
+            report.jury,
+            categoryRepository,
+            matchDayRepository,
+            sessionRepository,
+            positionRepository,
+            usersRepository
+        ).let {
             if (it is Failure) return it
         }
 

@@ -90,4 +90,17 @@ class SessionsRepositoryJdbi(
                     """.trimIndent(),
             ).bind("competitionId", competitionId)
             .execute() > 0
+
+    override fun setEndTime(sessionId: Int, endTime: LocalTime): Boolean {
+        return handle
+            .createUpdate(
+                """
+                    UPDATE dbp.session 
+                    SET end_time = :endTime 
+                    WHERE id = :sessionId
+                    """.trimIndent(),
+            ).bind("sessionId", sessionId)
+            .bind("endTime", endTime)
+            .execute() > 0
+    }
 }

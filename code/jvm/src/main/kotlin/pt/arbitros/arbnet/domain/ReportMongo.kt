@@ -67,6 +67,7 @@ data class JurySheet (
 
 data class JuryMember(
     val position : String, // Função do membro do júri (ex: "Presidente", "Vogal")
+    val juryMemberId : Int, // ‘ID’ do membro do júri
     val name : String, // Nome do membro do júri
     val category : String, // Categoria do membro do júri (ex: "Árbitro", "Delegado")
 )

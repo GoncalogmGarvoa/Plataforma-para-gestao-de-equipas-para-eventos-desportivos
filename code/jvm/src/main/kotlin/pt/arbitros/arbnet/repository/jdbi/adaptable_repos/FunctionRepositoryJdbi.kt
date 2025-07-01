@@ -45,4 +45,17 @@ class FunctionRepositoryJdbi(
             .list()
     }
 
+    override fun verifyFunctionNames(functions: List<String>): Boolean {
+        val sql = """
+        select count(*) from dbp.function
+        where name in (<FUNCTIONS>)
+        """
+
+        return handle.createQuery(sql)
+            .bindList("FUNCTIONS", functions)
+            .mapTo(Int::class.java)
+            .single() == functions.size
+
+    }
+
 }

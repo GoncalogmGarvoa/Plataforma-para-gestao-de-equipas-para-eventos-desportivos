@@ -12,4 +12,5 @@ interface PositionRepository {
 
     fun verifyPositionIds(ids: List<Int>): Boolean
 
+    fun verifyPositionNames(names: List<String>): Boolean
 }

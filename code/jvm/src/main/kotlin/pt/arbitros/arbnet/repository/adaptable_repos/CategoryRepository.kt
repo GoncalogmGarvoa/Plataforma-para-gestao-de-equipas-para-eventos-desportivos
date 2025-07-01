@@ -11,4 +11,6 @@ interface CategoryRepository {
     fun verifyCategoryIds(ids: List<Int>): Boolean
 
     fun getAllCategories(): List<Category>
+
+    fun verifyCategoryNames(names: List<String>): Boolean
 }

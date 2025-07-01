@@ -8,7 +8,9 @@ interface FunctionRepository {
 
     fun getFunctionIdByName(roleName: String): Int?
 
-    fun getFunctionNameById(roleId: Int): String?
+    fun getFunctionNameById(functionId: Int): String?
 
     fun verifyFunctionIds(functions: List<String>): List<Int>
+
+    fun verifyFunctionNames(functions: List<String>): Boolean
 }
