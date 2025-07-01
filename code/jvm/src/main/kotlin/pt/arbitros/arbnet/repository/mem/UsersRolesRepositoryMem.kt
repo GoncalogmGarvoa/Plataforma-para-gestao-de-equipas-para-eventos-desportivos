@@ -14,6 +14,10 @@ class UsersRolesRepositoryMem : UsersRolesRepository {
         TODO("Not yet implemented")
     }
 
+    override fun getUsersRolesName(userId: Int): List<String> {
+        TODO("Not yet implemented")
+    }
+
     override fun addRoleToUser(
         userId: Int,
         roleId: Int,

@@ -39,6 +39,7 @@ interface RefereeCallListsOutputModel {
     association: string
     location: string
     deadline: string
+    callListType: string
     participants: ParticipantInfo[]
     matchDaySessions: MatchDay[]
     equipments: EquipmentOutputModel[]
@@ -163,48 +164,52 @@ export function CallListInfo() {
                 ))}
             </ul>
 
-            {/* Confirmação de dias */}
-            <hr />
-            <h3>Confirmação de Presença</h3>
-            <ul>
-                {event.matchDaySessions.map((matchDay) => (
-                    <li key={matchDay.id} style={{ marginBottom: "1em" }}>
-                        <div>
-                            <strong>{new Date(matchDay.matchDate).toLocaleDateString()}</strong>
-                            {" — "}
-                            {matchDay.sessions.length > 0 ? (
-                                matchDay.sessions.map(session => (
-                                    <span key={session.id} style={{ marginRight: "0.5em" }}>
-                                        {session.startTime.slice(0, 5)}/
-                                    </span>
-                                ))
-                            ) : (
-                                <em>Sem sessões</em>
-                            )}
-                        </div>
+            {/* Confirmação de dias (visível apenas se o tipo permitir) */}
+            {["sealedCallList", "finalJury"].includes(event.callListType) && (
+                <>
+                    <hr />
+                    <h3>Confirmação de Presença</h3>
+                    <ul>
+                        {event.matchDaySessions.map((matchDay) => (
+                            <li key={matchDay.id} style={{ marginBottom: "1em" }}>
+                                <div>
+                                    <strong>{new Date(matchDay.matchDate).toLocaleDateString()}</strong>
+                                    {" — "}
+                                    {matchDay.sessions.length > 0 ? (
+                                        matchDay.sessions.map(session => (
+                                            <span key={session.id} style={{ marginRight: "0.5em" }}>
+                                    {session.startTime.slice(0, 5)}/
+                                </span>
+                                        ))
+                                    ) : (
+                                        <em>Sem sessões</em>
+                                    )}
+                                </div>
 
-                        <label>
-                            <input
-                                type="checkbox"
-                                checked={dayResponses[matchDay.id] === "accepted"}
-                                onChange={() => updateDayResponse(matchDay.id, "accepted")}
-                            />
-                            ✔️ Aceitar
-                        </label>
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={dayResponses[matchDay.id] === "accepted"}
+                                        onChange={() => updateDayResponse(matchDay.id, "accepted")}
+                                    />
+                                    ✔️ Aceitar
+                                </label>
 
-                        <label style={{ marginLeft: "1em" }}>
-                            <input
-                                type="checkbox"
-                                checked={dayResponses[matchDay.id] === "declined"}
-                                onChange={() => updateDayResponse(matchDay.id, "declined")}
-                            />
-                            ❌ Recusar
-                        </label>
-                    </li>
-                ))}
-            </ul>
+                                <label style={{ marginLeft: "1em" }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={dayResponses[matchDay.id] === "declined"}
+                                        onChange={() => updateDayResponse(matchDay.id, "declined")}
+                                    />
+                                    ❌ Recusar
+                                </label>
+                            </li>
+                        ))}
+                    </ul>
 
-            <button onClick={handleSubmit}>Submeter Confirmação</button>
+                    <button onClick={handleSubmit}>Submeter Confirmação</button>
+                </>
+            )}
         </div>
     )
 }

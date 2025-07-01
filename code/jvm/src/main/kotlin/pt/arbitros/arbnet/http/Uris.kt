@@ -13,6 +13,8 @@ object Uris {
         const val USER_ROLES = "$PREFIX/users/roles"
         const val USER_ROLES_DELETE = "$PREFIX/users/roles/delete"
         const val USER_CATEGORY = "$PREFIX/users/category"
+        const val USERS_BY_PARAMETERS = "$PREFIX/users/parameters"
+        const val USERS_WITHOUT_ROLES = "$PREFIX/users/withoutRoles"
 
         const val USERS = "$PREFIX/users" // TODO
         const val USER_ROLES_FROM_USER = "$PREFIX/users/roles/fromUser"

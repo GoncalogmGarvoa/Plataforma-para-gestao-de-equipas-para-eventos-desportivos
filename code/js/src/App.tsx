@@ -21,6 +21,7 @@ import {SelectRole} from "../components/user/SelectRole";
 import { EditCallList } from "../components/callList/EditCallList";
 import {CheckCallLists} from "../components/callList/CheckCallLists";
 import {CallListInfo} from "../components/callList/CallListInfo";
+import {AttributeRoles} from "../components/user/AttributeRoles";
 
 // Componente para proteger a rota de criar callList
 function RequireArbitrationCouncil({ children }: { children: React.ReactNode }) {
@@ -37,6 +38,16 @@ function RequireReferee({ children }: { children: React.ReactNode }) {
     const currentRole = useCurrentRole()
 
     if (currentRole !== "Referee") {
+        return <Navigate to="/" replace={true} />
+    }
+
+    return <>{children}</>
+}
+
+function RequireAdmin({ children }: { children: React.ReactNode }) {
+    const currentRole = useCurrentRole()
+
+    if (currentRole !== "Admin") {
         return <Navigate to="/" replace={true} />
     }
 
@@ -92,6 +103,10 @@ const router = createBrowserRouter([
             {
                 "path": "/edit-calllist/:id",
                 "element": <RequireAuthn><RequireArbitrationCouncil><EditCallList /></RequireArbitrationCouncil></RequireAuthn>
+            },
+            {
+                "path": "/attribute-roles",
+                "element": <RequireAuthn><RequireAdmin ><AttributeRoles /></RequireAdmin></RequireAuthn>
             },
             {
                 "path": "/logout",
@@ -171,6 +186,7 @@ export function Header() {
 
     const isConselhoDeArbitragem = currentRole === "Arbitration_Council"
     const isReferee = currentRole === "Referee"
+    const isAdmin = currentRole === "Admin"
 
     return (
         <header>
@@ -189,6 +205,11 @@ export function Header() {
                             {isReferee && (
                                 <>
                                     <li><Link to="/check-callLists">Ver Convocações</Link></li>
+                                </>
+                            )}
+                            {isAdmin && (
+                                <>
+                                    <li><Link to="/attribute-roles">Atribuir Roles</Link></li>
                                 </>
                             )}
                             <li><Logout /></li>

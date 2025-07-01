@@ -11,6 +11,7 @@ import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.http.invalidFieldError
 import pt.arbitros.arbnet.http.model.UserInputModel
 import pt.arbitros.arbnet.http.model.UserUpdateInputModel
+import pt.arbitros.arbnet.http.model.UsersParametersOutputModel
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.transactionRepo
 import java.time.LocalDate
@@ -386,6 +387,49 @@ class UsersService(
             return@run success(roles)
         }
 
+    fun getUsersByParameters(userName: String, userRoles: List<String>): Either<ApiError, List<UsersParametersOutputModel>> =
+        transactionManager.run {
+            val usersRepository = it.usersRepository
+            val usersRolesRepository = it.usersRolesRepository
+
+            val users = usersRepository.getUsersByParameters(userName, userRoles)
+
+            if (users.isEmpty()) {
+                return@run failure(ApiError.NotFound(
+                    "No users found",
+                    "No users found with the provided parameters.",
+                ))
+            }
+
+            val usersWithRoles = users.map{ user ->
+                val userRoles = usersRolesRepository.getUsersRolesName(user.id)
+                UsersParametersOutputModel(
+                    user.id,
+                    user.name,
+                    userRoles
+                )
+            }
+
+            return@run success(usersWithRoles)
+        }
+
+    fun getUsersWithoutRoles( userName: String): Either<ApiError, List<UsersParametersOutputModel>> =
+        transactionManager.run {
+            val usersRepository = it.usersRepository
+
+            val users = usersRepository.getUsersWithoutRoles(userName)
+
+            val usersOutput = users.map { user ->
+                UsersParametersOutputModel(
+                    user.id,
+                    user.name,
+                    emptyList(),
+                )
+            }
+
+            return@run success(usersOutput)
+        }
+
 //    fun getAllRolesFromPlayer(userId: Int): Either<ApiError.NotFound, List<Pair<Int, String?>>> =
 //        transactionManager.run {
 //            val usersRepository = it.usersRepository
@@ -403,7 +447,7 @@ class UsersService(
 //            return@run success(roles)
 //        }
 
-    fun getAllRolesFromPlayer(userId: Int): Either<ApiError.NotFound, List<Role>> =
+    fun getAllRolesFromUser(userId: Int): Either<ApiError.NotFound, List<Role>> =
         transactionManager.run {
             val usersRepository = it.usersRepository
             val usersRolesRepository = it.usersRolesRepository

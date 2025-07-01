@@ -28,6 +28,14 @@ class UsersRolesRepositoryJdbi(
             .mapTo<Int>()
             .list()
 
+    override fun getUsersRolesName(userId: Int): List<String> =
+        handle
+            .createQuery(
+                """select r.name from dbp.users_roles ur join dbp.role r on ur.role_id = r.id where ur.user_id = :id""",
+            ).bind("id", userId)
+            .mapTo<String>()
+            .list()
+
     override fun addRoleToUser(
         userId: Int,
         roleId: Int,

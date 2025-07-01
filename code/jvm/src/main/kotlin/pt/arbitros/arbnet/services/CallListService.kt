@@ -310,6 +310,7 @@ class CallListService(
                     it.association,
                     it.location,
                     it.deadline.toString(),
+                    it.callListType,
                     participantsInfo,
                     matchDays,
                     equipments

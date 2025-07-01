@@ -12,4 +12,5 @@ class RefereeCallLists(
     val association: String,
     val location: String,
     val deadline: LocalDate,
+    val callListType: String,
 )

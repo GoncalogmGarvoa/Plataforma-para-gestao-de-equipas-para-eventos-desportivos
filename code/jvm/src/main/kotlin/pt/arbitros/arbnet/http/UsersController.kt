@@ -55,7 +55,7 @@ class UsersController(
         @RequestHeader token: String,
     ): ResponseEntity<*> {
         return when (val userResult = usersService.getUserByToken(token)) {
-            is Success -> when (val result = usersService.getAllRolesFromPlayer(userResult.value.id)) {
+            is Success -> when (val result = usersService.getAllRolesFromUser(userResult.value.id)) {
                 is Success -> ResponseEntity.ok(result)
                 is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
             }
@@ -217,7 +217,7 @@ class UsersController(
                     user.addOrRemove,
                 )
         ) {
-            is Success -> ResponseEntity.ok(userRolesUpdated)
+            is Success -> ResponseEntity.ok(userRolesUpdated.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(userRolesUpdated.value)
         }
 
@@ -226,7 +226,7 @@ class UsersController(
         when (
             val result = usersService.getAllRoles()
         ) {
-            is Success -> ResponseEntity.ok(result)
+            is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
@@ -241,7 +241,30 @@ class UsersController(
                     user.categoryId,
                 )
         ) {
-            is Success -> ResponseEntity.ok(result)
+            is Success -> ResponseEntity.ok(result.value)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
+
+    @GetMapping(Uris.UsersUris.USERS_BY_PARAMETERS)
+    fun getUsersByParameters(
+        @RequestParam userName: String,
+        @RequestParam userRoles: List<String>
+    ): ResponseEntity<*> =
+        when (
+            val result = usersService.getUsersByParameters(userName, userRoles)
+        ) {
+            is Success -> ResponseEntity.ok(result.value)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
+
+    @GetMapping(Uris.UsersUris.USERS_WITHOUT_ROLES)
+    fun getUsersWithoutRoles(
+        @RequestParam userName: String,
+    ) : ResponseEntity<*> =
+        when (
+            val result = usersService.getUsersWithoutRoles(userName)
+        ) {
+            is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 

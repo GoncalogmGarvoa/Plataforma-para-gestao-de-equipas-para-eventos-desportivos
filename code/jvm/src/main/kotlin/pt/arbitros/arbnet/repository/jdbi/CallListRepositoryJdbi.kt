@@ -100,11 +100,12 @@ class CallListRepositoryJdbi(
             c.email, 
             c.association,
             c.location,
-            cl.deadline
+            cl.deadline,
+            cl.call_type AS call_list_type
         FROM dbp.call_list cl
         JOIN dbp.competition c ON cl.competition_id = c.competition_number
         JOIN dbp.participant p ON cl.id = p.call_list_id
-        WHERE p.user_id = :userId
+        WHERE p.user_id = :userId AND cl.call_type != 'callList'
         """
         )
             .bind("userId", userId)

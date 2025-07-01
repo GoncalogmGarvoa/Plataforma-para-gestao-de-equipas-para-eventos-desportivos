@@ -79,6 +79,15 @@ interface UsersRepository {
         iban: String,
     ): Boolean
 
+    fun getUsersByParameters(
+        name: String,
+        roles: List<String>,
+    ): List<User>
+
+    fun getUsersWithoutRoles(
+        name: String,
+    ): List<User>
+
     fun updateRoles(
         userId: Int,
         roles: List<String>,

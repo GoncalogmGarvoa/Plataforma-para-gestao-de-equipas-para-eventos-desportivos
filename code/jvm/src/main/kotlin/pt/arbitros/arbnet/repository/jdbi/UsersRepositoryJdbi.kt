@@ -253,6 +253,35 @@ class UsersRepositoryJdbi(
             .map { rs, _ -> usersMap(rs) }
             .list()
 
+    override fun getUsersByParameters(name: String, roles: List<String>): List<User> =
+        handle
+            .createQuery(
+                """
+            SELECT DISTINCT u.* FROM dbp.users u
+            JOIN dbp.users_roles ur ON u.id = ur.user_id
+            JOIN dbp.role r ON ur.role_id = r.id
+            WHERE LOWER(u.name) LIKE LOWER(:name)
+              AND r.name IN (<roles>)
+        """,
+            ).bind("name", "%$name%")
+            .bindList("roles", roles)
+            .map(UsersMapper())
+            .list()
+
+    override fun getUsersWithoutRoles(name: String): List<User> =
+        handle
+            .createQuery(
+                """
+            SELECT * FROM dbp.users u
+            WHERE LOWER(u.name) LIKE LOWER(:name)
+              AND NOT EXISTS (
+                SELECT 1 FROM dbp.users_roles ur WHERE ur.user_id = u.id
+            )
+        """,
+            ).bind("name", "%$name%")
+            .map(UsersMapper())
+            .list()
+
 
     private fun usersMap(rs: ResultSet) =
         User(

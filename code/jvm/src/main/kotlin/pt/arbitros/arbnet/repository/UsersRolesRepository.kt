@@ -8,6 +8,8 @@ interface UsersRolesRepository {
 
     fun getUserRolesId(userId: Int): List<Int>
 
+    fun getUsersRolesName(userId: Int): List<String>
+
     fun addRoleToUser(
         userId: Int,
         roleId: Int,

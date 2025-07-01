@@ -41,6 +41,7 @@ interface RefereeCallListsOutputModel {
     association: string
     location: string
     deadline: string
+    callListType: string
     participants: ParticipantInfo[]
     matchDaySessions: MatchDay[]
     equipments: EquipmentOutputModel[]

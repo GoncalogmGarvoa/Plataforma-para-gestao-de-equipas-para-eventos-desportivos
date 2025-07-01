@@ -14,6 +14,7 @@ class RefereeCallListsOutputModel(
     val association: String,
     val location: String,
     val deadline: String,
+    val callListType: String,
     val participants: List<ParticipantInfo>,
     val matchDaySessions: List<MatchDay>,
     val equipments: List<EquipmentOutputModel>,

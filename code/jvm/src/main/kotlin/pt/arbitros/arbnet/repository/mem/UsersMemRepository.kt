@@ -135,6 +135,17 @@ class UsersRepositoryMem : UsersRepository {
         return true
     }
 
+    override fun getUsersByParameters(
+        name: String,
+        roles: List<String>
+    ): List<User> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getUsersWithoutRoles(name: String): List<User> {
+        TODO("Not yet implemented")
+    }
+
     override fun updateRoles(
         userId: Int,
         roles: List<String>,
