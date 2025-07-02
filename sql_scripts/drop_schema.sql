@@ -1,5 +1,4 @@
 DROP TABLE IF EXISTS
-    dbp.session_referees,
     dbp.participant,
     dbp.session,
     dbp.match_day,

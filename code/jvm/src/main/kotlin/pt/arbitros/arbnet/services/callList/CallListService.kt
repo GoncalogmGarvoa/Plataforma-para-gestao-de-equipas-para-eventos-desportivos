@@ -553,7 +553,7 @@ class CallListService(
         )
     }
 
-    fun cancelCallList(competitionId: Int) {
+    fun cancelCallList(competitionId: Int) : Either<ApiError, Boolean> {
         transactionManager.run { tx ->
             val callListRepository = tx.callListRepository
             val competitionRepository = tx.competitionRepository
@@ -587,9 +587,8 @@ class CallListService(
                 }
             }
 
-            success(true)
         }
-
+        return success(true)
     }
 
 }

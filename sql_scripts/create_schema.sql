@@ -75,11 +75,27 @@ create table dbp.competition (
 create table dbp.call_list (
                                id serial,
                                deadline date not null,
-                               call_type varchar(100) default 'callList' check (call_type in ('callList','sealedCallList', 'confirmation', 'finalJury')),
+                               call_type varchar(100) default 'callList' check (call_type in ('callList','sealedCallList', 'confirmation', 'finalJury','cancelled')),
                                user_id int,
                                competition_id int not null,
                                primary key (id),
                                foreign key (user_id) references dbp.users(id),
+                               foreign key (competition_id) references dbp.competition(competition_number) on delete cascade
+);
+
+create table dbp.function (
+                                id serial primary key,
+                                name varchar(100) unique not null
+  );
+
+
+
+
+create table dbp.match_day (
+                               id serial,
+                               match_date date not null,
+                               competition_id int,
+                               primary key (id, competition_id),
                                foreign key (competition_id) references dbp.competition(competition_number) on delete cascade
 );
 
@@ -92,26 +108,12 @@ create table dbp.participant (
                              confirmation_status varchar(10) default 'waiting' check (confirmation_status in ('waiting', 'accepted', 'declined')),
                              primary key (call_list_id, match_day_id, user_id, function_id,competition_id_match_day),
                              foreign key (function_id) references dbp.function(id),
-                             foreign key (call_list_id) references dbp.call_list(id),
+                             foreign key (call_list_id) references dbp.call_list(id) on delete cascade,
                              foreign key (match_day_id, competition_id_match_day)
                                  references dbp.match_day(id, competition_id)
                                  on delete cascade,
                              foreign key (user_id) references dbp.users(id)
 );
-
-create table dbp.function (
-                              id serial primary key,
-                              name varchar(100) unique not null
-);
-
-create table dbp.match_day (
-                               id serial,
-                               match_date date not null,
-                               competition_id int,
-                               primary key (id, competition_id),
-                               foreign key (competition_id) references dbp.competition(competition_number) on delete cascade
-);
-
 
 
 create table dbp.session (
@@ -129,24 +131,6 @@ create table dbp.position (
                              id serial primary key,
                              name varchar(100) not null
 );
-
-
-
-create table dbp.session_referees (
-                              session_id int,
-                              position_id int,
-                              user_id int,
-                              match_day_id_session int,
-                              competition_id_match_day int,
-                              primary key (position_id, session_id, user_id, match_day_id_session, competition_id_match_day),
-                              foreign key (session_id, match_day_id_session, competition_id_match_day)
-                                  references dbp.session(id, match_day_id, competition_id_match_day),
-                              foreign key (user_id) references dbp.users(id),
-                              foreign key (position_id) references dbp.position(id)
-);
-
-
-
 
 create table dbp.report (
                             id varchar(100) not null,

@@ -140,13 +140,11 @@ class CallListController(
     @PutMapping(Uris.CallListUris.CANCEL_CALLLIST)
     fun updateCallList(
         @RequestBody competitionId: Int,
-    ): ResponseEntity<*> {
+    ): ResponseEntity<*> =
         when (
             val result = callListService.cancelCallList(competitionId)
         ) {
             is Success -> ResponseEntity.ok(result)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
-
-    }
 }

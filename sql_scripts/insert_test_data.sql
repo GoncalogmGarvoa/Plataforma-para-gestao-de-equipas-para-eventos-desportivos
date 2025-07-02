@@ -89,18 +89,11 @@ VALUES
     (1, '14:00', '15:30', 1, 1001),
     (2, '16:00', '17:30', 2, 1002);
 
--- SESSION_REFEREES
-INSERT INTO dbp.session_referees (session_id, position_id, user_id, match_day_id_session, competition_id_match_day)
-VALUES
-    (1, 1, 1, 1, 1001),
-    (1, 2, 3, 1, 1001),
-    (2, 1, 4, 2, 1002);
-
 -- REPORT
-INSERT INTO dbp.report (id, report_type, competition_id)
-VALUES
-    ('rep1', 'final', 1001),
-    ('rep2', 'parcial', 1002);
+-- INSERT INTO dbp.report (id, report_type, competition_id)
+-- VALUES
+--     ('rep1', 'final', 1001),
+--     ('rep2', 'parcial', 1002);
 
 insert into dbp.payment_values (name, value)
 values
