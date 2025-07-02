@@ -39,6 +39,7 @@ interface CallListRepository {
         callType: String,
     ): CallList
 
+    fun getCallListsByCompetitionId(competitionId: Int): CallList?
 
 //    fun getCallListsByCouncil(councilId: Int): List<CallList>
 //

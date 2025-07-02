@@ -4,6 +4,7 @@ package pt.arbitros.arbnet.http
 
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import pt.arbitros.arbnet.domain.Competition
 import pt.arbitros.arbnet.http.model.calllist.CallListInputModel
 import pt.arbitros.arbnet.http.model.ParticipantUpdateInput
 import pt.arbitros.arbnet.http.model.calllist.CallListIdInput
@@ -119,7 +120,7 @@ class CallListController(
 
     @GetMapping(Uris.CallListUris.GET_CALLLISTS_WITH_REFEREE)
     fun getAllCallListsWithReferee(
-        @PathVariable refereeId: Int,
+        @RequestBody refereeId: Int,
     ): ResponseEntity<*> =
         when (val result = callListService.getCallListsWithReferee(refereeId)) {
             is Success -> ResponseEntity.ok(result.value)
@@ -136,4 +137,16 @@ class CallListController(
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
+    @PutMapping(Uris.CallListUris.CANCEL_CALLLIST)
+    fun updateCallList(
+        @RequestBody competitionId: Int,
+    ): ResponseEntity<*> {
+        when (
+            val result = callListService.cancelCallList(competitionId)
+        ) {
+            is Success -> ResponseEntity.ok(result)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
+
+    }
 }

@@ -25,7 +25,7 @@ interface CompetitionRepository {
     fun getCompetitionById(id: Int): Competition?
 
 
-//    fun deleteCompetition(id: Int): Boolean
+    fun deleteCompetition(id: Int): Boolean
 
     fun getCompetitionIdByCallListId(callListId: Int): Int
 }

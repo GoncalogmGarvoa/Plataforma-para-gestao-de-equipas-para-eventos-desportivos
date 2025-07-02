@@ -125,6 +125,15 @@ class CallListRepositoryJdbi(
             .execute()
         return getCallListById(callListId) ?: throw IllegalStateException("CallList not found")
     }
+
+    override fun getCallListsByCompetitionId(competitionId: Int): CallList? {
+        return handle
+            .createQuery(
+                """select * from dbp.call_list where competition_id = :competition_id""",
+            ).bind("competition_id", competitionId)
+            .mapTo<CallList>()
+            .singleOrNull()
+    }
 }
 
 //    override fun findCallListById(id: Int): CallList? =

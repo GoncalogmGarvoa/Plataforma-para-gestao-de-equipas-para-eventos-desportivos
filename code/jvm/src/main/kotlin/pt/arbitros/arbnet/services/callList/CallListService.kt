@@ -18,6 +18,7 @@ import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.http.model.ParticipantInfo
 import pt.arbitros.arbnet.http.model.RefereeCallLists
 import pt.arbitros.arbnet.http.model.RefereeCallListsOutputModel
+import pt.arbitros.arbnet.http.model.calllist.CallListIdInput
 import pt.arbitros.arbnet.http.model.calllist.CallListInputModel
 import pt.arbitros.arbnet.http.model.calllist.EquipmentOutputModel
 import pt.arbitros.arbnet.http.model.calllist.EventOutputModel
@@ -550,6 +551,45 @@ class CallListService(
                 "No call list found with the ID $callListId",
             )
         )
+    }
+
+    fun cancelCallList(competitionId: Int) {
+        transactionManager.run { tx ->
+            val callListRepository = tx.callListRepository
+            val competitionRepository = tx.competitionRepository
+
+            // Check if the competition exists
+            competitionRepository.getCompetitionById(competitionId)
+                ?: return@run failure(
+                    ApiError.NotFound(
+                        "Competition not found",
+                        "No competition found with ID $competitionId",
+                    )
+                )
+
+            val callList = callListRepository.getCallListsByCompetitionId(competitionId)
+                ?: return@run failure(
+                    ApiError.NotFound(
+                        "CallList not found",
+                        "No call list found for competition with ID $competitionId",
+                    )
+                )
+
+            when (callList.callType) {
+                CallListType.CALL_LIST.callType -> {
+                    competitionRepository.deleteCompetition(competitionId)
+                }
+                else -> {
+                    callListRepository.updateCallListStage(
+                        callList.id,
+                        CallListType.CANCELLED.callType
+                    )
+                }
+            }
+
+            success(true)
+        }
+
     }
 
 }

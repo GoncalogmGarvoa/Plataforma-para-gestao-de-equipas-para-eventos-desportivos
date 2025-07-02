@@ -17,6 +17,7 @@ enum class CallListType(
     SEALED_CALL_LIST("sealedCallList"),
     CONFIRMATION("confirmation"),
     FINAL_JURY("finalJury"),
+    CANCELLED("cancelled")
 }
 
 

@@ -35,6 +35,7 @@ object Uris {
         const val GET_SEALED_CALLLIST = "$PREFIX/callList/sealed/{id}"
         const val GET_CALLLIST_DRAFT = "$PREFIX/callListDraft/get"
         const val GET_CALLLISTS_WITH_REFEREE = "$PREFIX/callList/referee/{refereeId}"
+        const val CANCEL_CALLLIST = "$PREFIX/callList/cancel/{id}"
 
     }
 

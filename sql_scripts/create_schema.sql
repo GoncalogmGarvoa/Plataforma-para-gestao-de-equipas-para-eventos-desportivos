@@ -80,7 +80,7 @@ create table dbp.call_list (
                                competition_id int not null,
                                primary key (id),
                                foreign key (user_id) references dbp.users(id),
-                               foreign key (competition_id) references dbp.competition(competition_number)
+                               foreign key (competition_id) references dbp.competition(competition_number) on delete cascade
 );
 
 create table dbp.participant (
@@ -109,7 +109,7 @@ create table dbp.match_day (
                                match_date date not null,
                                competition_id int,
                                primary key (id, competition_id),
-                               foreign key (competition_id) references dbp.competition(competition_number)
+                               foreign key (competition_id) references dbp.competition(competition_number) on delete cascade
 );
 
 
@@ -165,7 +165,7 @@ create table dbp.competition_equipment (
                            competition_id int,
                            equipment_id int,
                            primary key (equipment_id, competition_id),
-                           foreign key (competition_id) references dbp.competition(competition_number),
+                           foreign key (competition_id) references dbp.competition(competition_number) on delete cascade,
                            foreign key (equipment_id) references dbp.equipment(id)
 );
 

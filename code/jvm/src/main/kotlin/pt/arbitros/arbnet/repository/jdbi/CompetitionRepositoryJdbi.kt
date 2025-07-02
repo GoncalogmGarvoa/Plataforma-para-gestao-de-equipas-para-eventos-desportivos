@@ -57,6 +57,14 @@ class CompetitionRepositoryJdbi(
             .mapTo<Competition>()
             .singleOrNull()
 
+    override fun deleteCompetition(id: Int): Boolean {
+        val rowsAffected = handle
+            .createUpdate("""delete from dbp.competition where competition_number = :id""")
+            .bind("id", id)
+            .execute()
+        return rowsAffected > 0
+    }
+
     override fun getCompetitionIdByCallListId(callListId: Int): Int =
         handle
             .createQuery("""select competition_id from dbp.call_list where id = :callListId""")
