@@ -16,5 +16,6 @@ DROP TABLE IF EXISTS
     dbp.position,
     dbp.function,
     dbp.competition,
-    dbp.users
+    dbp.users,
+    dbp.payment_values
     CASCADE;

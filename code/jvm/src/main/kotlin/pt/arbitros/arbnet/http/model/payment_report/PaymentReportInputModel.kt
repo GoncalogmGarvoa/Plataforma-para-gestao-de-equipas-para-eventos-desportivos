@@ -1,7 +1,7 @@
 package pt.arbitros.arbnet.http.model.payment_report
 
 import pt.arbitros.arbnet.domain.PaymentCoverSheet
-import pt.arbitros.arbnet.domain.PaymentPerReferee
+import pt.arbitros.arbnet.domain.PaymentInfoPerReferee
 
 data class PaymentReportInputModel (
     val id : String? = null,
@@ -9,7 +9,7 @@ data class PaymentReportInputModel (
     val sealed: Boolean = false,
     val juryRefere: String,
     val paymentCoverSheet: PaymentCoverSheet,
-    val paymentPerReferee: List<PaymentPerReferee>
+    val paymentInfoPerReferee: List<PaymentInfoPerReferee>
 )
 
 

@@ -101,3 +101,12 @@ INSERT INTO dbp.report (id, report_type, competition_id)
 VALUES
     ('rep1', 'final', 1001),
     ('rep2', 'parcial', 1002);
+
+insert into dbp.payment_values (name, value)
+values
+    ('presence', 25.00),
+    ('weekday', 15.50),
+    ('transportation', 8.75),
+    ('meals', 12.30),
+    ('jury-ref', 20.00);
+

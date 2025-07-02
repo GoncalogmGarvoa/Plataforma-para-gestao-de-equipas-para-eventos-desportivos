@@ -29,13 +29,13 @@ create table dbp.role (
 );
 
 CREATE TABLE dbp.user_token_role (
-                                     id SERIAL PRIMARY KEY,
-                                     user_id INT NOT NULL,
-                                     token_val VARCHAR(256) NOT NULL,
-                                     role_id INT NOT NULL,
-                                     FOREIGN KEY (user_id) REFERENCES dbp.users(id),
-                                     FOREIGN KEY (token_val) REFERENCES dbp.tokens(token_validation),
-                                     FOREIGN KEY (role_id) REFERENCES dbp.role(id)
+                             id SERIAL PRIMARY KEY,
+                             user_id INT NOT NULL,
+                             token_val VARCHAR(256) NOT NULL,
+                             role_id INT NOT NULL,
+                             FOREIGN KEY (user_id) REFERENCES dbp.users(id),
+                             FOREIGN KEY (token_val) REFERENCES dbp.tokens(token_validation),
+                             FOREIGN KEY (role_id) REFERENCES dbp.role(id)
 );
 
 create table dbp.users_roles (
@@ -84,19 +84,19 @@ create table dbp.call_list (
 );
 
 create table dbp.participant (
-                                 call_list_id int,
-                                 match_day_id int,
-                                 competition_id_match_day int,
-                                 user_id int,
-                                 function_id int,
-                                 confirmation_status varchar(10) default 'waiting' check (confirmation_status in ('waiting', 'accepted', 'declined')),
-                                 primary key (call_list_id, match_day_id, user_id, function_id,competition_id_match_day),
-                                 foreign key (function_id) references dbp.function(id),
-                                 foreign key (call_list_id) references dbp.call_list(id),
-                                 foreign key (match_day_id, competition_id_match_day)
-                                     references dbp.match_day(id, competition_id)
-                                     on delete cascade,
-                                 foreign key (user_id) references dbp.users(id)
+                             call_list_id int,
+                             match_day_id int,
+                             competition_id_match_day int,
+                             user_id int,
+                             function_id int,
+                             confirmation_status varchar(10) default 'waiting' check (confirmation_status in ('waiting', 'accepted', 'declined')),
+                             primary key (call_list_id, match_day_id, user_id, function_id,competition_id_match_day),
+                             foreign key (function_id) references dbp.function(id),
+                             foreign key (call_list_id) references dbp.call_list(id),
+                             foreign key (match_day_id, competition_id_match_day)
+                                 references dbp.match_day(id, competition_id)
+                                 on delete cascade,
+                             foreign key (user_id) references dbp.users(id)
 );
 
 create table dbp.function (
@@ -126,23 +126,23 @@ create table dbp.session (
 );
 
 create table dbp.position (
-                              id serial primary key,
-                              name varchar(100) not null
+                             id serial primary key,
+                             name varchar(100) not null
 );
 
 
 
 create table dbp.session_referees (
-                                      session_id int,
-                                      position_id int,
-                                      user_id int,
-                                      match_day_id_session int,
-                                      competition_id_match_day int,
-                                      primary key (position_id, session_id, user_id, match_day_id_session, competition_id_match_day),
-                                      foreign key (session_id, match_day_id_session, competition_id_match_day)
-                                          references dbp.session(id, match_day_id, competition_id_match_day),
-                                      foreign key (user_id) references dbp.users(id),
-                                      foreign key (position_id) references dbp.position(id)
+                              session_id int,
+                              position_id int,
+                              user_id int,
+                              match_day_id_session int,
+                              competition_id_match_day int,
+                              primary key (position_id, session_id, user_id, match_day_id_session, competition_id_match_day),
+                              foreign key (session_id, match_day_id_session, competition_id_match_day)
+                                  references dbp.session(id, match_day_id, competition_id_match_day),
+                              foreign key (user_id) references dbp.users(id),
+                              foreign key (position_id) references dbp.position(id)
 );
 
 
@@ -157,14 +157,19 @@ create table dbp.report (
 );
 
 create table dbp.equipment (
-                               id serial primary key,
-                               name varchar(100) not null
+                           id serial primary key,
+                           name varchar(100) not null
 );
 
 create table dbp.competition_equipment (
-                                           competition_id int,
-                                           equipment_id int,
-                                           primary key (equipment_id, competition_id),
-                                           foreign key (competition_id) references dbp.competition(competition_number),
-                                           foreign key (equipment_id) references dbp.equipment(id)
+                           competition_id int,
+                           equipment_id int,
+                           primary key (equipment_id, competition_id),
+                           foreign key (competition_id) references dbp.competition(competition_number),
+                           foreign key (equipment_id) references dbp.equipment(id)
+);
+
+create table dbp.payment_values (
+                           name varchar(50) not null primary key,
+                           value numeric(5,2) not null
 );

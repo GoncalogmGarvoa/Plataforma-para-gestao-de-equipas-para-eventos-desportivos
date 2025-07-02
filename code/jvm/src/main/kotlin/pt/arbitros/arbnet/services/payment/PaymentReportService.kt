@@ -11,6 +11,7 @@ import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.repository.mongo.PaymentReportMongoRepository
 import pt.arbitros.arbnet.services.Either
 import pt.arbitros.arbnet.services.failure
+import pt.arbitros.arbnet.services.payment.validation.PaymentReportCalculator
 import pt.arbitros.arbnet.services.success
 import pt.arbitros.arbnet.transactionRepo
 
@@ -18,6 +19,7 @@ import pt.arbitros.arbnet.transactionRepo
 class PaymentReportService(
     @Qualifier(transactionRepo) private val transactionManager: TransactionManager,
     private val paymentMongoRepository: PaymentReportMongoRepository,
+    private val paymentReportCalculator: PaymentReportCalculator,
     private val utilsDomain: UtilsDomain,
 ) {
 
@@ -25,7 +27,12 @@ class PaymentReportService(
         return transactionManager.run {
             val competitionRepository = it.competitionRepository //todo use this to validate competitionId
 
-            val reportMongo = PaymentReportMongo.Companion.fromInputModel(report)
+            val paymentListDetails = paymentReportCalculator.calculateTotalOwed(
+                report,
+                it
+            )
+
+            val reportMongo = PaymentReportMongo.Companion.fromInputModel(report, paymentListDetails)
 
             val result = paymentMongoRepository.save(reportMongo)
 
@@ -52,7 +59,13 @@ class PaymentReportService(
         return transactionManager.run {
 
             val competitionRepository = it.competitionRepository
-            val reportMongo = PaymentReportMongo.Companion.fromInputModel(report)
+
+            val paymentListDetails = paymentReportCalculator.calculateTotalOwed(
+                report,
+                it
+            )
+
+            val reportMongo = PaymentReportMongo.Companion.fromInputModel(report, paymentListDetails)
 
             val existingReport = paymentMongoRepository.findById(report.id!!).orElse(null)
                 ?: return@run failure(

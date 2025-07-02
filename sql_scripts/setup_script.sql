@@ -37,3 +37,11 @@ VALUES
     ('Apito'),
     ('Cartões'),
     ('Uniformes');
+
+-- VALORES DE PAGAMENTO
+insert into dbp.payment_values (name, value)
+values
+    ('presence', 25.00),
+    ('weekday', 15.50),
+    ('transportation', 8.75),
+    ('meals', 12.30);
