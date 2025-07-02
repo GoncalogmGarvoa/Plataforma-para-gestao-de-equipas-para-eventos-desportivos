@@ -98,4 +98,8 @@ interface UsersRepository {
     fun userHasCouncilRole(userId: Int): Boolean
 
     fun getUsersAndCheckIfReferee(participants: List<Int>): List<User>
+
+    fun isUserActive(userId: Int): Boolean
+
+    fun areAllUsersActive(userIds: List<Int>): Boolean
 }

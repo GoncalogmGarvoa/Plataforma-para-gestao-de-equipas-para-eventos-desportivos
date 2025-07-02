@@ -61,8 +61,6 @@ class UsersRepositoryJdbi(
         )
     }
 
-
-
     override fun assignRoleToUserToToken(
         userId: Int,
         tokenValidationInfo: TokenValidationInfo,
@@ -445,4 +443,28 @@ class UsersRepositoryJdbi(
                 usersMap(rs)
             }
             .list()
+
+    override fun isUserActive(userId: Int): Boolean {
+        return handle
+            .createQuery(
+                """
+            SELECT 1 FROM dbp.users WHERE id = :user_id AND status = 'ACTIVE'
+        """,
+            ).bind("user_id", userId)
+            .mapTo<Int>()
+            .findFirst()
+            .isPresent
+    }
+
+    override fun areAllUsersActive(userIds: List<Int>): Boolean {
+        return handle
+            .createQuery(
+                """
+            SELECT COUNT(*) FROM dbp.users WHERE id IN (<userIds>) AND status = 'ACTIVE'
+        """,
+            ).bindList("userIds", userIds)
+            .mapTo<Int>()
+            .single() == userIds.size
+
+    }
 }

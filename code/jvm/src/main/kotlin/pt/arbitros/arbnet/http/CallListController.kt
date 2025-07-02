@@ -93,10 +93,7 @@ class CallListController(
         @PathVariable id: Int,
     ): ResponseEntity<*> =
         when (val result: Either<ApiError, EventOutputModel> = callListService.getEventById(id)) {
-            is Success -> {
-                val value = result.value
-                ResponseEntity.ok(value)
-            }
+            is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
@@ -108,11 +105,7 @@ class CallListController(
         val userResult = usersService.getUserByToken(token)
         return if (userResult is Success) {
             when (val result = callListService.getEventsDraft(userResult.value.id,"callList")) {
-                is Success -> {
-                    val value = result.value
-                    ResponseEntity.ok(value)
-                }
-
+                is Success -> ResponseEntity.ok(result.value)
                 is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
             }
         } else {
@@ -129,10 +122,7 @@ class CallListController(
         @PathVariable refereeId: Int,
     ): ResponseEntity<*> =
         when (val result = callListService.getCallListsWithReferee(refereeId)) {
-            is Success -> {
-                val value = result.value
-                ResponseEntity.ok(value)
-            }
+            is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
@@ -142,10 +132,7 @@ class CallListController(
         @PathVariable id: String,
     ): ResponseEntity<*> =
         when (val result = callListService.getSealedCallList(id)) {
-            is Success -> {
-                val value = result.value
-                ResponseEntity.ok(value)
-            }
+            is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
