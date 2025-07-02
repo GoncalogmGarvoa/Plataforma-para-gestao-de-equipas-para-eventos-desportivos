@@ -6,7 +6,7 @@ data class MatchDay(
     val id: Int,
     val matchDate: LocalDate,
     val competitionId: Int,
-    val sessions: List<Session>,
+    val sessions: List<Session> = emptyList(),
 ) {
     fun addSession(session: Session): MatchDay = this.copy(sessions = this.sessions + session)
 

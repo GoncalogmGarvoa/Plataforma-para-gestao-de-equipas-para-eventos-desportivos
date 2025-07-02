@@ -33,17 +33,6 @@ data class PaymentDetails(
     val paymentValues : PaymentValuesPerReferee
 )
 
-
-data class PaymentValuesPerReferee (
-    val presence: Double,
-    val weekDay: Double,
-    val transportation: Double,
-    val meals: Double,
-    val totalOwed: Double,
-    val owedLeft: Double,
-)
-
-
 data class PaymentInfoPerReferee (
     val name: String,
     val nib: String,
@@ -69,4 +58,13 @@ data class PaymentCoverSheet (
     val eventTime: String,
     val location: String,
     val organization: String,
+)
+
+data class PaymentValuesPerReferee (
+    val presence: Double,
+    val weekDay: Double,
+    val transportation: Double,
+    val meals: Double,
+    val totalOwed: Double,
+    val owedLeft: Double,
 )
