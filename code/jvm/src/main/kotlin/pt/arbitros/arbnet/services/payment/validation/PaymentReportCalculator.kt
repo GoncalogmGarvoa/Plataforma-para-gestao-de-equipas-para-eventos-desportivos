@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.PaymentDetails
 import pt.arbitros.arbnet.domain.PaymentValuesPerReferee
 import pt.arbitros.arbnet.http.model.payment_report.PaymentReportInputModel
-import pt.arbitros.arbnet.repository.PaymentValuesRepository
 import pt.arbitros.arbnet.repository.Transaction
 
 
@@ -60,7 +59,7 @@ object PaymentReportCalculator {
             val totalOwed = presenceValue + weekDayValue + transportationValue + juryRefereeValue + mealsValue
             val owedLeft = totalOwed - info.payedAmount
 
-            val paymentValues = PaymentValuesPerReferee(
+            val paymentValuesPerReferee = PaymentValuesPerReferee(
                 presence = presenceValue,
                 weekDay = weekDayValue,
                 transportation = transportationValue,
@@ -72,7 +71,7 @@ object PaymentReportCalculator {
             paymentDetailsList.add(
                 PaymentDetails(
                     paymentRefInfo = info,
-                    paymentValues = paymentValues
+                    paymentValues = paymentValuesPerReferee
                 )
             )
         }

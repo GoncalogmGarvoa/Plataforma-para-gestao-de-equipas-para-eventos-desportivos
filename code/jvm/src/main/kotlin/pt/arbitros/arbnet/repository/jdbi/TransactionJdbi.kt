@@ -15,8 +15,7 @@ import pt.arbitros.arbnet.repository.jdbi.adaptable_repos.RoleRepositoryJdbi
 
 class TransactionJdbi(
     private val handle: Handle,
-
-) : Transaction {
+    ) : Transaction {
     override val usersRepository: UsersRepository = UsersRepositoryJdbi(handle)
     override val callListRepository: CallListRepository = CallListRepositoryJdbi(handle)
     override val competitionRepository: CompetitionRepository = CompetitionRepositoryJdbi(handle)
@@ -32,7 +31,8 @@ class TransactionJdbi(
     override val categoryDirRepository: CategoryDirRepository = CategoryDirRepositoryJdbi(handle)
     override val sessionRefereesRepository: SessionRefereesRepository = SessionRefereesRepositoryJdbi(handle)
     override val positionRepository: PositionRepository = PositionRepositoryJdbi(handle)
-
+    override val paymentValuesRepository = PaymentValuesRepositoryJdbi(handle)
+            
     override fun rollback() {
         handle.rollback()
     }
