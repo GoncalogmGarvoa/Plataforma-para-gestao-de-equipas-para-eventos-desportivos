@@ -484,4 +484,17 @@ class UsersRepositoryJdbi(
             .single() == userIds.size
 
     }
+
+    override fun updateUserStatus(id: Int, status: String): Boolean {
+        return handle
+            .createUpdate(
+                """
+            UPDATE dbp.users
+            SET status = :status
+            WHERE id = :id
+        """,
+            ).bind("status", status)
+            .bind("id", id)
+            .execute() > 0
+    }
 }

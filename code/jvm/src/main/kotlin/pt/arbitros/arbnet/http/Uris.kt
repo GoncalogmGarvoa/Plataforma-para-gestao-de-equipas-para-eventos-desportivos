@@ -27,6 +27,7 @@ object Uris {
         const val GET_COOKIES = "$PREFIX/cookies" // TODO
         const val NOTIFICATIONS = "$PREFIX/users/notifications"
         const val NOTIFICATIONS_READ = "$PREFIX/users/notifications/read/{notificationId}"
+        const val USER_STATUS = "$PREFIX/users/status"
     }
 
     object CallListUris {

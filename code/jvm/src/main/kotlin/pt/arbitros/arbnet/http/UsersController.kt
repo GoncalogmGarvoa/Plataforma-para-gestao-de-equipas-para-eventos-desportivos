@@ -3,8 +3,11 @@
 package pt.arbitros.arbnet.http
 
 import org.springframework.http.ResponseEntity
+import org.springframework.mail.MailSender
+import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.web.bind.annotation.*
 import pt.arbitros.arbnet.domain.users.AuthenticatedUser
+import pt.arbitros.arbnet.http.model.UserStatusInput
 import pt.arbitros.arbnet.http.model.users.UserCategoryUpdateInputModel
 import pt.arbitros.arbnet.http.model.users.UserCreateTokenInputModel
 import pt.arbitros.arbnet.http.model.users.UserInputModel
@@ -300,7 +303,6 @@ class UsersController(
         }
     }
 
-
     @PutMapping(Uris.UsersUris.NOTIFICATIONS_READ)
     fun changeNotificationStatus(
         @PathVariable notificationId: Int,
@@ -321,4 +323,15 @@ class UsersController(
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
     }
+
+    @PutMapping(Uris.UsersUris.USER_STATUS)
+    fun changeUserStatus(
+        @RequestBody userStatusInput: UserStatusInput
+    ): ResponseEntity<*> {
+        return when (val result = usersService.changeUserStatus(userStatusInput)) {
+            is Success -> ResponseEntity.ok(result.value)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
+    }
+
 }

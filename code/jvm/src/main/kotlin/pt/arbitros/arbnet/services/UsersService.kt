@@ -1,30 +1,63 @@
 package pt.arbitros.arbnet.services
 
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.SignatureAlgorithm
+import io.jsonwebtoken.security.Keys
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.autoconfigure.mail.MailProperties
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.mail.SimpleMailMessage
+import org.springframework.mail.javamail.JavaMailSender
+import org.springframework.mail.javamail.JavaMailSenderImpl
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.UtilsDomain
 import pt.arbitros.arbnet.domain.adaptable.Notification
 import pt.arbitros.arbnet.domain.adaptable.Role
 import pt.arbitros.arbnet.domain.users.*
 import pt.arbitros.arbnet.http.ApiError
+import pt.arbitros.arbnet.http.Uris
 import pt.arbitros.arbnet.http.invalidFieldError
+import pt.arbitros.arbnet.http.model.UserStatusInput
 import pt.arbitros.arbnet.http.model.UsersParametersOutputModel
 import pt.arbitros.arbnet.http.model.users.UserInputModel
 import pt.arbitros.arbnet.http.model.users.UserUpdateInputModel
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.transactionRepo
 import java.time.LocalDate
-
-sealed class TokenCreationError {
-    data object UserOrPasswordAreInvalid : TokenCreationError() // todo
-}
+import java.time.temporal.ChronoUnit
+import java.util.Date
+import javax.crypto.SecretKey
+import kotlin.time.Duration
 
 data class TokenExternalInfo(
     val tokenValue: String,
-    val tokenExpiration: Instant,
+    val tokenExpiration: kotlinx.datetime.Instant,
 )
+
+val SECRET_KEY: SecretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256)
+
+@Configuration
+class MailConfig {
+    @Bean
+    fun javaMailSender(): JavaMailSender {
+        val mailSender = JavaMailSenderImpl()
+        mailSender.host = "smtp.gmail.com"
+        mailSender.port = 587
+        mailSender.username =  System.getenv("ARBNET_EMAIL")
+        mailSender.password = System.getenv("ARBNET_EMAIL_PASSWORD")
+
+        val props = mailSender.javaMailProperties
+        props["mail.transport.protocol"] = "smtp"
+        props["mail.smtp.auth"] = "true"
+        props["mail.smtp.starttls.enable"] = "true"
+        props["mail.smtp.ssl.trust"] = "smtp.gmail.com"
+        props["mail.debug"] = "true"
+
+        return mailSender
+    }
+}
 
 @Component
 class UsersService(
@@ -33,6 +66,7 @@ class UsersService(
     private val usersDomain: UsersDomain,
     private val utilsDomain: UtilsDomain,
     private val clock: Clock,
+    private val mailSender: JavaMailSender,
 ) {
     private val userNotFoundId = ApiError.NotFound(
         "User not found",
@@ -542,5 +576,89 @@ class UsersService(
             }
             return@run success(functions)
         }
+
+    fun changeUserStatus(userStatusInput: UserStatusInput): Either<ApiError, Boolean> {
+        return transactionManager.run {
+
+            val usersRepository = it.usersRepository
+            val user = usersRepository.getUserById(userStatusInput.userId)
+                ?: return@run failure(userNotFoundId)
+
+            UserStatus.entries.find { it.status == userStatusInput.status }
+                ?: return@run failure(ApiError.InvalidField(
+                    "Invalid status",
+                    "The provided status is not valid. Valid statuses are: ${UserStatus.entries.joinToString(", ") { it.status }}",
+                ))
+
+
+            if (user.userStatus.status == userStatusInput.status) {
+                return@run failure(ApiError.InvalidField(
+                    "Status already set",
+                    "The user already has the status ${user.userStatus.status}. No changes were made.",
+                ))
+            }
+
+            val updated = usersRepository.updateUserStatus(user.id, userStatusInput.status)
+            if (!updated) {
+                return@run failure(ApiError.NotFound(
+                    "Some error occurred",
+                    "An error occurred while updating the user status. Please try again later.",
+                ))
+            }
+
+            val message = SimpleMailMessage()
+
+            message.setTo(user.email)
+            message.setSubject("User Status Change")
+            message.setText("User with ID ${userStatusInput.userId} has changed status to ${userStatusInput.status} at ${Clock.System.now()}")
+            message.setFrom(System.getenv("ARBNET_EMAIL"))
+            mailSender.send(message)
+
+            return@run success(true)
+        }
+    }
+
+    fun sendInvite(
+        email: String,
+    ): Either<ApiError, Boolean> {
+        return transactionManager.run {
+
+            if (!utilsDomain.validEmail(email)) {
+                return@run failure(invalidFieldError("email"))
+            }
+
+            val usersRepository = it.usersRepository
+            if (usersRepository.existsByEmail(email)) {
+                return@run failure(ApiError.InvalidField(
+                    "Email is already in use",
+                    "Invite are only for users that are not registered in ArbNet.",
+                ))
+            }
+
+            val message = SimpleMailMessage()
+            message.setTo(email)
+            message.setSubject("Invitation to ArbNet")
+            message.setText("You have been invited to join ArbNet use the following URL to register: " +
+                    "${System.getenv("ARBNET_URL")}/signup?inviteToken=${generateInviteToken(email)}")
+            message.setFrom(System.getenv("ARBNET_EMAIL"))
+            mailSender.send(message)
+
+            return@run success(true)
+        }
+    }
+
+
+    fun generateInviteToken(email: String): String {
+        val now = java.time.Instant.now()
+        val expiry = now.plus(7, ChronoUnit.DAYS) // expires in 7 days
+
+        return Jwts.builder()
+            .setSubject("invite")
+            .claim("email", email)
+            .setIssuedAt(Date.from(now))
+            .setExpiration(Date.from(expiry))
+            .signWith(SECRET_KEY)
+            .compact()
+    }
 
 }
