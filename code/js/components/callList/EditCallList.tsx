@@ -310,8 +310,6 @@ export function EditCallList() {
                 // Check for specific 'CallList not found' error to redirect
                 if (errorData.title === "Not Found" && errorData.detail && errorData.detail.includes("CallList")) {
                     alert(errorData.title + ": " + errorData.detail);
-                    navigate("/search-calllist-draft");
-                    return; // Exit the function after redirection
                 }
 
                 // For other errors from the backend, display alert and set error state without throwing
@@ -564,7 +562,45 @@ export function EditCallList() {
                     </table>
 
                 <button type="submit" disabled={submitting}>{submitting ? "Salvando..." : "Salvar Alterações"}</button>
+                <button type="button" onClick={handleSealCallList} disabled={submitting} style={{ marginLeft: "10px" }}>Lacrar</button>
             </form>
         </div>
     );
+
+    async function handleSealCallList() {
+        setSubmitting(true);
+        setError(null);
+        try {
+            const token = getCookie("token");
+            if (!token) throw new Error("Token não encontrado. Faça login novamente.");
+
+            const callListIdentifier = form.callListId || form.id || id;
+            console.log("Sealing CallList with ID:", callListIdentifier);
+
+            const response = await fetch("/arbnet/callList/updateCallListStage", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    token,
+                },
+                body: JSON.stringify({ id: callListIdentifier }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                const backendErrorMessage = errorData.title || "Erro ao lacrar convocatória.";
+                alert("Erro ao lacrar: " + backendErrorMessage);
+                setError(backendErrorMessage);
+                return;
+            }
+            alert("Convocatória lacrada com sucesso!");
+            navigate(`/arbnet/callList/sealed/${callListIdentifier}`); // Redirect after sealing
+        } catch (err: any) {
+            const errorMessage = err.message || "Erro inesperado ao lacrar.";
+            alert("Erro ao lacrar: " + errorMessage);
+            setError(errorMessage);
+        } finally {
+            setSubmitting(false);
+        }
+    }
 } 

@@ -278,16 +278,28 @@ class UsersController(
 
     @GetMapping(Uris.UsersUris.NOTIFICATIONS)
     fun getNotificationsByUserAndRoleIds(
-        @RequestParam userId: Int,
         @RequestParam roleId: Int,
-    ): ResponseEntity<*> =
+        @RequestHeader token: String,
 
-         when (
-             val result = usersService.getNotificationsByUserAndRoleIds(userId, roleId)
-         ) {
+        ): ResponseEntity<*> {
+        val userResult = usersService.getUserByToken(token)
+        return if (userResult is Success) {
+            when (
+            val result = usersService.getNotificationsByUserAndRoleIds(userResult.value.id, roleId)
+        ) {
             is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
+
+        }
+        else {
+            Problem.fromApiErrorToProblemResponse(
+                ApiError.NotFound(
+                    "User not found or not authorized to create a call list",
+                ))
+        }
+    }
+
 
     @PutMapping(Uris.UsersUris.NOTIFICATIONS_READ)
     fun changeNotificationStatus(

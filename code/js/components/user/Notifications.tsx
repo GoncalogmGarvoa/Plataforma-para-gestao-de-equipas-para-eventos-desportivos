@@ -2,6 +2,8 @@ import { useEffect, useState } from "react"
 import { FaBell } from "react-icons/fa"
 import { useCurrentRole } from "../../src/context/Referee"
 import React from "react"
+import {getCookie} from "../callList/CreateCallList";
+
 
 type Notification = {
     id: number
@@ -24,6 +26,7 @@ export function Notifications() {
 
     const currentRole = useCurrentRole()
     const hardcodedUserId = 13 // ← usar isto por agora
+    const token = getCookie("token");
 
     useEffect(() => {
         fetch("/arbnet/users/roles")
@@ -41,7 +44,10 @@ export function Notifications() {
         const roleObj = roles.find(r => r.name === currentRole)
         if (!roleObj) return
 
-        fetch(`/arbnet/users/notifications?userId=${hardcodedUserId}&roleId=${roleObj.id}`)
+        fetch(`/arbnet/users/notifications?userId=${hardcodedUserId}&roleId=${roleObj.id}`, {
+            method: "GET",
+            headers: {token}
+            })
             .then(res => res.json())
             .then(data => {
                 const unread = data.filter((n: Notification) => !n.readStatus)

@@ -96,7 +96,7 @@ const router = createBrowserRouter([
             },
             {
                 "path": "/check-callLists",
-                "element": <RequireAuthn><RequireReferee><CheckCallLists /></RequireReferee></RequireAuthn>
+                "element": <RequireAuthn><CheckCallLists /></RequireAuthn>
             },
             {
                 "path": "/callList-info",
@@ -152,13 +152,34 @@ export function App() {
 
 function Home() {
     const currentEmail = useCurrentEmail()
+    const currentRole = useCurrentRole()
+    
+    const isConselhoDeArbitragem = currentRole === "Arbitration_Council"
+    const isAdmin = currentRole === "Admin"
+
     return (
         <div>
             <h1>Home</h1>
             <ol>
                 <li><Link to="/">Home</Link></li>
                 {currentEmail ? (
-                    <li><Link to="/me">Me</Link></li>
+                    <>
+                        <li><Link to="/me">Me</Link></li>
+                        <li><Link to="/check-callLists">Ver Convocações</Link></li>
+
+                        {isConselhoDeArbitragem && (
+                            <>
+                                <li><Link to="/create-calllist">Criar Convocatória</Link></li>
+                                <li><Link to="/search-calllist-draft">Ver Convocatórias Draft</Link></li>
+                            </>
+                        )}
+
+                        {isAdmin && (
+                            <li><Link to="/attribute-roles">Atribuir Roles</Link></li>
+                        )}
+                    </>
+
+
                 ) : (
                     <>
                         {<li><Link to="/login">Login</Link></li>}
@@ -170,16 +191,7 @@ function Home() {
     )
 }
 
-//
-// export function Me() {
-//     const currentEmail = useCurrentEmail()
-//
-//     return (
-//         <div>
-//             {`Hello ${currentEmail}!`}
-//         </div>
-//     )
-// }
+
 
 export function Header() {
     const currentUser = useCurrentUser()
@@ -198,15 +210,15 @@ export function Header() {
                     {currentUser ? (
                         <>
                             <li><Link to="/me">Me</Link></li>
+                            <li><Link to="/check-callLists">Ver Convocações</Link></li>
+
                             {isConselhoDeArbitragem && (
                                 <>
                                     <li><Link to="/create-calllist">Criar Convocatória</Link></li>
                                     <li><Link to="/search-calllist-draft">Ver Convocatórias Draft</Link></li>
                                 </>
                             )}
-                            {isReferee && (
-                                <li><Link to="/check-callLists">Ver Convocações</Link></li>
-                            )}
+
                             {isAdmin && (
                                 <li><Link to="/attribute-roles">Atribuir Roles</Link></li>
                             )}
