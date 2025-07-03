@@ -530,4 +530,17 @@ class UsersService(
             "The $field is already in use by another user. Please choose a different one.",
         )
 
+    fun getAllFunctions() =
+        transactionManager.run {
+            val functionRepository = it.functionRepository
+            val functions = functionRepository.getAllFunctions()
+            if (functions.isEmpty()) {
+                return@run failure(ApiError.NotFound(
+                    "No functions found",
+                    "There are no functions available in the system.",
+                ))
+            }
+            return@run success(functions)
+        }
+
 }

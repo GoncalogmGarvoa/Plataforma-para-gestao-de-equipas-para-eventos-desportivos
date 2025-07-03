@@ -313,4 +313,12 @@ class UsersController(
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
     }
+
+    @GetMapping(Uris.UsersUris.GET_ALL_FUNCTIONS)
+    fun getAllFunctions(): ResponseEntity<*> {
+        return when (val result = usersService.getAllFunctions()) {
+            is Success -> ResponseEntity.ok(result.value)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
+    }
 }
