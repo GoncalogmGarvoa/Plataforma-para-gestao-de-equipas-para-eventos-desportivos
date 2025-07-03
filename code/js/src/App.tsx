@@ -25,7 +25,6 @@ import {CallListInfo} from "../components/callList/CallListInfo";
 import {AttributeRoles} from "../components/user/AttributeRoles";
 import {Notifications} from "../components/user/Notifications";
 
-// Componente para proteger a rota de criar callList
 function RequireArbitrationCouncil({ children }: { children: React.ReactNode }) {
     const currentRole = useCurrentRole()
     
@@ -113,8 +112,7 @@ const router = createBrowserRouter([
             {
                 "path": "/logout",
                 "element":<Logout />
-            },
-
+            }
         ]
     }
 ])
@@ -128,27 +126,6 @@ export function App() {
 
 
 
-
-// function Home() {
-//     const currentUser = useCurrentUser()
-//     console.log("HOME USER : ",currentUser)
-//     return (
-//         <div>
-//             <h1>Home</h1>
-//             <ol>
-//                 {currentUser ?(
-//                     <>
-//                         <li><Link to="/me">Me</Link></li>
-//                     </>
-//                 ): (<>
-//
-//                     </>
-//                 )}
-//             </ol>
-//             <Outlet />
-//         </div>
-//     )
-// }
 
 function Home() {
     const currentEmail = useCurrentEmail()
@@ -210,8 +187,9 @@ export function Header() {
                     {currentUser ? (
                         <>
                             <li><Link to="/me">Me</Link></li>
+                            {currentRole && (
                             <li><Link to="/check-callLists">Ver Convocações</Link></li>
-
+                            )}
                             {isConselhoDeArbitragem && (
                                 <>
                                     <li><Link to="/create-calllist">Criar Convocatória</Link></li>
@@ -221,6 +199,10 @@ export function Header() {
 
                             {isAdmin && (
                                 <li><Link to="/attribute-roles">Atribuir Roles</Link></li>
+                            )}
+
+                            {currentRole && (
+                                <li><Link to="/select-role">Mudar Perfil</Link></li>
                             )}
 
                             {/* Notificações */}

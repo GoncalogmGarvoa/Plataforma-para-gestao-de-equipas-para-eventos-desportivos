@@ -26,6 +26,7 @@ export function SelectRole() {
     const [selectedRole, setSelectedRole] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [hasExistingRole, setHasExistingRole] = useState<boolean>(false);
 
     const navigate = useNavigate();
     const setUser = useSetUser();
@@ -33,6 +34,10 @@ export function SelectRole() {
     const setRole = useSetRole();
 
     useEffect(() => {
+        if (getCookie("role")) {
+            setHasExistingRole(true);
+        }
+
         const fetchRoles = async () => {
             try {
                 const token = getCookie("token");
@@ -97,11 +102,9 @@ export function SelectRole() {
                 throw new Error(errorData.title || "Erro ao definir role");
             }
 
-            // Encontrar a role selecionada para obter o nome
             const selectedRoleData = roles.find((r: Role) => r.id === roleId);
             const roleName = selectedRoleData?.name || "";
 
-            // Adicionar a role à cookie com a mesma expiração das outras cookies
             const expirationDate = new Date();
             expirationDate.setHours(expirationDate.getHours() + 1);
             document.cookie = `role=${roleName}; expires=${expirationDate.toUTCString()}; path=/;`;
@@ -123,13 +126,13 @@ export function SelectRole() {
             <div className="error-container">
                 <h2>Erro</h2>
                 <p className="error-message">{error}</p>
-                <button onClick={() => navigate("/login")}>Voltar ao Login</button>
+                <button onClick={() => navigate(hasExistingRole ? "/" : "/login")}>Voltar {hasExistingRole ? "" : "ao Login"}</button>
             </div>
         );
     }
     return (
         <div className="role-selection">
-            <h2>Selecione o seu perfil</h2>
+            <h2>{hasExistingRole ? "Mudar o seu perfil" : "Selecione o seu perfil"}</h2>
 
             {loading ? (
                 <p>A carregar roles...</p>
@@ -152,7 +155,7 @@ export function SelectRole() {
                             className="select-role-button"
                             onClick={() => handleRoleSelect(selectedRole)}
                         >
-                            Continuar
+                            {hasExistingRole ? "Mudar Perfil" : "Continuar"}
                         </button>
                     )}
                 </div>
@@ -161,36 +164,4 @@ export function SelectRole() {
             )}
         </div>
     );
-
-
 }
-// return (
-//     <div className="role-selection">
-//         <h2>Selecione o seu perfil</h2>
-//         {loading ? (
-//             <p>A carregar roles...</p>
-//         ) : (
-//             <>
-//                 <div className="roles-list">
-//                     {roles.map((role) => (
-//                         <div
-//                             key={role.id}
-//                             className={`role-card ${selectedRole === role.id ? "selected" : ""}`}
-//                             onClick={() => setSelectedRole(role.id)}
-//                         >
-//                             <h3>{role.name}</h3>
-//                         </div>
-//                     ))}
-//                 </div>
-//                 {selectedRole && (
-//                     <button
-//                         className="select-role-button"
-//                         onClick={() => handleRoleSelect(selectedRole)}
-//                     >
-//                         Continuar
-//                     </button>
-//                 )}
-//             </>
-//         )}
-//     </div>
-// );
