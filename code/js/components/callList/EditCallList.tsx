@@ -383,12 +383,12 @@ export function EditCallList() {
     }, [form]);
 
     if (loading) return <div>Carregando...</div>;
-    if (error) return <div>Erro: {error}</div>;
     if (!form) return null;
 
     return (
         <div className="create-call-list-container">
             <h2>Editar Convocatória</h2>
+            {error && <div style={{ color: 'red', marginBottom: '10px' }}>Erro: {error}</div>}
             <form onSubmit={handleSubmit}>
                 <div className="form-group-inline">
                     <label>Competição:</label>
