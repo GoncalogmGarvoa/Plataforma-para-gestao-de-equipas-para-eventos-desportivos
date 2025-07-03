@@ -74,6 +74,9 @@ export function CreateCallList() {
     const [equipmentDropdownOpen, setEquipmentDropdownOpen] = useState(false);
     const equipmentDropdownRef = React.useRef<HTMLDivElement>(null);
 
+    // Function dropdown state
+    const [functionOptions, setFunctionOptions] = useState<{id: number, name: string}[]>([]);
+
     // Fechar dropdown ao clicar fora
     React.useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -136,6 +139,25 @@ export function CreateCallList() {
         fetchEquipment();
     }, []);
 
+    // Fetch function options on mount
+    React.useEffect(() => {
+        const fetchFunctions = async () => {
+            try {
+                const token = getCookie("token");
+                const res = await fetch("/arbnet/users/functions", {
+                    headers: token ? { token } : undefined
+                });
+                if (!res.ok) throw new Error("Erro ao buscar funções");
+                const data = await res.json();
+                setFunctionOptions(data);
+            } catch (err) {
+                console.error("Failed to fetch functions:", err);
+                setFunctionOptions([]);
+            }
+        };
+        fetchFunctions();
+    }, []);
+
     const [participantInputs, setParticipantInputs] = useState<Record<string, Record<string, string>>>({}); // name -> { date -> function }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -190,7 +212,7 @@ export function CreateCallList() {
 
             setParticipantInputs((prev) => ({
                 ...prev,
-                [newParticipantName]: Object.fromEntries(matchDaySessionsInput.map(({matchDay}) => [matchDay, "DEFAULT"]))
+                [newParticipantName]: Object.fromEntries(matchDaySessionsInput.map(({matchDay}) => [matchDay, ""]))
             }));
 
             setParticipants((prev) => [
@@ -515,48 +537,50 @@ export function CreateCallList() {
             </div>
             <button onClick={addParticipant}>Adicionar Participante</button>
 
-            <table border={1} cellPadding={5} style={{borderCollapse: "collapse", marginTop: "1rem"}}>
-                <thead>
-                <tr>
-                    <th>Nome</th>
-                    {matchDaySessionsInput.map(({matchDay}) => (
-                        <th key={matchDay}>{matchDay}</th>
-                    ))}
-                </tr>
-                </thead>
-                <tbody>
-                {Object.entries(participantInputs).map(([name, roles]) => (
-                    <tr key={name}>
-                        <td>
-                            <strong>{name}</strong>
-                            <button
-                                className="remove-button"
-                                style={{marginLeft: "8px"}}
-                                onClick={() => removeParticipant(name)}
-                            >
-                                Remover
-                            </button>
-
-                        </td>
+            <form>
+                <table border={1} cellPadding={5} style={{borderCollapse: "collapse", marginTop: "1rem"}}>
+                    <thead>
+                    <tr>
+                        <th>Nome</th>
                         {matchDaySessionsInput.map(({matchDay}) => (
-                            <td key={matchDay}>
-                            <input
-                                    value={roles[matchDay] || ""}
-                                    onChange={(e) => handleRoleChange(name, matchDay, e.target.value)}
-                                    placeholder="Função"
-                                    style={{width: "100px"}}
-                                />
-                            </td>
+                            <th key={matchDay}>{matchDay}</th>
                         ))}
                     </tr>
+                    </thead>
+                    <tbody>
+                        {Object.entries(participantInputs).map(([name, rolesByDay], index) => (
+                            <tr key={index}>
+                                <td>
+                                    {name}
+                                    <button
+                                        style={{marginLeft: "0.5rem", color: "red"}}
+                                        type="button"
+                                        onClick={() => removeParticipant(name)}
+                                    >
+                                        Remover
+                                    </button>
+                                </td>
+                                {matchDaySessionsInput.map((md) => (
+                                    <td key={md.matchDay}>
+                                        <select
+                                            value={rolesByDay[md.matchDay] || ""}
+                                            onChange={(e) => handleRoleChange(name, md.matchDay, e.target.value)}
+                                            style={{width: "100%"}}
+                                        >
+                                            <option value="" disabled>Selecione uma Função</option>
+                                            {functionOptions.map(func => (
+                                                <option key={func.id} value={func.name}>{func.name}</option>
+                                            ))}
+                                        </select>
+                                    </td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
 
-                ))}
-                </tbody>
-            </table>
-
-            <div>
-                <button onClick={handleSubmit}>Criar Convocatória</button>
-            </div>
+                <button type="submit" onClick={handleSubmit}>Criar Convocatória</button>
+            </form>
         </div>
     );
 }

@@ -36,6 +36,9 @@ export function EditCallList() {
     const [equipmentDropdownOpen, setEquipmentDropdownOpen] = useState(false);
     const equipmentDropdownRef = React.useRef<HTMLDivElement>(null);
 
+    // Function dropdown state
+    const [functionOptions, setFunctionOptions] = useState<{id: number, name: string}[]>([]);
+
     // Carregar dados iniciais
     useEffect(() => {
         const fetchCallList = async () => {
@@ -124,6 +127,25 @@ export function EditCallList() {
         if (id) fetchCallList();
     }, [id]);
 
+    // Fetch function options on mount
+    useEffect(() => {
+        const fetchFunctions = async () => {
+            try {
+                const token = getCookie("token");
+                const res = await fetch("/arbnet/users/functions", {
+                    headers: token ? { token } : undefined
+                });
+                if (!res.ok) throw new Error("Erro ao buscar funções");
+                const data = await res.json();
+                setFunctionOptions(data);
+            } catch (err) {
+                console.error("Failed to fetch functions:", err);
+                setFunctionOptions([]);
+            }
+        };
+        fetchFunctions();
+    }, []);
+
     // Sugestão de utilizadores
     useEffect(() => {
         const fetchUsers = async () => {
@@ -169,7 +191,7 @@ export function EditCallList() {
                 [newParticipantName]: Object.fromEntries(
                     form.matchDaySessions.map((md: any) => {
                         const dateKey = md.matchDate || md.day || md.date || md.matchDay;
-                        return [dateKey, "DEFAULT"];
+                        return [dateKey, ""];
                     })
                 )
             }));
@@ -547,13 +569,16 @@ export function EditCallList() {
                             </td>
                             {form.matchDaySessions.map((md: any) => (
                             <td key={md.id}>
-                                <input
-                                type="text"
-                                value={rolesByDay[md.matchDate] || ""}
-                                onChange={(e) => handleRoleChange(name, md.matchDate, e.target.value)}
-                                placeholder="Função"
-                                style={{ width: "100%" }}
-                                />
+                                <select
+                                    value={rolesByDay[md.matchDate] || "DEFAULT"}
+                                    onChange={(e) => handleRoleChange(name, md.matchDate, e.target.value)}
+                                    style={{ width: "100%" }}
+                                >
+                                    <option value="DEFAULT" disabled>Selecione uma Função</option>
+                                    {functionOptions.map(func => (
+                                        <option key={func.id} value={func.name}>{func.name}</option>
+                                    ))}
+                                </select>
                             </td>
                             ))}
                         </tr>
