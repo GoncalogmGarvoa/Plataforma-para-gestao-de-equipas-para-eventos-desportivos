@@ -395,23 +395,6 @@ class CallListService(
                 )
             }
 
-            val callType =
-                when (callList.callType) {
-                    CallListType.CALL_LIST.callType -> {
-                        CallListType.SEALED_CALL_LIST.callType
-                    }
-                    CallListType.CONFIRMATION.callType -> {
-                        CallListType.FINAL_JURY.callType
-                    }
-                    else -> return@run failure(
-                        ApiError.InvalidField(
-                            "Invalid call list type",
-                            "Call list must either be in 'CALL_LIST' or 'CONFIRMATION' to update the stage.",
-                        )
-                    )
-                }
-
-            callListRepository.updateCallListStage(callListId, callType)
 
             //TODO code below is repeated from above put all in one function
             val callListContent = callListRepository.getCallListById(callListId)!!
@@ -456,6 +439,23 @@ class CallListService(
                         )
                     )
 
+            val callType =
+                when (callList.callType) {
+                    CallListType.CALL_LIST.callType -> {
+                        CallListType.SEALED_CALL_LIST.callType
+                    }
+                    CallListType.CONFIRMATION.callType -> {
+                        CallListType.FINAL_JURY.callType
+                    }
+                    else -> return@run failure(
+                        ApiError.InvalidField(
+                            "Invalid call list type",
+                            "Call list must either be in 'CALL_LIST' or 'CONFIRMATION' to update the stage.",
+                        )
+                    )
+                }
+
+            callListRepository.updateCallListStage(callListId, callType)
 
                 ParticipantWithCategory(
                     callListId = it.callListId,
