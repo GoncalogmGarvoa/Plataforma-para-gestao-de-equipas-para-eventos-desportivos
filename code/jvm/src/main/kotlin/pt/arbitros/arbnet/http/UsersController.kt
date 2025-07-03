@@ -59,7 +59,7 @@ class UsersController(
 
 
     @GetMapping(Uris.UsersUris.USER_ROLES_FROM_USER)
-    fun getAllRolesFromPlayer(
+    fun getAllRolesFromUser(
         @RequestHeader token: String,
     ): ResponseEntity<*> {
         return when (val userResult = usersService.getUserByToken(token)) {
@@ -276,4 +276,29 @@ class UsersController(
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
+    @GetMapping(Uris.UsersUris.NOTIFICATIONS)
+    fun getNotificationsByUserAndRoleIds(
+        @RequestParam userId: Int,
+        @RequestParam roleId: Int,
+    ): ResponseEntity<*> =
+
+         when (
+             val result = usersService.getNotificationsByUserAndRoleIds(userId, roleId)
+         ) {
+            is Success -> ResponseEntity.ok(result.value)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
+
+    @PutMapping(Uris.UsersUris.NOTIFICATIONS_READ)
+    fun changeNotificationStatus(
+        @PathVariable notificationId: Int,
+    ): ResponseEntity<*> {
+
+        return when (
+            val result = usersService.changeNotificationStatus(notificationId)
+        ) {
+            is Success -> ResponseEntity.ok(result.value)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
+    }
 }

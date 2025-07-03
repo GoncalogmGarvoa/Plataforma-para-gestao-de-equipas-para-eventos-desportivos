@@ -82,6 +82,7 @@ class CallListService(
                             competitionId,
                             it.functionRepository,
                             it.participantRepository,
+                            it.notificationRepository
                         )
                     if (participantsResult is Failure)
                         throw RuntimeException("Error Creating Participant: ${participantsResult.value}")
@@ -143,6 +144,7 @@ class CallListService(
                 it.sessionsRepository,
                 it.functionRepository,
                 it.participantRepository,
+                it.notificationRepository,
                 it.equipmentRepository,
             )
 

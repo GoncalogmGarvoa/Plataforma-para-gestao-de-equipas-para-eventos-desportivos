@@ -251,20 +251,37 @@ class UsersRepositoryJdbi(
             .map { rs, _ -> usersMap(rs) }
             .list()
 
-    override fun getUsersByParameters(name: String, roles: List<String>): List<User> =
-        handle
-            .createQuery(
-                """
-            SELECT DISTINCT u.* FROM dbp.users u
-            JOIN dbp.users_roles ur ON u.id = ur.user_id
-            JOIN dbp.role r ON ur.role_id = r.id
-            WHERE LOWER(u.name) LIKE LOWER(:name)
-              AND r.name IN (<roles>)
-        """,
-            ).bind("name", "%$name%")
-            .bindList("roles", roles)
-            .map(UsersMapper())
-            .list()
+    override fun getUsersByParameters(name: String, roles: List<String>): List<User> {
+        val namePattern = "%${name.lowercase()}%"
+        return if (roles.isEmpty()) {
+            handle
+                .createQuery(
+                    """
+                SELECT DISTINCT u.* FROM dbp.users u
+                WHERE LOWER(u.name) LIKE :name
+                """,
+                )
+                .bind("name", namePattern)
+                .map(UsersMapper())
+                .list()
+        } else {
+            handle
+                .createQuery(
+                    """
+                SELECT DISTINCT u.* FROM dbp.users u
+                JOIN dbp.users_roles ur ON u.id = ur.user_id
+                JOIN dbp.role r ON ur.role_id = r.id
+                WHERE LOWER(u.name) LIKE :name
+                  AND r.name IN (<roles>)
+                """,
+                )
+                .bind("name", namePattern)
+                .bindList("roles", roles)
+                .map(UsersMapper())
+                .list()
+        }
+    }
+
 
     override fun getUsersWithoutRoles(name: String): List<User> =
         handle

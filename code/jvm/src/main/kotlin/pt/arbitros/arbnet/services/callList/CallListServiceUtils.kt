@@ -16,6 +16,7 @@ import pt.arbitros.arbnet.http.model.calllist.ParticipantChoice
 import pt.arbitros.arbnet.repository.CallListRepository
 import pt.arbitros.arbnet.repository.CompetitionRepository
 import pt.arbitros.arbnet.repository.MatchDayRepository
+import pt.arbitros.arbnet.repository.NotificationRepository
 import pt.arbitros.arbnet.repository.ParticipantRepository
 import pt.arbitros.arbnet.repository.SessionsRepository
 import pt.arbitros.arbnet.repository.Transaction
@@ -205,6 +206,7 @@ class CallListServiceUtils {
         competitionId: Int,
         functionRepository: FunctionRepository,
         participantRepository: ParticipantRepository,
+        notificationRepository: NotificationRepository
     ): Either<ApiError, Unit> {
         val participantsToInsert = mutableListOf<Participant>()
 
@@ -243,6 +245,19 @@ class CallListServiceUtils {
                 }
             }
             participantRepository.batchAddParticipants(participantsToInsert)
+
+            participantsToInsert
+                .map { it.userId }
+                .distinct()
+                .forEach { userId ->
+                    notificationRepository.createNotification(
+                        userId = userId,
+                        roleId = 3,
+                        message = "You have been added to a call list for competition $competitionId"
+                    )
+                }
+
+
         }
 
         return success(Unit)
@@ -320,6 +335,7 @@ class CallListServiceUtils {
         sessionsRepository: SessionsRepository,
         functionRepository: FunctionRepository,
         participantRepository: ParticipantRepository,
+        notificationRepository: NotificationRepository,
         equipmentRepository: EquipmentRepository,
     ): Either<ApiError, Int> {
 
@@ -349,6 +365,7 @@ class CallListServiceUtils {
                     competitionId,
                     functionRepository,
                     participantRepository,
+                    notificationRepository
                 )
             if (participantsResult is Failure) return participantsResult
         }

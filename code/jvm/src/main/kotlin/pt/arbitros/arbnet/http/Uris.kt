@@ -24,6 +24,8 @@ object Uris {
         const val LOGOUT = "$PREFIX/users/logout"
         const val HOME = "$PREFIX/me"
         const val GET_COOKIES = "$PREFIX/cookies" // TODO
+        const val NOTIFICATIONS = "$PREFIX/users/notifications"
+        const val NOTIFICATIONS_READ = "$PREFIX/users/notifications/read/{notificationId}"
     }
 
     object CallListUris {

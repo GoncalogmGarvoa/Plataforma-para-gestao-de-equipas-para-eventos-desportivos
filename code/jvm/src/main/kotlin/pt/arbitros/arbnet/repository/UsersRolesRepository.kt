@@ -19,4 +19,6 @@ interface UsersRolesRepository {
         userId: Int,
         roleId: Int,
     ): Boolean
+
+    fun getAdminUsers(): List<Int>
 }

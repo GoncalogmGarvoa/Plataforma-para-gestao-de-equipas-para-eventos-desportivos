@@ -2,6 +2,7 @@ import * as React from 'react'
 import '../components/Components.css'
 import '../components/SelectRole.css'
 import '../components/CreateCallList.css'
+import { FaBell } from "react-icons/fa"
 
 
 import {createBrowserRouter, Link, Outlet, RouterProvider, Navigate} from 'react-router-dom'
@@ -22,6 +23,7 @@ import { EditCallList } from "../components/callList/EditCallList";
 import {CheckCallLists} from "../components/callList/CheckCallLists";
 import {CallListInfo} from "../components/callList/CallListInfo";
 import {AttributeRoles} from "../components/user/AttributeRoles";
+import {Notifications} from "../components/user/Notifications";
 
 // Componente para proteger a rota de criar callList
 function RequireArbitrationCouncil({ children }: { children: React.ReactNode }) {
@@ -203,15 +205,17 @@ export function Header() {
                                 </>
                             )}
                             {isReferee && (
-                                <>
-                                    <li><Link to="/check-callLists">Ver Convocações</Link></li>
-                                </>
+                                <li><Link to="/check-callLists">Ver Convocações</Link></li>
                             )}
                             {isAdmin && (
-                                <>
-                                    <li><Link to="/attribute-roles">Atribuir Roles</Link></li>
-                                </>
+                                <li><Link to="/attribute-roles">Atribuir Roles</Link></li>
                             )}
+
+                            {/* Notificações */}
+                            <li style={{ position: "relative" }}>
+                                <Notifications />
+                            </li>
+
                             <li><Logout /></li>
                         </>
                     ) : (
@@ -225,6 +229,7 @@ export function Header() {
         </header>
     )
 }
+
 
 
 

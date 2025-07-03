@@ -5,6 +5,7 @@ import kotlinx.datetime.Instant
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.UtilsDomain
+import pt.arbitros.arbnet.domain.adaptable.Notification
 import pt.arbitros.arbnet.domain.adaptable.Role
 import pt.arbitros.arbnet.domain.users.*
 import pt.arbitros.arbnet.http.ApiError
@@ -193,6 +194,8 @@ class UsersService(
     fun createUser(user: UserInputModel): Either<ApiError, Int> =
         transactionManager.run {
             val usersRepository = it.usersRepository
+            val usersRolesRepository = it.usersRolesRepository
+            val notificationsRepository = it.notificationRepository
 
             val validateResult =
                 validateUser(
@@ -233,6 +236,12 @@ class UsersService(
                     LocalDate.parse(user.birthDate),
                     user.iban,
                 )
+
+            val allAdmins = usersRolesRepository.getAdminUsers()
+            allAdmins.forEach { admin ->
+                notificationsRepository.createNotification(admin, 1,"New user created, roles are needed")
+            }
+
             return@run success(id)
         }
 
@@ -423,6 +432,42 @@ class UsersService(
             }
 
             return@run success(usersOutput)
+        }
+
+    fun getNotificationsByUserAndRoleIds(
+        userId: Int,
+        roleId: Int,
+    ): Either<ApiError, List<Notification>> =
+        transactionManager.run {
+            val usersRepository = it.usersRepository
+            val roleRepository = it.roleRepository
+            val notificationRepository = it.notificationRepository
+
+            usersRepository.getUserById(userId) ?: return@run failure(userNotFoundId)
+            if (roleId < 0) return@run failure(ApiError.InvalidField(
+                "Invalid role ID",
+                "The provided role ID is invalid.",
+            ))
+
+            //TODO GET ROLE BY ID
+
+            val notifications = notificationRepository.getNotificationsByUserAndRoleIds(userId, roleId)
+
+            return@run success(notifications)
+        }
+
+    fun changeNotificationStatus(
+        notificationId: Int,
+    ): Either<ApiError, Boolean> =
+        transactionManager.run {
+            val notificationRepository = it.notificationRepository
+
+            val success = notificationRepository.updateNotificationStatus(notificationId)
+            if (!success) {
+                return@run failure(ApiError.NotFound("Notification not found", "No notification found with the provided ID"))
+            }
+
+            return@run success(success)
         }
 
 //    fun getAllRolesFromPlayer(userId: Int): Either<ApiError.NotFound, List<Pair<Int, String?>>> =

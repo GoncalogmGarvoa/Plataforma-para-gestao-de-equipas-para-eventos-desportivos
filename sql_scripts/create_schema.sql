@@ -157,3 +157,14 @@ create table dbp.payment_values (
                            name varchar(50) not null primary key,
                            value numeric(5,2) not null
 );
+
+create table dbp.notification(
+                                id serial primary key,
+                                user_id int not null,
+                                role_id int not null,
+                                message varchar(255) not null,
+                                created_at timestamp default current_timestamp,
+                                read_status boolean default false,
+                                foreign key (user_id) references dbp.users(id),
+                                foreign key (role_id) references dbp.role(id)
+)

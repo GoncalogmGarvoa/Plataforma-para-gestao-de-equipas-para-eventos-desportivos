@@ -58,4 +58,12 @@ class UsersRolesRepositoryJdbi(
             ).bind("id", userId)
             .bind("roleId", roleId)
             .execute() > 0
+
+    override fun getAdminUsers(): List<Int> =
+        handle
+            .createQuery(
+                """select user_id from dbp.users_roles where role_id = 1""",
+            )
+            .mapTo<Int>()
+            .list()
 }

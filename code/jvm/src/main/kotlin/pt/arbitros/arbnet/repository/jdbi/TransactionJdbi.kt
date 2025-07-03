@@ -31,8 +31,9 @@ class TransactionJdbi(
     override val categoryDirRepository: CategoryDirRepository = CategoryDirRepositoryJdbi(handle)
     override val sessionRefereesRepository: SessionRefereesRepository = SessionRefereesRepositoryJdbi(handle)
     override val positionRepository: PositionRepository = PositionRepositoryJdbi(handle)
+    override val notificationRepository: NotificationRepository = NotificationRepositoryJdbi(handle)
     override val paymentValuesRepository = PaymentValuesRepositoryJdbi(handle)
-            
+
     override fun rollback() {
         handle.rollback()
     }
