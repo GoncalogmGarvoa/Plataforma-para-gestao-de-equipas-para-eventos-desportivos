@@ -3,14 +3,12 @@
 package pt.arbitros.arbnet.http
 
 import org.springframework.http.ResponseEntity
-import org.springframework.mail.MailSender
-import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.web.bind.annotation.*
 import pt.arbitros.arbnet.domain.users.AuthenticatedUser
 import pt.arbitros.arbnet.http.model.UserStatusInput
 import pt.arbitros.arbnet.http.model.users.UserCategoryUpdateInputModel
 import pt.arbitros.arbnet.http.model.users.UserCreateTokenInputModel
-import pt.arbitros.arbnet.http.model.users.UserInputModel
+import pt.arbitros.arbnet.http.model.users.UserCreationInputModel
 import pt.arbitros.arbnet.http.model.users.UserNameId
 import pt.arbitros.arbnet.http.model.users.UserOutputModel
 import pt.arbitros.arbnet.http.model.users.UserOutputPassValModel
@@ -171,12 +169,12 @@ class UsersController(
 
     @PostMapping(Uris.UsersUris.CREATE_USER)
     fun createUser(
-        @RequestBody user: UserInputModel,
+        @RequestBody user: UserCreationInputModel,
     ): ResponseEntity<*> =
         when (
             val result =
                 usersService.createUser(
-                    UserInputModel(
+                    UserCreationInputModel(
                         user.name,
                         user.phoneNumber,
                         user.address,
@@ -348,6 +346,16 @@ class UsersController(
         @RequestBody userStatusInput: UserStatusInput
     ): ResponseEntity<*> {
         return when (val result = usersService.changeUserStatus(userStatusInput)) {
+            is Success -> ResponseEntity.ok(result.value)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
+    }
+
+    @PostMapping(Uris.UsersUris.INVITE_NEW_USER)
+    fun inviteNewUser(
+        @RequestBody email: String,
+    ): ResponseEntity<*> {
+        return when (val result = usersService.sendInvite(email)) {
             is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }

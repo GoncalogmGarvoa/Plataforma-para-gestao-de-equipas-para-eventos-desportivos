@@ -5,7 +5,6 @@ import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import kotlinx.datetime.Clock
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.boot.autoconfigure.mail.MailProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.mail.SimpleMailMessage
@@ -18,11 +17,10 @@ import pt.arbitros.arbnet.domain.adaptable.Notification
 import pt.arbitros.arbnet.domain.adaptable.Role
 import pt.arbitros.arbnet.domain.users.*
 import pt.arbitros.arbnet.http.ApiError
-import pt.arbitros.arbnet.http.Uris
 import pt.arbitros.arbnet.http.invalidFieldError
 import pt.arbitros.arbnet.http.model.UserStatusInput
 import pt.arbitros.arbnet.http.model.UsersParametersOutputModel
-import pt.arbitros.arbnet.http.model.users.UserInputModel
+import pt.arbitros.arbnet.http.model.users.UserCreationInputModel
 import pt.arbitros.arbnet.http.model.users.UserUpdateInputModel
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.transactionRepo
@@ -30,13 +28,13 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.Date
 import javax.crypto.SecretKey
-import kotlin.time.Duration
 
 data class TokenExternalInfo(
     val tokenValue: String,
     val tokenExpiration: kotlinx.datetime.Instant,
 )
 
+//TODO change this to a Environment variable
 val SECRET_KEY: SecretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256)
 
 @Configuration
@@ -233,7 +231,7 @@ class UsersService(
             return@run success(users)
         }
 
-    fun createUser(user: UserInputModel): Either<ApiError, Int> =
+    fun createUser(user: UserCreationInputModel): Either<ApiError, Int> =
         transactionManager.run {
             val usersRepository = it.usersRepository
             val usersRolesRepository = it.usersRolesRepository
@@ -267,6 +265,25 @@ class UsersService(
                     )
                     )
                 }
+
+            if (user.creationToken != null) {
+
+                val emailFromTokenResult = extractEmailFromInviteToken(user.creationToken)
+
+                if (emailFromTokenResult is Failure) {
+                    return@run failure(ApiError.InvalidField(
+                        "Invalid invite token",
+                        "The provided invite token is invalid or expired.",
+                    ))
+                }
+
+                if ((emailFromTokenResult as Success).value != user.email) {
+                    return@run failure(ApiError.InvalidField(
+                        "Invite token does not match email",
+                        "The provided invite token does not match the email.",
+                    ))
+                }
+            }
 
             val id =
                 usersRepository.createUser(
@@ -686,6 +703,25 @@ class UsersService(
             .setExpiration(Date.from(expiry))
             .signWith(SECRET_KEY)
             .compact()
+    }
+
+    fun extractEmailFromInviteToken(token: String): Either<ApiError, String> {
+        return try {
+            val claims = Jwts.parserBuilder()
+                .setSigningKey(SECRET_KEY)
+                .build()
+                .parseClaimsJws(token)
+                .body
+
+            val email = claims["email"] as? String
+            if (email.isNullOrBlank()) {
+                failure(ApiError.InvalidField("Invalid token", "Email claim is missing or invalid."))
+            } else {
+                success(email)
+            }
+        } catch (e: Exception) {
+            failure(ApiError.InvalidField("Invalid token", e.localizedMessage ?: "Token parsing failed."))
+        }
     }
 
 }

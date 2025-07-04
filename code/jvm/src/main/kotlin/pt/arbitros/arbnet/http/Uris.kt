@@ -29,6 +29,7 @@ object Uris {
         const val NOTIFICATIONS = "$PREFIX/users/notifications"
         const val NOTIFICATIONS_READ = "$PREFIX/users/notifications/read/{notificationId}"
         const val USER_STATUS = "$PREFIX/users/status"
+        const val INVITE_NEW_USER = "$PREFIX/users/invite"
     }
 
     object CallListUris {
