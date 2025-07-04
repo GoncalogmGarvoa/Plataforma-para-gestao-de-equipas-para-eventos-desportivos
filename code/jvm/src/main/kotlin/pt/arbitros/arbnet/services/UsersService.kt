@@ -87,6 +87,13 @@ class UsersService(
             val user: User = usersRepository.getUserByEmail(email) ?:
             return@run failure(ApiError.NotFound("User not found", "No user found with the provided email"))
 
+            if (user.userStatus == UserStatus.INACTIVE)
+                return@run failure(ApiError.InvalidField(
+                    "User is not active",
+                    "The user is not active and cannot create a token.",
+                ))
+
+
             if (!usersDomain.validatePassword(password, user.passwordValidation)) {
                 return@run failure(ApiError.InvalidField("Invalid password", "The provided password does not match the user's password"))
             }

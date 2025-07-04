@@ -9,6 +9,7 @@ import pt.arbitros.arbnet.domain.MatchDay
 import pt.arbitros.arbnet.domain.Participant
 import pt.arbitros.arbnet.domain.UtilsDomain
 import pt.arbitros.arbnet.domain.users.User
+import pt.arbitros.arbnet.domain.users.UserStatus
 import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.http.invalidFieldError
 import pt.arbitros.arbnet.http.model.calllist.CallListInputModel
@@ -55,13 +56,20 @@ class CallListServiceUtils {
             )
         if (validateResult is Failure) return validateResult
 
-        usersRepository.getUserById(userId)
+        val user = usersRepository.getUserById(userId)
             ?: return failure(
                 ApiError.NotFound(
                     "User not found",
                     "No user found with the provided ID",
                 )
             )
+
+        if (user.userStatus == UserStatus.INACTIVE) return failure(
+            ApiError.InvalidField(
+                "Inactive user",
+                "The user creating the call List is inactive and cannot create or update a call list",
+            )
+        )
 
         if(!usersRepository.userHasCouncilRole(userId))
             return failure(
@@ -89,6 +97,15 @@ class CallListServiceUtils {
         }
 
         val participantIds = participants.map { it.userId }
+
+        if (!usersRepository.areAllUsersActive(participantIds))
+            return failure(
+                ApiError.InvalidField(
+                    "Inactive participants",
+                    "Some participants are inactive or do not exist in the system",
+                )
+            )
+
         val foundReferees = usersRepository.getUsersAndCheckIfReferee(participantIds)
 
         if (foundReferees.size != participants.size) { //todo check

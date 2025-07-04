@@ -50,8 +50,6 @@ object PaymentReportValidator {
                 )
             )
 
-
-
         return success(Unit)
     }
 }

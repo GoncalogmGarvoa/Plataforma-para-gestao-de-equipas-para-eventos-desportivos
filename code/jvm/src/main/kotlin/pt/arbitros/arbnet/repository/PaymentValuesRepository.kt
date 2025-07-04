@@ -1,6 +1,6 @@
 package pt.arbitros.arbnet.repository
 
-import pt.arbitros.arbnet.services.payment.validation.PaymentValue
+import pt.arbitros.arbnet.services.payment.PaymentValue
 
 interface PaymentValuesRepository {
 

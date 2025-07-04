@@ -96,7 +96,7 @@ class UsersRepositoryJdbi(
         val lastUsedAt: Long,
     ) {
         val status2 =
-            UserStatus.values().firstOrNull { it.status == status }
+            UserStatus.entries.firstOrNull { it.status == status }
                 ?: throw IllegalArgumentException("Invalid user status: $status")
 
         val userAndToken: Pair<User, Token>
@@ -460,18 +460,6 @@ class UsersRepositoryJdbi(
                 usersMap(rs)
             }
             .list()
-
-    override fun isUserActive(userId: Int): Boolean {
-        return handle
-            .createQuery(
-                """
-            SELECT 1 FROM dbp.users WHERE id = :user_id AND status = 'ACTIVE'
-        """,
-            ).bind("user_id", userId)
-            .mapTo<Int>()
-            .findFirst()
-            .isPresent
-    }
 
     override fun areAllUsersActive(userIds: List<Int>): Boolean {
         return handle

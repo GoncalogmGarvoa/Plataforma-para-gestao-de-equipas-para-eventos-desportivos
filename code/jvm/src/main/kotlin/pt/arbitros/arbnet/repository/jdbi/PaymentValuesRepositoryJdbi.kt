@@ -3,7 +3,7 @@ package pt.arbitros.arbnet.repository.jdbi
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.arbitros.arbnet.repository.PaymentValuesRepository
-import pt.arbitros.arbnet.services.payment.validation.PaymentValue
+import pt.arbitros.arbnet.services.payment.PaymentValue
 
 class PaymentValuesRepositoryJdbi(private val handle: Handle) : PaymentValuesRepository {
     override fun getPaymentValueByName(name: String): Double? {

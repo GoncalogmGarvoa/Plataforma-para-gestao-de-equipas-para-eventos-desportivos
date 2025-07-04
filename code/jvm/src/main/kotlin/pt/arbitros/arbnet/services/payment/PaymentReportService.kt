@@ -1,7 +1,6 @@
 package pt.arbitros.arbnet.services.payment
 
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.PaymentReportMongo
 import pt.arbitros.arbnet.domain.UtilsDomain
@@ -11,7 +10,6 @@ import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.repository.mongo.PaymentReportMongoRepository
 import pt.arbitros.arbnet.services.Either
 import pt.arbitros.arbnet.services.failure
-import pt.arbitros.arbnet.services.payment.validation.PaymentReportCalculator
 import pt.arbitros.arbnet.services.success
 import pt.arbitros.arbnet.transactionRepo
 

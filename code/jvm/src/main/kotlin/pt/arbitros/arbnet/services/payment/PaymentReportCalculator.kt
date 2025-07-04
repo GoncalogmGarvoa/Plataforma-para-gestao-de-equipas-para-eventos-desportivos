@@ -1,10 +1,11 @@
-package pt.arbitros.arbnet.services.payment.validation
+package pt.arbitros.arbnet.services.payment
 
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.PaymentDetails
 import pt.arbitros.arbnet.domain.PaymentValuesPerReferee
 import pt.arbitros.arbnet.http.model.payment_report.PaymentReportInputModel
 import pt.arbitros.arbnet.repository.Transaction
+import java.time.DayOfWeek
 
 
 enum class PaymentValueType(val dbName: String) {
@@ -42,7 +43,7 @@ object PaymentReportCalculator {
 
                 val dayOfWeek = transaction.matchDayRepository.getMatchDayById(session.matchDay)!!.matchDate.dayOfWeek
 
-                if (dayOfWeek != java.time.DayOfWeek.SATURDAY && dayOfWeek != java.time.DayOfWeek.SUNDAY) {
+                if (dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY) {
                     weekdays++
                 }
             }
