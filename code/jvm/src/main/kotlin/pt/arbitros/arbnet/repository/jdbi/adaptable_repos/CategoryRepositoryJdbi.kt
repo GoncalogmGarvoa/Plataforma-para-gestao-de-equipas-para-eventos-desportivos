@@ -43,11 +43,13 @@ class CategoryRepositoryJdbi(
     override fun getAllCategories(): List<Category> {
         handle.
             createQuery(
-                """select id, name, description from dbp.category""",
+                """select * from dbp.category order by name""",
             )
             .mapTo<Category>()
             .list()
-            .let { return it }
+            .let { categories ->
+                return categories.sortedBy { it.name }
+            }
     }
 
     override fun verifyCategoryNames(names: List<String>): Boolean {

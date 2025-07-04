@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react"
 import { useCurrentUser } from "../../src/context/Authn"
 import { useNavigate } from "react-router-dom"
+import {getCookie} from "./CreateCallList";
 
 interface Session {
     id: number
@@ -54,17 +55,34 @@ export function CheckCallLists() {
     const navigate = useNavigate()
 
     useEffect(() => {
-        if (!currentUser) return
+        if (!currentUser) return;
 
-        fetch(`/arbnet/callList/referee/13`)
-            .then(res => {
-                if (!res.ok) throw new Error("Erro ao obter convocações")
-                return res.json()
-            })
-            .then((data: RefereeCallListsOutputModel[]) => setEvents(data))
-            .catch(err => console.error(err))
-            .finally(() => setLoading(false))
-    }, [currentUser])
+        const fetchData = async () => {
+            const token = getCookie("token");
+
+            try {
+                const res = await fetch(`/arbnet/callList/referee`, {
+                    method: "GET",
+                    headers: {
+                        token: token
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error("Erro ao obter convocações");
+                }
+
+                const data: RefereeCallListsOutputModel[] = await res.json();
+                setEvents(data);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, [currentUser]);
+
 
     if (loading) return <div>A carregar convocações...</div>
 

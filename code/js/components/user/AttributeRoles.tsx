@@ -11,8 +11,16 @@ interface User {
     userRoles: string[]
 }
 
+interface Category {
+    id: number
+    name: string
+}
+
 export function AttributeRoles() {
     const [availableRoles, setAvailableRoles] = useState<Role[]>([])
+    const [availableCategories, setAvailableCategories] = useState<Category[]>([])
+    const [userCategories, setUserCategories] = useState<{ [userId: number]: number }>({})
+
     const [userNameSearch, setUserNameSearch] = useState("")
     const [selectedRoles, setSelectedRoles] = useState<string[]>([])
     const [users, setUsers] = useState<User[]>([])
@@ -23,14 +31,40 @@ export function AttributeRoles() {
                 if (!res.ok) throw new Error("Erro ao carregar roles")
                 return res.json()
             })
-            .then(data => {
-                setAvailableRoles(data)
-            })
+            .then(setAvailableRoles)
             .catch(err => {
                 console.error(err)
                 alert("Erro ao obter lista de roles")
             })
+
+        fetch("/arbnet/users/categories")
+            .then(res => {
+                if (!res.ok) throw new Error("Erro ao carregar categorias")
+                return res.json()
+            })
+            .then(setAvailableCategories)
+            .catch(err => {
+                console.error(err)
+                alert("Erro ao obter categorias")
+            })
     }, [])
+
+    const fetchUserCategories = async (users: User[]) => {
+        const categoriesMap: { [userId: number]: number } = {}
+
+        await Promise.all(users.map(async (user) => {
+            try {
+                const res = await fetch(`/arbnet/users/category?userId=${user.userId}`)
+                if (!res.ok) throw new Error("Erro ao obter categoria")
+                const categoryId = await res.json()
+                categoriesMap[user.userId] = categoryId
+            } catch (err) {
+                console.error(`Erro ao obter categoria do utilizador ${user.userName}`, err)
+            }
+        }))
+
+        setUserCategories(categoriesMap)
+    }
 
     const handleSearch = () => {
         fetch(`/arbnet/users/parameters?userName=${userNameSearch}&userRoles=${selectedRoles.join(",")}`)
@@ -38,8 +72,9 @@ export function AttributeRoles() {
                 if (!res.ok) throw new Error("Erro ao pesquisar utilizadores")
                 return res.json()
             })
-            .then(data => {
+            .then(async (data) => {
                 setUsers(data)
+                await fetchUserCategories(data)
             })
             .catch(err => {
                 console.error(err)
@@ -53,8 +88,9 @@ export function AttributeRoles() {
                 if (!res.ok) throw new Error("Erro ao obter utilizadores sem roles")
                 return res.json()
             })
-            .then(data => {
+            .then(async (data) => {
                 setUsers(data)
+                await fetchUserCategories(data)
             })
             .catch(err => {
                 console.error(err)
@@ -73,7 +109,7 @@ export function AttributeRoles() {
             body: JSON.stringify({
                 userId: user.userId,
                 roleId: role.id,
-                addOrRemove: !hasRole // true se vamos adicionar
+                addOrRemove: !hasRole
             })
         })
             .then(res => {
@@ -81,7 +117,6 @@ export function AttributeRoles() {
                 return res.json()
             })
             .then(() => {
-                // Atualiza o estado local
                 setUsers(prevUsers =>
                     prevUsers.map(u => {
                         if (u.userId !== user.userId) return u
@@ -95,6 +130,24 @@ export function AttributeRoles() {
             .catch(err => {
                 console.error(err)
                 alert("Erro ao atualizar role do utilizador")
+            })
+    }
+
+    const handleCategoryChange = (userId: number, newCategoryId: number) => {
+        fetch("/arbnet/users/category", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ userId, categoryId: newCategoryId })
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("Erro ao atualizar categoria")
+                setUserCategories(prev => ({ ...prev, [userId]: newCategoryId }))
+            })
+            .catch(err => {
+                console.error(err)
+                alert("Erro ao atualizar categoria do utilizador")
             })
     }
 
@@ -144,11 +197,18 @@ export function AttributeRoles() {
             {users.length === 0 ? (
                 <p>Nenhum utilizador encontrado.</p>
             ) : (
-                <ul>
+                <ul style={{ listStyle: "none", padding: 0 }}>
                     {users.map(user => (
-                        <li key={user.userId}>
+                        <li
+                            key={user.userId}
+                            style={{
+                                padding: "1em 0",
+                                borderBottom: "1px solid #ccc"
+                            }}
+                        >
                             <strong>{user.userName}</strong> —{" "}
                             {user.userRoles.length > 0 ? user.userRoles.join(", ") : <em>Sem roles</em>}
+
                             <div style={{ marginTop: "0.5em" }}>
                                 {availableRoles.map(role => {
                                     const hasRole = user.userRoles.includes(role.name)
@@ -165,6 +225,26 @@ export function AttributeRoles() {
                                         </button>
                                     )
                                 })}
+                            </div>
+
+                            <div style={{ marginTop: "0.5em" }}>
+                                <label>
+                                    Categoria:
+                                    <select
+                                        value={userCategories[user.userId] ?? ""}
+                                        onChange={(e) =>
+                                            handleCategoryChange(user.userId, Number(e.target.value))
+                                        }
+                                        style={{ marginLeft: "0.5em" }}
+                                    >
+                                        <option value="" disabled>Selecionar categoria</option>
+                                        {availableCategories.map(cat => (
+                                            <option key={cat.id} value={cat.id}>
+                                                {cat.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
                             </div>
                         </li>
                     ))}

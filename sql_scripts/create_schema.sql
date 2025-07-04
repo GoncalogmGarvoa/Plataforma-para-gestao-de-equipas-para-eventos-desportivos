@@ -10,19 +10,17 @@ create table dbp.users (
                            password_validation varchar(255) not null,
                            birth_date date not null,
                            iban varchar(25) not null,
-                           status VARCHAR(10)CHECK (status IN ('active', 'inactive'))DEFAULT 'active'
+                           status VARCHAR(10)CHECK (status IN ('active', 'inactive'))DEFAULT 'inactive'
 
 );
 
 create table dbp.notification(
                                  id serial primary key,
                                  user_id int not null,
-                                 role_id int not null,
                                  message varchar(255) not null,
                                  created_at timestamp default current_timestamp,
                                  read_status boolean default false,
-                                 foreign key (user_id) references dbp.users(id),
-                                 foreign key (role_id) references dbp.role(id)
+                                 foreign key (user_id) references dbp.users(id)
 );
 
 create table dbp.tokens(

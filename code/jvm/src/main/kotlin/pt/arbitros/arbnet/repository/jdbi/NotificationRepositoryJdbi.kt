@@ -9,28 +9,25 @@ class NotificationRepositoryJdbi (
     private val handle: Handle,
 ) : NotificationRepository {
 
-    override fun createNotification(userId: Int, roleId: Int, message: String): Int =
+    override fun createNotification(userId: Int, message: String): Int =
         handle
             .createUpdate(
-                """insert into dbp.notification (user_id, role_id, message) values (:userId, :roleId, :message)""",
+                """insert into dbp.notification (user_id, message) values (:userId, :message)""",
             )
             .bind("userId", userId)
-            .bind("roleId", roleId)
             .bind("message", message)
             .executeAndReturnGeneratedKeys()
             .mapTo<Int>()
             .single() as Int
 
-    override fun getNotificationsByUserAndRoleIds(
-        userId: Int,
-        roleId: Int
+    override fun getNotificationsByUserId(
+        userId: Int
     ): List<Notification> =
         handle
             .createQuery(
-                """select distinct * from dbp.notification where user_id = :userId and role_id = :roleId""",
+                """select * from dbp.notification where user_id = :userId""",
             )
             .bind("userId", userId)
-            .bind("roleId", roleId)
             .mapTo<Notification>()
             .list()
 

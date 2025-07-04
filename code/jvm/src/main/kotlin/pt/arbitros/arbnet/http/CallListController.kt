@@ -120,12 +120,25 @@ class CallListController(
 
     @GetMapping(Uris.CallListUris.GET_CALLLISTS_WITH_REFEREE)
     fun getAllCallListsWithReferee(
-        @RequestBody refereeId: Int,
-    ): ResponseEntity<*> =
-        when (val result = callListService.getCallListsWithReferee(refereeId)) {
-            is Success -> ResponseEntity.ok(result.value)
-            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        @RequestHeader token: String,
+    ): ResponseEntity<*> {
+        val userResult = usersService.getUserByToken(token)
+        return if (userResult is Success) {
+            when (
+                val result = callListService.getCallListsWithReferee(userResult.value.id)
+            ) {
+                is Success -> ResponseEntity.ok(result.value)
+                is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+            }
+
         }
+        else {
+            Problem.fromApiErrorToProblemResponse(
+                ApiError.NotFound(
+                    "User not found or not authorized to create a call list",
+                ))
+        }
+    }
 
 
     @GetMapping(Uris.CallListUris.GET_SEALED_CALLLIST)

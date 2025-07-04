@@ -374,6 +374,7 @@ class CallListService(
     fun updateCallListStage(callListId: Int): Either<ApiError, Boolean> =
         transactionManager.run { tx ->
             val callListRepository = tx.callListRepository
+            val notificationRepository = tx.notificationRepository
 
             val callList =
                 callListRepository.getCallListById(callListId)
@@ -456,6 +457,14 @@ class CallListService(
                 }
 
             callListRepository.updateCallListStage(callListId, callType)
+            if(callType == CallListType.SEALED_CALL_LIST.callType) {
+                participants.forEach { participant ->
+                     notificationRepository.createNotification(
+                        participant.userId,
+                        "Foi convocado para a competição ${callList.competitionId}"
+                     )
+                }
+            }
 
                 ParticipantWithCategory(
                     callListId = it.callListId,

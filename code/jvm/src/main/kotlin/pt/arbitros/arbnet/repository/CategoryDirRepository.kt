@@ -1,6 +1,7 @@
 package pt.arbitros.arbnet.repository
 
 import pt.arbitros.arbnet.domain.CategoryDir
+import pt.arbitros.arbnet.domain.adaptable.Category
 
 interface CategoryDirRepository {
     fun findCategoryDirEntry(

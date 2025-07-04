@@ -241,6 +241,26 @@ class UsersController(
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
+    @GetMapping(Uris.UsersUris.CATEGORIES)
+    fun getAllCategories(): ResponseEntity<*> =
+        when (
+            val result = usersService.getAllCategories()
+        ) {
+            is Success -> ResponseEntity.ok(result.value)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
+
+    @GetMapping(Uris.UsersUris.USER_CATEGORY)
+    fun getUserCategory(
+        @RequestParam userId: Int,
+    ): ResponseEntity<*> =
+        when (
+            val result = usersService.getUserCategory(userId)
+        ) {
+            is Success -> ResponseEntity.ok(result.value)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
+
     @PostMapping(Uris.UsersUris.USER_CATEGORY)
     fun updateUserCategory(
         @RequestBody user: UserCategoryUpdateInputModel,
@@ -280,15 +300,14 @@ class UsersController(
         }
 
     @GetMapping(Uris.UsersUris.NOTIFICATIONS)
-    fun getNotificationsByUserAndRoleIds(
-        @RequestParam roleId: Int,
+    fun getNotificationsByUser(
         @RequestHeader token: String,
 
         ): ResponseEntity<*> {
         val userResult = usersService.getUserByToken(token)
         return if (userResult is Success) {
             when (
-            val result = usersService.getNotificationsByUserAndRoleIds(userResult.value.id, roleId)
+            val result = usersService.getNotificationsByUserAndRoleIds(userResult.value.id)
         ) {
             is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)

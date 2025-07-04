@@ -246,18 +246,6 @@ class CallListServiceUtils {
             }
             participantRepository.batchAddParticipants(participantsToInsert)
 
-            participantsToInsert
-                .map { it.userId }
-                .distinct()
-                .forEach { userId ->
-                    notificationRepository.createNotification(
-                        userId = userId,
-                        roleId = 3,
-                        message = "You have been added to a call list for competition $competitionId"
-                    )
-                }
-
-
         }
 
         return success(Unit)

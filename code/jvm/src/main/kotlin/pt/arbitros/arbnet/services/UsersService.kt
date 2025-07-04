@@ -13,6 +13,7 @@ import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.JavaMailSenderImpl
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.UtilsDomain
+import pt.arbitros.arbnet.domain.adaptable.Category
 import pt.arbitros.arbnet.domain.adaptable.Notification
 import pt.arbitros.arbnet.domain.adaptable.Role
 import pt.arbitros.arbnet.domain.users.*
@@ -273,7 +274,7 @@ class UsersService(
 
             val allAdmins = usersRolesRepository.getAdminUsers()
             allAdmins.forEach { admin ->
-                notificationsRepository.createNotification(admin, 1,"New user created, roles are needed")
+                notificationsRepository.createNotification(admin,"New user created, roles are needed")
             }
 
             return@run success(id)
@@ -425,6 +426,32 @@ class UsersService(
             return@run success(roles)
         }
 
+    fun getAllCategories(): Either<ApiError, List<Category>> =
+        transactionManager.run {
+            val categoryRepository = it.categoryRepository
+            val categories = categoryRepository.getAllCategories()
+            if (categories.isEmpty()) return@run failure(ApiError.NotFound(
+                "No categories found",
+                "There are no categories available in the system.",
+            )) // TODO check if this is the right error
+            return@run success(categories)
+        }
+
+    fun getUserCategory(userId: Int): Either<ApiError, Int> =
+        transactionManager.run {
+            val usersRepository = it.usersRepository
+            val categoryDirRepository = it.categoryDirRepository
+
+            val user = usersRepository.getUserById(userId) ?: return@run failure(userNotFoundId)
+            val category = categoryDirRepository.getCategoryIdByUserId(user.id)
+                ?: return@run failure(ApiError.NotFound(
+                    "Category not found",
+                    "No category found for the provided user ID.",
+                ))
+
+            return@run success(category)
+        }
+
     fun getUsersByParameters(userName: String, userRoles: List<String>): Either<ApiError, List<UsersParametersOutputModel>> =
         transactionManager.run {
             val usersRepository = it.usersRepository
@@ -470,22 +497,15 @@ class UsersService(
 
     fun getNotificationsByUserAndRoleIds(
         userId: Int,
-        roleId: Int,
-    ): Either<ApiError, List<Notification>> =
+    ): Either<ApiError, List<Notification>?> =
         transactionManager.run {
             val usersRepository = it.usersRepository
             val roleRepository = it.roleRepository
             val notificationRepository = it.notificationRepository
 
             usersRepository.getUserById(userId) ?: return@run failure(userNotFoundId)
-            if (roleId < 0) return@run failure(ApiError.InvalidField(
-                "Invalid role ID",
-                "The provided role ID is invalid.",
-            ))
 
-            //TODO GET ROLE BY ID
-
-            val notifications = notificationRepository.getNotificationsByUserAndRoleIds(userId, roleId)
+            val notifications = notificationRepository.getNotificationsByUserId(userId)
 
             return@run success(notifications)
         }

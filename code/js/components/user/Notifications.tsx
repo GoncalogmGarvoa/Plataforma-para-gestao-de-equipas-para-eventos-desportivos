@@ -25,7 +25,6 @@ export function Notifications() {
     const [showDropdown, setShowDropdown] = useState(false)
 
     const currentRole = useCurrentRole()
-    const hardcodedUserId = 13 // ← usar isto por agora
     const token = getCookie("token");
 
     useEffect(() => {
@@ -44,7 +43,7 @@ export function Notifications() {
         const roleObj = roles.find(r => r.name === currentRole)
         if (!roleObj) return
 
-        fetch(`/arbnet/users/notifications?userId=${hardcodedUserId}&roleId=${roleObj.id}`, {
+        fetch(`/arbnet/users/notifications`, {
             method: "GET",
             headers: {token}
             })

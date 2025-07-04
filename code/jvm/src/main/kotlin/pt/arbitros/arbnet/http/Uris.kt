@@ -12,6 +12,7 @@ object Uris {
         const val UPDATE_USER = "$PREFIX/users/update"
         const val USER_ROLES = "$PREFIX/users/roles"
         const val USER_ROLES_DELETE = "$PREFIX/users/roles/delete"
+        const val CATEGORIES = "$PREFIX/users/categories"
         const val USER_CATEGORY = "$PREFIX/users/category"
         const val USERS_BY_PARAMETERS = "$PREFIX/users/parameters"
         const val USERS_WITHOUT_ROLES = "$PREFIX/users/withoutRoles"
@@ -38,7 +39,7 @@ object Uris {
         const val UPDATE_CALLLIST = "$PREFIX/callList/update"
         const val GET_SEALED_CALLLIST = "$PREFIX/callList/sealed/{id}"
         const val GET_CALLLIST_DRAFT = "$PREFIX/callListDraft/get"
-        const val GET_CALLLISTS_WITH_REFEREE = "$PREFIX/callList/referee/{refereeId}"
+        const val GET_CALLLISTS_WITH_REFEREE = "$PREFIX/callList/referee"
         const val CANCEL_CALLLIST = "$PREFIX/callList/cancel"
 
     }
