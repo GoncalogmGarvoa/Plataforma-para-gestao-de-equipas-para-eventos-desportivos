@@ -1,0 +1,52 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: my-postgres
+    restart: always
+    ports:
+      - "5430:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+    networks:
+      - backend-network
+
+  mongodb:
+    image: mongo
+    container_name: my-mongo
+    restart: always
+    ports:
+      - "27000:27017"
+    environment:
+      MONGO_INITDB_DATABASE: mymongodb
+    volumes:
+      - mongodbdata:/data/db
+    networks:
+      - backend-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: wep-api.Dockerfile
+    depends_on:
+      - postgres
+      - mongodb
+    ports:
+      - "8080:8080"
+    networks:
+      - backend-network
+    env_file:
+      - .env
+
+volumes:
+  pgdata:
+  mongodbdata:
+
+networks:
+  backend-network:
