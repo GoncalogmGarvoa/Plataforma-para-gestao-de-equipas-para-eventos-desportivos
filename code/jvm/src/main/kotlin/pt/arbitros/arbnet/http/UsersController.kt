@@ -189,7 +189,7 @@ class UsersController(
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
-    // TODO: needs to check with token if its the same user being changed
+
     @PutMapping(Uris.UsersUris.UPDATE_USER)
     fun updateUser(
         @RequestBody user: UserUpdateInputModel,
@@ -220,7 +220,7 @@ class UsersController(
 
         when (
             val userRolesUpdated =
-                usersService.updateUserRoles(   //todo check with token if is admin
+                usersService.updateUserRoles(
                     user.userId,
                     user.roleId,
                     user.addOrRemove,
@@ -265,7 +265,7 @@ class UsersController(
     ): ResponseEntity<*> =
         when (
             val result =
-                usersService.updateUserCategory(   //todo check with token if is admin
+                usersService.updateUserCategory(
                     user.userId,
                     user.categoryId,
                 )
