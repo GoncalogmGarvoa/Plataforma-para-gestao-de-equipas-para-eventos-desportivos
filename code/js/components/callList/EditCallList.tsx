@@ -53,10 +53,7 @@ export function EditCallList() {
                 }
                 const data = await response.json();
                 // Garante que callListId está presente
-                if (!data.callListId && data.id) {
-                    data.callListId = data.id;
-                }
-                setForm(data);
+                setForm({ ...data, callListId: parseInt(id), callListType: data.callListType || "" });
                 // Popular equipamentos selecionados
                 if (data.equipmentIds) {
                     setSelectedEquipmentIds(data.equipmentIds);
@@ -90,16 +87,29 @@ export function EditCallList() {
                         // Para cada dia disponível, verificar se o participante tem função atribuída
                         if (data.matchDaySessions) {
                             data.matchDaySessions.forEach((md: any) => {
-                                const dateKey = md.matchDate || md.day || md.date || md.matchDay;
-                                
-                                // Procurar se este participante tem função para este dia específico
-                                const participantForThisDay = participantEntries.find((p: any) => p.matchDayId === md.id);
-                                
-                                if (participantForThisDay) {
-                                    partInputs[name][dateKey] = participantForThisDay.functionName || "";
-                                } else {
-                                    // Se não tem função atribuída para este dia, deixar vazio
-                                    partInputs[name][dateKey] = "";
+                                const dateKeyRaw = md.matchDate || md.day || md.date || md.matchDay;
+                                let dateKey = "";
+                                if (dateKeyRaw) {
+                                    try {
+                                        const dateObj = new Date(dateKeyRaw);
+                                        if (!isNaN(dateObj.getTime())) {
+                                            dateKey = dateObj.toISOString().split('T')[0];
+                                        }
+                                    } catch (e) {
+                                        console.error("Error parsing dateKey in fetchCallList:", e);
+                                    }
+                                }
+
+                                if (dateKey) {
+                                    // Procurar se este participante tem função para este dia específico
+                                    const participantForThisDay = participantEntries.find((p: any) => p.matchDayId === md.id);
+                                    
+                                    if (participantForThisDay) {
+                                        partInputs[name][dateKey] = participantForThisDay.functionName || "";
+                                    } else {
+                                        // Se não tem função atribuída para este dia, deixar vazio
+                                        partInputs[name][dateKey] = "";
+                                    }
                                 }
                             });
                         }
@@ -190,10 +200,21 @@ export function EditCallList() {
             setParticipantInputs((prev) => ({
                 ...prev,
                 [newParticipantName]: Object.fromEntries(
-                    form.matchDaySessions.map((md: any) => {
-                        const dateKey = md.matchDate || md.day || md.date || md.matchDay;
-                        return [dateKey, ""];
-                    })
+                    matchDaySessionsInput.map((md: any) => {
+                        const dateKeyRaw = md.matchDate; // Use matchDate directly
+                        let dateKey = "";
+                        if (dateKeyRaw) {
+                            try {
+                                const dateObj = new Date(dateKeyRaw);
+                                if (!isNaN(dateObj.getTime())) {
+                                    dateKey = dateObj.toISOString().split('T')[0];
+                                }
+                            } catch (e) {
+                                console.error("Error parsing dateKey in addParticipant:", e);
+                            }
+                        }
+                        return [dateKey, "DEFAULT"];
+                    }).filter(([dateKey]) => dateKey !== "")
                 )
             }));
     
@@ -201,7 +222,7 @@ export function EditCallList() {
                 ...prev,
                 {
                     userId,
-                    participantAndRole: form.matchDaySessions.map((md: any) => ({
+                    participantAndRole: matchDaySessionsInput.map((md: any) => ({
                         matchDay: md.matchDay,
                         function: "DEFAULT"
                     }))
@@ -254,11 +275,35 @@ export function EditCallList() {
     };
 
     const handleMatchDayChange = (index: number, value: string) => {
-        setMatchDaySessionsInput((prev) =>
-            prev.map((item, i) =>
-                i === index ? { ...item, matchDate: value } : item
-            )
-        );
+        setMatchDaySessionsInput((prevMatchDays) => {
+            const oldMatchDay = prevMatchDays[index];
+            const oldDateKey = oldMatchDay.matchDate; // The date BEFORE the change
+
+            const updatedMatchDays = prevMatchDays.map((item, i) =>
+                i === index ? { ...item, matchDate: value } : item // `value` is the new date
+            );
+
+            // Update participantInputs based on the changed date
+            setParticipantInputs((prevParticipantInputs) => {
+                const newParticipantInputs: Record<string, Record<string, string>> = {};
+                Object.keys(prevParticipantInputs).forEach(name => {
+                    const participantDays = { ...prevParticipantInputs[name] }; // Copy existing map for this participant
+
+                    // Remove the old date entry if it exists for this participant
+                    if (participantDays[oldDateKey]) {
+                        delete participantDays[oldDateKey];
+                    }
+
+                    // Add the new date entry with "DEFAULT" for the changed match day
+                    participantDays[value] = "DEFAULT";
+
+                    newParticipantInputs[name] = participantDays;
+                });
+                return newParticipantInputs;
+            });
+
+            return updatedMatchDays;
+        });
     };
 
     const handleSessionInputChange = (matchDayIndex: number, sessionIndex: number, value: string) => {
@@ -351,51 +396,113 @@ export function EditCallList() {
             return;
         }
 
+        if (!form.deadline) {
+            setError("O prazo de resposta é obrigatório.");
+            setSubmitting(false);
+            return;
+        }
+
+        const requiredStringFields = [
+            "competitionName",
+            "address",
+            "phoneNumber",
+            "email",
+            "association",
+            "location",
+            "callListType",
+        ];
+
+        for (const field of requiredStringFields) {
+            if (!form[field] || String(form[field]).trim() === "") {
+                setError(`O campo '${field}' é obrigatório.`);
+                setSubmitting(false);
+                return;
+            }
+        }
+
         // Construir matchDaySessions para o envio
         const formattedMatchDaySessions = matchDaySessionsInput.map(md => {
-            const matchDate = md.matchDay || md.matchDate || md.day || md.date;
-            if (!matchDate) return null; // Ou lidar com erro
+            // Ensure matchDay is consistently formatted as YYYY-MM-DD
+            const dateValue = md.matchDate || md.day || md.date || md.matchDay;
+            let matchDayFormatted = "";
+            if (dateValue) {
+                try {
+                    const dateObj = new Date(dateValue);
+                    if (!isNaN(dateObj.getTime())) {
+                        matchDayFormatted = dateObj.toISOString().split('T')[0];
+                    }
+                } catch (e) {
+                    console.error("Error parsing matchDay date:", e);
+                }
+            }
+
+            if (!matchDayFormatted) return null; // If date parsing fails or is empty, filter this entry out
 
             return {
-                matchDay: matchDate,
-                sessions: md.sessions.filter((s: string) => s && s.trim() !== ""),
+                matchDay: matchDayFormatted,
+                sessions: md.sessions.map((s: any) => {
+                    const timeValue = s.time;
+                    if (timeValue) {
+                        try {
+                            // Parse time as HH:MM and format to HH:MM (adding leading zeros if necessary)
+                            const [hours, minutes] = timeValue.split(':').map(Number);
+                            if (!isNaN(hours) && !isNaN(minutes)) {
+                                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+                            }
+                        } catch (e) {
+                            console.error("Error parsing session time:", e);
+                        }
+                    }
+                    return null; // Return null for invalid or empty times
+                }).filter(Boolean), // Filter out nulls
             };
         }).filter(Boolean); // Remover entradas nulas
 
-        // Construir participants para o envio
-        const formattedParticipants = Object.keys(participantInputs).flatMap(name => {
-            const userId = nameToUserIdMap[name];
-            if (!userId) return []; // Should not happen if logic is correct
+        const participantsMap = new Map<number, { matchDay: string; function: string }[]>();
 
-            return Object.keys(participantInputs[name]).map(dateKey => {
-                const functionName = participantInputs[name][dateKey];
-                const matchDayObj = matchDaySessionsInput.find(md => (md.matchDay || md.matchDate || md.day || md.date) === dateKey);
-                const matchDayId = matchDayObj?.id; // Assuming matchDayObj has an id
-
-                return {
-                    userId,
-                    userName: name,
-                    matchDayId,
-                    functionName,
-                };
-            }).filter(p => p.functionName); // Only include if a function is assigned
+        Object.entries(participantInputs).forEach(([userName, functionsByMatchDay]) => {
+            Object.entries(functionsByMatchDay).forEach(([matchDayKey, functionName]) => {
+                const userId = nameToUserIdMap[userName];
+                if (userId !== undefined) {
+                    if (!participantsMap.has(userId)) {
+                        participantsMap.set(userId, []);
+                    }
+                    participantsMap.get(userId)?.push({
+                        matchDay: matchDayKey,
+                        function: functionName,
+                    });
+                }
+            });
         });
+
+        const formattedParticipants = Array.from(participantsMap.entries()).map(([userId, functionsByMatchDay]) => ({
+            userId: userId,
+            participantAndRole: functionsByMatchDay.map(item => ({
+                matchDay: item.matchDay,
+                function: item.function,
+            })),
+        }));
 
         const payload = {
             callListId: form.callListId,
             competitionName: form.competitionName,
-            date: form.date,
-            deadline: form.deadline,
-            local: form.local,
-            description: form.description,
+            deadline: new Date(form.deadline).toISOString().split('T')[0],
+            address: form.address,
+            phoneNumber: form.phoneNumber,
+            email: form.email,
+            association: form.association,
+            location: form.location,
             equipmentIds: selectedEquipmentIds,
+            callListType: form.callListType, // Ensure callListType is always sent
             matchDaySessions: formattedMatchDaySessions,
             participants: formattedParticipants,
         };
 
+        console.log("Payload being sent:", payload);
+
         try {
             const token = getCookie("token");
-            const response = await fetch("/arbnet/callList/edit", {
+            const response = await fetch("/arbnet/callList/update", {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -409,7 +516,6 @@ export function EditCallList() {
                 throw new Error(err.title || "Erro ao atualizar convocatória");
             }
             alert("Convocatória atualizada com sucesso!");
-            navigate("/check-callLists");
         } catch (err: any) {
             setError(err.message || "Erro desconhecido ao atualizar");
             console.error("Erro ao submeter convocatória:", err);
@@ -445,11 +551,11 @@ export function EditCallList() {
     }
 
     if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error: {error}</p>;
 
     return (
         <div className="edit-call-list-container">
             <h2>Editar Convocatória</h2>
+            {error && <p className="error-message" style={{ color: 'red', marginBottom: '10px' }}>Error: {error}</p>}
             <form onSubmit={handleSubmit}>
                 <div className="form-section">
                     <h3>Detalhes da Convocatória</h3>
@@ -656,14 +762,16 @@ export function EditCallList() {
                     <h3 className="section-title" style={{ marginTop: '30px' }}>Participantes e Funções</h3>
                     {Object.entries(participantInputs).map(([name, days]) => (
                         <div key={name} className="participant-item">
-                            <h4>{name}</h4>
-                            <button
-                                type="button"
-                                className="btn btn-danger btn-sm"
-                                onClick={() => removeParticipant(name)}
-                            >
-                                Remover Participante
-                            </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <h4>{name}</h4>
+                                <button
+                                    type="button"
+                                    className="btn btn-danger btn-sm"
+                                    onClick={() => removeParticipant(name)}
+                                >
+                                    -
+                                </button>
+                            </div>
                             <div className="participant-roles-grid">
                                 {matchDaySessionsInput.map((md) => {
                                     const dateKey = md.matchDate; // Use matchDate directly
@@ -689,7 +797,7 @@ export function EditCallList() {
                         </div>
                     ))}
 
-                    <div className="add-participant-section" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+                    <div className="add-participant-section" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '30px', marginBottom: '15px' }}>
                         <input
                             type="text"
                             className="form-control"
@@ -729,7 +837,7 @@ export function EditCallList() {
                         {submitting ? 'Aguarde...' : 'Atualizar Convocatória'}
                     </button>
                     <button type="button" className="btn btn-info" onClick={handleSealCallList}>
-                        Fechar Convocatória
+                        Lacrar Convocatória
                     </button>
                     <button type="button" className="btn btn-danger" onClick={() => navigate('/calllists-draft')}>
                         Cancelar
