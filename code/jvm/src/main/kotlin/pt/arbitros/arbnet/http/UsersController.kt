@@ -334,31 +334,37 @@ class UsersController(
     }
 
     @GetMapping(Uris.UsersUris.GET_ALL_FUNCTIONS)
-    fun getAllFunctions(): ResponseEntity<*> {
-        return when (val result = usersService.getAllFunctions()) {
+    fun getAllFunctions(): ResponseEntity<*> =
+        when (val result = usersService.getAllFunctions()) {
             is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
-    }
+
 
     @PutMapping(Uris.UsersUris.USER_STATUS)
     fun changeUserStatus(
         @RequestBody userStatusInput: UserStatusInput
-    ): ResponseEntity<*> {
-        return when (val result = usersService.changeUserStatus(userStatusInput)) {
+    ): ResponseEntity<*> =
+        when (val result = usersService.changeUserStatus(userStatusInput)) {
             is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
-    }
+
+
+    @GetMapping(Uris.UsersUris.INACTIVE_USERS)
+    fun getInactiveUsers(): ResponseEntity<*> =
+        when (val result = usersService.getInactiveUsers()) {
+            is Success -> ResponseEntity.ok(result.value)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
 
     @PostMapping(Uris.UsersUris.INVITE_NEW_USER)
     fun inviteNewUser(
         @RequestBody email: String,
-    ): ResponseEntity<*> {
-        return when (val result = usersService.sendInvite(email)) {
+    ): ResponseEntity<*> =
+        when (val result = usersService.sendInvite(email)) {
             is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
-    }
 
 }

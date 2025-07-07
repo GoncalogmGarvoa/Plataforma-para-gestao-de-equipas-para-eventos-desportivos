@@ -258,7 +258,7 @@ class UsersRepositoryJdbi(
                 .createQuery(
                     """
                 SELECT DISTINCT u.* FROM dbp.users u
-                WHERE LOWER(u.name) LIKE :name
+                WHERE LOWER(u.name) LIKE :name AND u.status = 'active'
                 """,
                 )
                 .bind("name", namePattern)
@@ -272,7 +272,7 @@ class UsersRepositoryJdbi(
                 JOIN dbp.users_roles ur ON u.id = ur.user_id
                 JOIN dbp.role r ON ur.role_id = r.id
                 WHERE LOWER(u.name) LIKE :name
-                  AND r.name IN (<roles>)
+                  AND r.name IN (<roles>) AND u.status = 'active'
                 """,
                 )
                 .bind("name", namePattern)
@@ -423,6 +423,18 @@ class UsersRepositoryJdbi(
             .bindArray("roles", String::class.java, roles)
             .bind("id", userId)
             .execute() > 0
+
+    override fun getInactiveUsers(): List<User> =
+        handle
+            .createQuery(
+                """
+            SELECT * FROM dbp.users WHERE status = 'inactive' AND id IN (
+                SELECT user_id FROM dbp.users_roles
+            )
+        """,
+            )
+            .map(UsersMapper())
+            .list()
 
     override fun deleteUser(id: Int): Boolean =
         handle

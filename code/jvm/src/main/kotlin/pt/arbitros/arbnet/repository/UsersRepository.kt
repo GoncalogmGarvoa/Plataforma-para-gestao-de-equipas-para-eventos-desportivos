@@ -93,6 +93,8 @@ interface UsersRepository {
         roles: List<String>,
     ): Boolean
 
+    fun getInactiveUsers(): List<User>
+
     fun deleteUser(id: Int): Boolean
 
     fun userHasCouncilRole(userId: Int): Boolean

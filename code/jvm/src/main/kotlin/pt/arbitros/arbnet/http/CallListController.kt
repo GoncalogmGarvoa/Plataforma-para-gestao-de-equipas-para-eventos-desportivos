@@ -101,11 +101,12 @@ class CallListController(
     @GetMapping(Uris.CallListUris.GET_CALLLIST_DRAFT)
     fun getCallListDraft(
         @RequestHeader token: String,
+        @RequestParam callType: String,
     ): ResponseEntity<*> {
 
         val userResult = usersService.getUserByToken(token)
         return if (userResult is Success) {
-            when (val result = callListService.getEventsDraft(userResult.value.id,"callList")) {
+            when (val result = callListService.getEventsDraft(userResult.value.id, callType)) {
                 is Success -> ResponseEntity.ok(result.value)
                 is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
             }

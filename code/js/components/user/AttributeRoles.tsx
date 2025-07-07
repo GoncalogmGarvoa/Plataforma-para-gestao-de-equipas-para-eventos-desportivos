@@ -9,6 +9,7 @@ interface User {
     userId: number
     userName: string
     userRoles: string[]
+    status: string
 }
 
 interface Category {
@@ -98,6 +99,21 @@ export function AttributeRoles() {
             })
     }
 
+    const handleFetchInactiveUsers = () => {
+        fetch("/arbnet/users/inactive")
+            .then(res => {
+                if (!res.ok) throw new Error("Erro ao obter utilizadores inativos")
+                return res.json()
+            })
+            .then(data => {
+                setUsers(data)
+            })
+            .catch(err => {
+                console.error(err)
+                alert("Erro ao obter utilizadores inativos")
+            })
+    }
+
     const toggleUserRole = (user: User, role: Role) => {
         const hasRole = user.userRoles.includes(role.name)
 
@@ -132,6 +148,38 @@ export function AttributeRoles() {
                 alert("Erro ao atualizar role do utilizador")
             })
     }
+
+    const toggleUserStatus = (user: User) => {
+        const newStatus = user.status === "active" ? "inactive" : "active"
+
+        fetch("/arbnet/users/status", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                userId: user.userId,
+                status: newStatus
+            })
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("Erro ao atualizar estado do utilizador")
+                return res.json()
+            })
+            .then(() => {
+                // Atualiza localmente o status do utilizador
+                setUsers(prevUsers =>
+                    prevUsers.map(u =>
+                        u.userId === user.userId ? { ...u, status: newStatus } : u
+                    )
+                )
+            })
+            .catch(err => {
+                console.error(err)
+                alert("Erro ao atualizar estado do utilizador")
+            })
+    }
+
 
     const handleCategoryChange = (userId: number, newCategoryId: number) => {
         fetch("/arbnet/users/category", {
@@ -189,6 +237,10 @@ export function AttributeRoles() {
                 <button onClick={handleFetchUsersWithoutRoles} style={{ marginLeft: "0.5em", fontWeight: "bold" }}>
                     Utilizadores novos/Sem Roles
                 </button>
+
+                <button onClick={handleFetchInactiveUsers} style={{ marginLeft: "0.5em", backgroundColor: "#eee" }}>
+                    Utilizadores Inativos
+                </button>
             </div>
 
             <hr />
@@ -203,48 +255,71 @@ export function AttributeRoles() {
                             key={user.userId}
                             style={{
                                 padding: "1em 0",
-                                borderBottom: "1px solid #ccc"
+                                borderBottom: "1px solid #ccc",
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center"
                             }}
                         >
-                            <strong>{user.userName}</strong> —{" "}
-                            {user.userRoles.length > 0 ? user.userRoles.join(", ") : <em>Sem roles</em>}
+                            <div>
+                                <strong>{user.userName}</strong> —{" "}
+                                {user.userRoles.length > 0 ? user.userRoles.join(", ") : <em>Sem roles</em>}
 
-                            <div style={{ marginTop: "0.5em" }}>
-                                {availableRoles.map(role => {
-                                    const hasRole = user.userRoles.includes(role.name)
-                                    return (
-                                        <button
-                                            key={role.id}
-                                            onClick={() => toggleUserRole(user, role)}
-                                            style={{
-                                                marginRight: "0.5em",
-                                                backgroundColor: hasRole ? "lightgreen" : "lightgray"
-                                            }}
+                                <div style={{ marginTop: "0.5em" }}>
+                                    {availableRoles.map(role => {
+                                        const hasRole = user.userRoles.includes(role.name)
+                                        return (
+                                            <button
+                                                key={role.id}
+                                                onClick={() => toggleUserRole(user, role)}
+                                                disabled={user.status === "INACTIVE"}
+                                                style={{
+                                                    marginRight: "0.5em",
+                                                    backgroundColor: hasRole ? "lightgreen" : "lightgray",
+                                                    opacity: user.status === "INACTIVE" ? 0.5 : 1,
+                                                    cursor: user.status === "INACTIVE" ? "not-allowed" : "pointer"
+                                                }}
+                                            >
+                                                {hasRole ? `Remover ${role.name}` : `Adicionar ${role.name}`}
+                                            </button>
+                                        )
+                                    })}
+                                </div>
+
+                                <div style={{ marginTop: "0.5em" }}>
+                                    <label>
+                                        Categoria:
+                                        <select
+                                            value={userCategories[user.userId] ?? ""}
+                                            onChange={(e) =>
+                                                handleCategoryChange(user.userId, Number(e.target.value))
+                                            }
+                                            style={{ marginLeft: "0.5em" }}
                                         >
-                                            {hasRole ? `Remover ${role.name}` : `Adicionar ${role.name}`}
-                                        </button>
-                                    )
-                                })}
+                                            <option value="" disabled>Selecionar categoria</option>
+                                            {availableCategories.map(cat => (
+                                                <option key={cat.id} value={cat.id}>
+                                                    {cat.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
+                                </div>
                             </div>
 
-                            <div style={{ marginTop: "0.5em" }}>
-                                <label>
-                                    Categoria:
-                                    <select
-                                        value={userCategories[user.userId] ?? ""}
-                                        onChange={(e) =>
-                                            handleCategoryChange(user.userId, Number(e.target.value))
-                                        }
-                                        style={{ marginLeft: "0.5em" }}
-                                    >
-                                        <option value="" disabled>Selecionar categoria</option>
-                                        {availableCategories.map(cat => (
-                                            <option key={cat.id} value={cat.id}>
-                                                {cat.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </label>
+                            <div>
+                                <button
+                                    onClick={() => toggleUserStatus(user)}
+                                    style={{
+                                        padding: "0.5em 1em",
+                                        backgroundColor: user.status === "active" ? "#f44336" : "#4caf50",
+                                        color: "white",
+                                        border: "none",
+                                        borderRadius: "5px"
+                                    }}
+                                >
+                                    {user.status === "active" ? "Desativar" : "Ativar"}
+                                </button>
                             </div>
                         </li>
                     ))}

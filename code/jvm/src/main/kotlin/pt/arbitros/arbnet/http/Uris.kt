@@ -17,7 +17,7 @@ object Uris {
         const val USERS_BY_PARAMETERS = "$PREFIX/users/parameters"
         const val USERS_WITHOUT_ROLES = "$PREFIX/users/withoutRoles"
         const val GET_ALL_FUNCTIONS = "$PREFIX/users/functions"
-
+        const val INACTIVE_USERS = "$PREFIX/users/inactive"
         const val USERS = "$PREFIX/users" // TODO
         const val USER_ROLES_FROM_USER = "$PREFIX/users/roles/fromUser"
         const val SET_ROLE = "$PREFIX/users/role/set" // TODO
