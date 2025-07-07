@@ -4,6 +4,7 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -31,7 +32,7 @@ import javax.crypto.SecretKey
 
 data class TokenExternalInfo(
     val tokenValue: String,
-    val tokenExpiration: kotlinx.datetime.Instant,
+    val tokenExpiration: Instant,
 )
 
 //TODO change this to a Environment variable
@@ -495,7 +496,8 @@ class UsersService(
                 UsersParametersOutputModel(
                     user.id,
                     user.name,
-                    userRoles
+                    userRoles,
+                    user.userStatus.status
                 )
             }
 
@@ -513,6 +515,7 @@ class UsersService(
                     user.id,
                     user.name,
                     emptyList(),
+                    user.userStatus.status
                 )
             }
 
@@ -656,8 +659,18 @@ class UsersService(
             message.setSubject("User Status Change")
             message.setText("User with ID ${userStatusInput.userId} has changed status to ${userStatusInput.status} at ${Clock.System.now()}")
             message.setFrom(System.getenv("ARBNET_EMAIL"))
-            mailSender.send(message)
+            println("${System.getenv("ARBNET_EMAIL")}, ${System.getenv("ARBNET_EMAIL_PASSWORD")}")
 
+            try {
+                mailSender.send(message)
+            }
+            catch (e: Exception) {
+                it.rollback()
+                return@run failure(ApiError.InternalServerError(
+                    "Email sending failed",
+                    "An error occurred while trying to send the email notification. Please try again later.",
+                ))
+            }
             return@run success(true)
         }
     }
@@ -683,7 +696,7 @@ class UsersService(
             message.setTo(email)
             message.setSubject("Invitation to ArbNet")
             message.setText("You have been invited to join ArbNet use the following URL to register: " +
-                    "${System.getenv("ARBNET_URL")}/signup?inviteToken=${generateInviteToken(email)}")
+                    "${System.getenv("ARBNET_URL")}?inviteToken=${generateInviteToken(email)}")
             message.setFrom(System.getenv("ARBNET_EMAIL"))
             mailSender.send(message)
 
@@ -723,5 +736,24 @@ class UsersService(
             failure(ApiError.InvalidField("Invalid token", e.localizedMessage ?: "Token parsing failed."))
         }
     }
+
+    fun getInactiveUsers() : Either<ApiError, List<UsersParametersOutputModel>> =
+        transactionManager.run {
+            val usersRepository = it.usersRepository
+            val usersRolesRepository = it.usersRolesRepository
+
+            val inactiveUsers = usersRepository.getInactiveUsers()
+
+            val inactiveUsersWithRoles: List<UsersParametersOutputModel> = inactiveUsers.map{ user ->
+                val userRoles = usersRolesRepository.getUsersRolesName(user.id)
+                UsersParametersOutputModel(
+                    user.id,
+                    user.name,
+                    userRoles,
+                    user.userStatus.status
+                )
+            }
+            return@run success(inactiveUsersWithRoles)
+        }
 
 }

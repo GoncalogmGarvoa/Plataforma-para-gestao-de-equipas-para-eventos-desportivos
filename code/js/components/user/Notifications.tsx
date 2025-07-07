@@ -3,6 +3,7 @@ import { FaBell } from "react-icons/fa"
 import { useCurrentRole } from "../../src/context/Referee"
 import React from "react"
 import {getCookie} from "../callList/CreateCallList";
+import "./Notifications.css"
 
 
 type Notification = {
@@ -75,13 +76,7 @@ export function Notifications() {
         <div style={{ position: "relative" }}>
             <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: "20px",
-                    color: "#333"
-                }}
+                className="notification-button"
                 title="Notificações"
             >
                 <FaBell />

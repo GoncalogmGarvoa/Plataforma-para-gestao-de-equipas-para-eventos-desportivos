@@ -26,111 +26,110 @@ export function SearchCallListDraft() {
     const navigate = useNavigate();
     const currentRole = useCurrentRole();
     const [callLists, setCallLists] = useState<CallListDraft[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-
+    const [activeTab, setActiveTab] = useState<"callList" | "confirmation" | "sealedCallList" | null>(null);
 
     useEffect(() => {
         if (currentRole && currentRole !== "Arbitration_Council") {
             navigate("/");
-            return;
         }
     }, [currentRole, navigate]);
 
-    useEffect(() => {
-        const fetchCallListDrafts = async () => {
-            try {
-                const token = getCookie("token");
+    const fetchCallLists = async (state: "callList" | "confirmation" | "sealedCallList") => {
+        setLoading(true);
+        setActiveTab(state);
+        try {
+            const token = getCookie("token");
+            if (!token) {
+                setError("Token não encontrado. Faça login novamente.");
+                setLoading(false);
+                return;
+            }
 
-                if (!token) {
-                    setError("Token não encontrado. Faça login novamente.");
-                    setLoading(false);
-                    return;
+            const response = await fetch(`/arbnet/callListDraft/get?callType=${state}`, {
+                method: "GET",
+                headers: {
+                    token,
+                    "Content-Type": "application/json"
                 }
+            });
 
-                const response = await fetch("/arbnet/callListDraft/get", {
-                    method: "GET",
-                    headers: {
-                        token: token,
-                        "Content-Type": "application/json"
-                    }
-                });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.title || "Erro ao obter convocatórias");
+            }
 
-                console.log("API Response:", response);
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error("Erro da API:", errorData);
-                    throw new Error(errorData.title || "Erro ao obter convocatórias draft");
-                }
-
-                const data = await response.json();
-                //console.log("Dados recebidos (JSON):", data);
-
-                const rawList = Array.isArray(data) ? data : [];
-                //console.log("Valor da lista de drafts:", rawList);
-
-                const mappedList: CallListDraft[] = rawList.map((item: any) => ({
+            const data = await response.json();
+            const mapped: CallListDraft[] = Array.isArray(data)
+                ? data.map((item: any) => ({
                     callListId: item.callListId,
                     competitionName: item.competitionName,
                     deadline: item.deadline,
                     callType: item.callType,
                     userName: item.userName,
                     userEmail: item.userEmail,
-                }));
+                }))
+                : [];
 
-                setCallLists(mappedList);
-
-
-                setLoading(false);
-            } catch (err) {
-                console.error("Erro no bloco catch:", err);
-                setError(err instanceof Error ? err.message : "Erro inesperado.");
-                setLoading(false);
-            }
-        };
-
-        if (currentRole === "Arbitration_Council") {
-            fetchCallListDrafts();
+            setCallLists(mapped);
+            setError(null);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Erro inesperado.");
+        } finally {
+            setLoading(false);
         }
-    }, [currentRole]);
+    };
 
-    console.log("Estado antes de renderizar:", { loading, error, callLists });
+    const title =
+        activeTab === "callList"
+            ? "Convocatórias em Draft/CallList"
+            : activeTab === "confirmation"
+                ? "Convocatórias em Pré-confirmação"
+                : activeTab === "sealedCallList"
+                    ? "Convocatórias em Confirmação"
+                    : "Convocatórias";
 
-    if (currentRole !== "Arbitration_Council") {
-        return null;
-    }
-
-    if (loading) {
-        return (
-            <div className="center-container">
-                <div className="form-container">
-                    <h2>Carregando Convocatórias Draft...</h2>
-                </div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="center-container">
-                <div className="form-container">
-                    <h2>Erro</h2>
-                    <p className="error-message">{error}</p>
-                    <button onClick={() => navigate("/")}>Voltar ao Início</button>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="search-call-list-draft-container">
-            <h2>Convocatórias em Draft</h2>
+            <h2>{title}</h2>
 
-            {callLists.length === 0 ? (
-                <div className="no-call-lists">
-                    <p>Nenhuma convocatória draft encontrada.</p>
+            <div style={{ marginBottom: "1em" }}>
+                <button
+                    onClick={() => fetchCallLists("callList")}
+                    className={activeTab === "callList" ? "active-tab" : ""}
+                >
+                    Em draft/callList
+                </button>
+                <button
+                onClick={() => fetchCallLists("sealedCallList")}
+                className={activeTab === "sealedCallList" ? "active-tab" : ""}
+                >
+                    Em confirmação
+                </button>
+                <button
+                    onClick={() => fetchCallLists("confirmation")}
+                    className={activeTab === "confirmation" ? "active-tab" : ""}
+                >
+                    Confirmadas
+                </button>
+
+            </div>
+
+
+            {loading ? (
+                <div className="form-container">
+                    <h3>Carregando convocatórias...</h3>
                 </div>
+            ) : error ? (
+                <div className="form-container">
+                    <h3>Erro</h3>
+                    <p className="error-message">{error}</p>
+                    <button onClick={() => navigate("/")}>Voltar ao Início</button>
+                </div>
+            ) : callLists.length === 0 && activeTab ? (
+                <p>Nenhuma convocatória encontrada.</p>
             ) : (
                 <div className="call-lists-grid">
                     {callLists.map((callList) => (
@@ -139,7 +138,6 @@ export function SearchCallListDraft() {
                                 <h3>{callList.competitionName}</h3>
                                 <span className="call-list-id">#{callList.callListId}</span>
                             </div>
-
                             <div className="call-list-details">
                                 <div className="detail-item">
                                     <strong>Nome da Competição:</strong> {callList.competitionName}
@@ -151,15 +149,16 @@ export function SearchCallListDraft() {
                                     <strong>Data Limite:</strong> {new Date(callList.deadline).toLocaleDateString()}
                                 </div>
                             </div>
-
-                            <div className="call-list-actions">
-                                <button
-                                    className="btn btn-secondary"
-                                    onClick={() => navigate(`/edit-calllist/${callList.callListId}`)}
-                                >
-                                    Editar
-                                </button>
-                            </div>
+                            {activeTab !== "sealedCallList" && (
+                                <div className="call-list-actions">
+                                    <button
+                                        className="btn btn-secondary"
+                                        onClick={() => navigate(`/edit-calllist/${callList.callListId}`)}
+                                    >
+                                        Editar
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>

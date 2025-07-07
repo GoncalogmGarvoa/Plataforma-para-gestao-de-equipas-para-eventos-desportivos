@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react"
+import "./AttributeRoles.css"
 
 interface Role {
     id: number
@@ -9,6 +10,7 @@ interface User {
     userId: number
     userName: string
     userRoles: string[]
+    status: string
 }
 
 interface Category {
@@ -98,6 +100,21 @@ export function AttributeRoles() {
             })
     }
 
+    const handleFetchInactiveUsers = () => {
+        fetch("/arbnet/users/inactive")
+            .then(res => {
+                if (!res.ok) throw new Error("Erro ao obter utilizadores inativos")
+                return res.json()
+            })
+            .then(data => {
+                setUsers(data)
+            })
+            .catch(err => {
+                console.error(err)
+                alert("Erro ao obter utilizadores inativos")
+            })
+    }
+
     const toggleUserRole = (user: User, role: Role) => {
         const hasRole = user.userRoles.includes(role.name)
 
@@ -133,6 +150,38 @@ export function AttributeRoles() {
             })
     }
 
+    const toggleUserStatus = (user: User) => {
+        const newStatus = user.status === "active" ? "inactive" : "active"
+
+        fetch("/arbnet/users/status", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                userId: user.userId,
+                status: newStatus
+            })
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("Erro ao atualizar estado do utilizador")
+                return res.json()
+            })
+            .then(() => {
+                // Atualiza localmente o status do utilizador
+                setUsers(prevUsers =>
+                    prevUsers.map(u =>
+                        u.userId === user.userId ? { ...u, status: newStatus } : u
+                    )
+                )
+            })
+            .catch(err => {
+                console.error(err)
+                alert("Erro ao atualizar estado do utilizador")
+            })
+    }
+
+
     const handleCategoryChange = (userId: number, newCategoryId: number) => {
         fetch("/arbnet/users/category", {
             method: "POST",
@@ -152,15 +201,16 @@ export function AttributeRoles() {
     }
 
     return (
-        <div>
+        <div className="attribute-roles-container">
             <h2>User Roles</h2>
 
-            <div style={{ marginBottom: "1em" }}>
+            <div className="search-controls">
                 <input
                     type="text"
                     placeholder="Pesquisar por nome"
                     value={userNameSearch}
                     onChange={(e) => setUserNameSearch(e.target.value)}
+                    className="search-input"
                 />
 
                 {availableRoles.map(role => (
@@ -173,21 +223,22 @@ export function AttributeRoles() {
                                     : [...prev, role.name]
                             )
                         }
-                        style={{
-                            marginLeft: "0.5em",
-                            backgroundColor: selectedRoles.includes(role.name) ? "lightblue" : "white"
-                        }}
+                        className={`role-filter-button ${selectedRoles.includes(role.name) ? "selected" : ""}`}
                     >
                         {role.name}
                     </button>
                 ))}
 
-                <button onClick={handleSearch} style={{ marginLeft: "0.5em" }}>
+                <button onClick={handleSearch} className="btn btn-primary">
                     Pesquisar
                 </button>
 
-                <button onClick={handleFetchUsersWithoutRoles} style={{ marginLeft: "0.5em", fontWeight: "bold" }}>
+                <button onClick={handleFetchUsersWithoutRoles} className="btn btn-secondary">
                     Utilizadores novos/Sem Roles
+                </button>
+
+                <button onClick={handleFetchInactiveUsers} className="btn btn-secondary">
+                    Utilizadores Inativos
                 </button>
             </div>
 
@@ -195,60 +246,62 @@ export function AttributeRoles() {
 
             <h3>Utilizadores Encontrados</h3>
             {users.length === 0 ? (
-                <p>Nenhum utilizador encontrado.</p>
+                <p className="message-info">Nenhum utilizador encontrado.</p>
             ) : (
-                <ul style={{ listStyle: "none", padding: 0 }}>
+                <table className="user-table">
+                    <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Funções</th>
+                        <th>Estado</th>
+                        <th>Categoria</th>
+                        <th>Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
                     {users.map(user => (
-                        <li
-                            key={user.userId}
-                            style={{
-                                padding: "1em 0",
-                                borderBottom: "1px solid #ccc"
-                            }}
-                        >
-                            <strong>{user.userName}</strong> —{" "}
-                            {user.userRoles.length > 0 ? user.userRoles.join(", ") : <em>Sem roles</em>}
-
-                            <div style={{ marginTop: "0.5em" }}>
-                                {availableRoles.map(role => {
-                                    const hasRole = user.userRoles.includes(role.name)
-                                    return (
-                                        <button
-                                            key={role.id}
-                                            onClick={() => toggleUserRole(user, role)}
-                                            style={{
-                                                marginRight: "0.5em",
-                                                backgroundColor: hasRole ? "lightgreen" : "lightgray"
-                                            }}
-                                        >
-                                            {hasRole ? `Remover ${role.name}` : `Adicionar ${role.name}`}
-                                        </button>
-                                    )
-                                })}
-                            </div>
-
-                            <div style={{ marginTop: "0.5em" }}>
-                                <label>
-                                    Categoria:
-                                    <select
-                                        value={userCategories[user.userId] ?? ""}
-                                        onChange={(e) =>
-                                            handleCategoryChange(user.userId, Number(e.target.value))
-                                        }
-                                        style={{ marginLeft: "0.5em" }}
+                        <tr key={user.userId}>
+                            <td>{user.userName}</td>
+                            <td>{user.userRoles.join(", ")}</td>
+                            <td>{user.status}</td>
+                            <td>
+                                {availableRoles.map(role => (
+                                    <button
+                                        key={role.id}
+                                        onClick={() => toggleUserRole(user, role)}
+                                        className={`user-role-toggle-button ${user.userRoles.includes(role.name) ? "active-role" : "inactive-role"}`}
                                     >
-                                        <option value="" disabled>Selecionar categoria</option>
-                                        {availableCategories.map(cat => (
-                                            <option key={cat.id} value={cat.id}>
-                                                {cat.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </label>
-                            </div>
-                        </li>
+                                        {role.name}
+                                    </button>
+                                ))}
+                            </td>
+                            <td>
+                                <button
+                                    onClick={() => toggleUserStatus(user)}
+                                    className={`user-status-toggle-button ${user.status === "active" ? "active-status" : "inactive-status"}`}
+                                >
+                                    {user.status === "active" ? "Desativar" : "Ativar"}
+                                </button>
+                            </td>
+                            <td>
+                                <select
+                                    value={userCategories[user.userId] || ""}
+                                    onChange={(e) => handleCategoryChange(user.userId, parseInt(e.target.value))}
+                                    className="category-select"
+                                >
+                                    <option value="">Selecionar Categoria</option>
+                                    {availableCategories.map(category => (
+                                        <option key={category.id} value={category.id}>
+                                            {category.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </td>
+                        </tr>
                     ))}
-                </ul>
+                    </tbody>
+                </table>
             )}
         </div>
     )
