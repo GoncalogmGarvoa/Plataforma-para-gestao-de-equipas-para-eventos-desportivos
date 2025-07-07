@@ -411,7 +411,7 @@ export function CreateCallList() {
                         <p>Convocatória criada com sucesso!</p>
                         <button onClick={() => {
                             setShowSuccessDialog(false);
-                            navigate("/"); // Navigate on dialog close
+                            navigate("/search-calllist-draft"); // Navigate on dialog close
                         }} style={{ marginTop: '1rem', padding: '0.5rem 1rem', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
                             OK
                         </button>
