@@ -28,6 +28,7 @@ export function EditCallList() {
     const [participantQuery, setParticipantQuery] = useState("");
     const [userSuggestions, setUserSuggestions] = useState<{ name: string; id: number }[]>([]);
     const [newParticipantName, setNewParticipantName] = useState<string>("");
+    const [dateToMatchDayIdMap, setDateToMatchDayIdMap] = useState<Record<string, number>>({});
     // MATCH DAYS
     const [matchDaySessionsInput, setMatchDaySessionsInput] = useState<any[]>([]); // [{matchDay, sessions: [hora]}]
 
@@ -128,6 +129,25 @@ export function EditCallList() {
                 // Converter dias e sessões
                 if (data.matchDaySessions) {
                     setMatchDaySessionsInput(data.matchDaySessions);
+
+                    // Populate dateToMatchDayIdMap
+                    const tempMap: Record<string, number> = {};
+                    data.matchDaySessions.forEach((md: any) => {
+                        const dateKeyRaw = md.matchDate || md.day || md.date || md.matchDay;
+                        let dateKey = "";
+                        if (dateKeyRaw) {
+                            try {
+                                const dateObj = new Date(dateKeyRaw);
+                                if (!isNaN(dateObj.getTime())) {
+                                    dateKey = dateObj.toISOString().split('T')[0];
+                                    tempMap[dateKey] = md.id; // Store the ID
+                                }
+                            } catch (e) {
+                                console.error("Error parsing dateKey for matchDayId map:", e);
+                            }
+                        }
+                    });
+                    setDateToMatchDayIdMap(tempMap);
                 }
             } catch (err: any) {
                 setError(err.message || "Erro inesperado");
@@ -561,77 +581,77 @@ export function EditCallList() {
                     <h3>Detalhes da Convocatória</h3>
                     <div className="form-grid">
                         <div className="form-group">
-                            <label htmlFor="location">Localização:</label>
-                            <input
-                                type="text"
-                                id="location"
-                                className="form-control"
-                                value={form.location || ''}
-                                onChange={(e) => setForm({ ...form, location: e.target.value })}
-                                required
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="deadline">Prazo de Resposta:</label>
-                            <input
-                                type="date"
-                                id="deadline"
-                                className="form-control"
-                                value={form.deadline ? new Date(form.deadline).toISOString().substring(0, 10) : ''}
-                                onChange={(e) => setForm({ ...form, deadline: e.target.value })}
-                                required
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="competitionName">Nome da Competição:</label>
+                            <label htmlFor="competitionName" className="form-label">Nome da Competição:</label>
                             <input
                                 type="text"
                                 id="competitionName"
-                                className="form-control"
+                                className="form-input"
                                 value={form.competitionName || ''}
                                 onChange={(e) => setForm({ ...form, competitionName: e.target.value })}
                                 required
                             />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="address">Morada:</label>
+                            <label htmlFor="location" className="form-label">Localização:</label>
+                            <input
+                                type="text"
+                                id="location"
+                                className="form-input"
+                                value={form.location || ''}
+                                onChange={(e) => setForm({ ...form, location: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="deadline" className="form-label">Prazo de Resposta:</label>
+                            <input
+                                type="date"
+                                id="deadline"
+                                className="form-input"
+                                value={form.deadline ? new Date(form.deadline).toISOString().substring(0, 10) : ''}
+                                onChange={(e) => setForm({ ...form, deadline: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="address" className="form-label">Morada:</label>
                             <input
                                 type="text"
                                 id="address"
-                                className="form-control"
+                                className="form-input"
                                 value={form.address || ''}
                                 onChange={(e) => setForm({ ...form, address: e.target.value })}
                                 required
                             />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="phoneNumber">Número de Telefone:</label>
+                            <label htmlFor="phoneNumber" className="form-label">Número de Telefone:</label>
                             <input
                                 type="text"
                                 id="phoneNumber"
-                                className="form-control"
+                                className="form-input"
                                 value={form.phoneNumber || ''}
                                 onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
                                 required
                             />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="email">Email:</label>
+                            <label htmlFor="email" className="form-label">Email:</label>
                             <input
                                 type="email"
                                 id="email"
-                                className="form-control"
+                                className="form-input"
                                 value={form.email || ''}
                                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                                 required
                             />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="association">Associação:</label>
+                            <label htmlFor="association" className="form-label">Associação:</label>
                             <input
                                 type="text"
                                 id="association"
-                                className="form-control"
+                                className="form-input"
                                 value={form.association || ''}
                                 onChange={(e) => setForm({ ...form, association: e.target.value })}
                                 required
@@ -654,7 +674,7 @@ export function EditCallList() {
                                         <input
                                             type="date"
                                             id={`matchDay-${mdIndex}`}
-                                            className="form-control form-control-sm match-day-date-input"
+                                            className="form-input match-day-date-input"
                                             value={md.matchDate ? new Date(md.matchDate).toISOString().substring(0, 10) : ''}
                                             onChange={(e) => handleMatchDayChange(mdIndex, e.target.value)}
                                             required
@@ -666,7 +686,7 @@ export function EditCallList() {
                                                 <div key={sessionIndex} className="session-item" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                                     <input
                                                         type="time"
-                                                        className="form-control form-control-sm session-time-input"
+                                                        className="form-input session-time-input"
                                                         style={{ width: '100px' }}
                                                         value={session.time || ''}
                                                         onChange={(e) => handleSessionInputChange(mdIndex, sessionIndex, e.target.value)}
@@ -712,11 +732,11 @@ export function EditCallList() {
                     </button>
                     <h3 className="section-title" style={{ marginTop: '30px' }}>Equipamentos</h3>
                     <div className="form-group dropdown-container" ref={equipmentDropdownRef}>
-                        <label htmlFor="equipment">Equipamentos Necessários:</label>
+                        <label htmlFor="equipment" className="form-label">Equipamentos Necessários:</label>
                         <input
                             type="text"
                             id="equipment"
-                            className="form-control"
+                            className="form-input"
                             placeholder="Selecione equipamentos"
                             value={selectedEquipmentIds.map(id => equipmentOptions.find(opt => opt.id === id)?.name).filter(Boolean).join(', ')}
                             onFocus={() => setEquipmentDropdownOpen(true)}
@@ -760,47 +780,59 @@ export function EditCallList() {
                     </div>
 
                     <h3 className="section-title" style={{ marginTop: '30px' }}>Participantes e Funções</h3>
-                    {Object.entries(participantInputs).map(([name, days]) => (
-                        <div key={name} className="participant-item">
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <h4>{name}</h4>
-                                <button
-                                    type="button"
-                                    className="btn btn-danger btn-sm"
-                                    onClick={() => removeParticipant(name)}
-                                >
-                                    -
-                                </button>
-                            </div>
-                            <div className="participant-roles-grid">
-                                {matchDaySessionsInput.map((md) => {
-                                    const dateKey = md.matchDate; // Use matchDate directly
-                                    return (
-                                        <div key={dateKey} className="participant-role-item">
-                                            <label>{new Date(dateKey).toLocaleDateString()}:</label>
-                                            <select
-                                                className="form-control"
-                                                value={days[dateKey] || ""}
-                                                onChange={(e) => handleRoleChange(name, dateKey, e.target.value)}
+                    <div className="participants-table-container">
+                        <table className="matchday-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    {matchDaySessionsInput.map((md, index) => (
+                                        <th key={index}>{new Date(md.matchDate).toLocaleDateString()}</th>
+                                    ))}
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {Object.entries(participantInputs).map(([name, days]) => (
+                                    <tr key={name}>
+                                        <td>{name}</td>
+                                        {matchDaySessionsInput.map((md) => {
+                                            const dateKey = md.matchDate;
+                                            return (
+                                                <td key={dateKey}>
+                                                    <select
+                                                        className="form-input"
+                                                        value={days[dateKey] || ""}
+                                                        onChange={(e) => handleRoleChange(name, dateKey, e.target.value)}
+                                                    >
+                                                        <option value="">Selecione Função</option>
+                                                        {functionOptions.map((func) => (
+                                                            <option key={func.id} value={func.name}>
+                                                                {func.name}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </td>
+                                            );
+                                        })}
+                                        <td>
+                                            <button
+                                                type="button"
+                                                className="btn btn-danger btn-sm"
+                                                onClick={() => removeParticipant(name)}
                                             >
-                                                <option value="">Selecione Função</option>
-                                                {functionOptions.map((func) => (
-                                                    <option key={func.id} value={func.name}>
-                                                        {func.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    ))}
+                                                Remover
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
 
-                    <div className="add-participant-section" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '30px', marginBottom: '15px' }}>
+                    <div className="add-participant-section" style={{ display: 'flex', alignItems: 'flex-end', gap: '10px', marginTop: '30px', marginBottom: '15px' }}>
                         <input
                             type="text"
-                            className="form-control"
+                            className="form-input"
                             placeholder="Adicionar Participante (Nome)"
                             value={newParticipantName}
                             onChange={(e) => setNewParticipantName(e.target.value)}
@@ -811,7 +843,7 @@ export function EditCallList() {
                             className="btn btn-success btn-sm"
                             onClick={addParticipant}
                         >
-                            Adicionar Participante
+                            Adicionar
                         </button>
                     </div>
                     {userSuggestions.length > 0 && participantQuery.length > 1 && (
