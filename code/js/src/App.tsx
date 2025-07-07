@@ -24,6 +24,7 @@ import {CheckCallLists} from "../components/callList/CheckCallLists";
 import {CallListInfo} from "../components/callList/CallListInfo";
 import {AttributeRoles} from "../components/user/AttributeRoles";
 import {Notifications} from "../components/user/Notifications";
+import {InviteUsers} from "../components/user/InviteUsers";
 
 function RequireArbitrationCouncil({ children }: { children: React.ReactNode }) {
     const currentRole = useCurrentRole()
@@ -110,6 +111,10 @@ const router = createBrowserRouter([
                 "element": <RequireAuthn><RequireAdmin ><AttributeRoles /></RequireAdmin></RequireAuthn>
             },
             {
+                "path": "/invite-users",
+                "element": <RequireAuthn><RequireAdmin ><InviteUsers /></RequireAdmin></RequireAuthn>
+            },
+            {
                 "path": "/logout",
                 "element":<Logout />
             }
@@ -152,7 +157,10 @@ function Home() {
                         )}
 
                         {isAdmin && (
-                            <li><Link to="/attribute-roles">Atribuir Roles</Link></li>
+                            <>
+                                <li><Link to="/attribute-roles">Gerir Utilizadores</Link></li>
+                                <li><Link to="/invite-users">Convidar Utilizadores</Link></li>
+                            </>
                         )}
                     </>
 
@@ -197,7 +205,10 @@ export function Header() {
                             )}
 
                             {isAdmin && (
-                                <li><Link to="/attribute-roles">Atribuir Roles</Link></li>
+                                <>
+                                    <li><Link to="/attribute-roles">Gerir Utilizadores</Link></li>
+                                    <li><Link to="/invite-users">Convidar Utilizadores</Link></li>
+                                </>
                             )}
 
                             {currentRole && (
