@@ -1,5 +1,7 @@
 import React, { useState } from "react"
 import { useLocation } from "react-router-dom"
+import "../../CallListInfo.css"
+import {getCookie} from "./CreateCallList";
 
 interface Session {
     id: number
@@ -60,7 +62,7 @@ export function CallListInfo() {
         () => Object.fromEntries(event.matchDaySessions.map(md => [md.id, "waiting"]))
     )
 
-    if (!event) return <div>Erro: convocatória não encontrada.</div>
+    if (!event) return <div className="error-message">Erro: convocatória não encontrada.</div>
 
     const groupedParticipants: Record<
         string,
@@ -94,20 +96,28 @@ export function CallListInfo() {
     }
 
     const handleSubmit = () => {
+
+        const token = getCookie("token");
+        if (!token) {
+            alert("Token não encontrado. Faça login novamente.");
+            return;
+        }
+
         const acceptedDays = Object.entries(dayResponses)
             .filter(([_, value]) => value === "accepted")
             .map(([key]) => Number(key))
 
         const input: ParticipantUpdateInput = {
             days: acceptedDays,
-            participantId: participantId ?? 13,
+            participantId: participantId,
             callListId: event.callListId
         }
 
         fetch("/arbnet/callList/updateParticipant", {
             method: "PUT",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                token
             },
             body: JSON.stringify(input)
         })
@@ -122,17 +132,19 @@ export function CallListInfo() {
     }
 
     return (
-        <div className="calllist-info">
+        <div className="calllist-info-container">
             {/* Info da convocatória */}
             <h2>{event.competitionName}</h2>
-            <p><strong>Morada:</strong> {event.address}</p>
-            <p><strong>Local:</strong> {event.location}</p>
-            <p><strong>Associação:</strong> {event.association}</p>
-            <p><strong>Contactos:</strong> {event.phoneNumber} / {event.email}</p>
-            <p><strong>Data limite:</strong> {new Date(event.deadline).toLocaleDateString()}</p>
+            <div className="calllist-details">
+                <p><strong>Morada:</strong> {event.address}</p>
+                <p><strong>Local:</strong> {event.location}</p>
+                <p><strong>Associação:</strong> {event.association}</p>
+                <p><strong>Contactos:</strong> {event.phoneNumber} / {event.email}</p>
+                <p><strong>Data limite:</strong> {new Date(event.deadline).toLocaleDateString()}</p>
+            </div>
 
             {/* Participantes */}
-            <hr />
+            <hr className="section-divider" />
             <h3>Participantes Convocados</h3>
             {Object.entries(groupedParticipants).map(([name, { category, days }]) => (
                 <div key={name} className="participant-block">
@@ -141,7 +153,15 @@ export function CallListInfo() {
                         {days.map((day, i) => (
                             <li key={i}>
                                 {day.date} — <em>{day.func}</em> —{" "}
-                                <strong>
+                                <strong
+                                    className={
+                                        day.status === "accepted"
+                                            ? "participant-status-accepted"
+                                            : day.status === "declined"
+                                                ? "participant-status-declined"
+                                                : "participant-status-waiting"
+                                    }
+                                >
                                     {day.status === "accepted"
                                         ? "Aceitou"
                                         : day.status === "declined"
@@ -156,9 +176,9 @@ export function CallListInfo() {
 
 
             {/* Equipamentos */}
-            <hr />
+            <hr className="section-divider"/>
             <h3>Equipamentos Associados</h3>
-            <ul>
+            <ul className="equipment-list">
                 {event.equipments.map((e) => (
                     <li key={e.id}>{e.name}</li>
                 ))}
@@ -166,49 +186,52 @@ export function CallListInfo() {
 
             {/* Confirmação de dias (visível apenas se o tipo permitir) */}
             {["sealedCallList", "finalJury"].includes(event.callListType) && (
-                <>
-                    <hr />
+                <div className="confirmation-section">
+                    <hr className="section-divider" />
                     <h3>Confirmação de Presença</h3>
                     <ul>
                         {event.matchDaySessions.map((matchDay) => (
-                            <li key={matchDay.id} style={{ marginBottom: "1em" }}>
-                                <div>
+                            <li key={matchDay.id} className="confirmation-item">
+                                <div className="confirmation-item-header">
                                     <strong>{new Date(matchDay.matchDate).toLocaleDateString()}</strong>
-                                    {" — "}
+                                    <div className="confirmation-item-sessions">
                                     {matchDay.sessions.length > 0 ? (
                                         matchDay.sessions.map(session => (
-                                            <span key={session.id} style={{ marginRight: "0.5em" }}>
-                                    {session.startTime.slice(0, 5)}/
-                                </span>
+                                            <span key={session.id} className="confirmation-item-session">
+                                                {session.startTime.slice(0, 5)}
+                                            </span>
                                         ))
                                     ) : (
                                         <em>Sem sessões</em>
                                     )}
+                                    </div>
                                 </div>
 
-                                <label>
-                                    <input
-                                        type="checkbox"
-                                        checked={dayResponses[matchDay.id] === "accepted"}
-                                        onChange={() => updateDayResponse(matchDay.id, "accepted")}
-                                    />
-                                    ✔️ Aceitar
-                                </label>
+                                <div className="confirmation-options">
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            checked={dayResponses[matchDay.id] === "accepted"}
+                                            onChange={() => updateDayResponse(matchDay.id, "accepted")}
+                                        />
+                                        ✔️ Aceitar
+                                    </label>
 
-                                <label style={{ marginLeft: "1em" }}>
-                                    <input
-                                        type="checkbox"
-                                        checked={dayResponses[matchDay.id] === "declined"}
-                                        onChange={() => updateDayResponse(matchDay.id, "declined")}
-                                    />
-                                    ❌ Recusar
-                                </label>
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            checked={dayResponses[matchDay.id] === "declined"}
+                                            onChange={() => updateDayResponse(matchDay.id, "declined")}
+                                        />
+                                        ❌ Recusar
+                                    </label>
+                                </div>
                             </li>
                         ))}
                     </ul>
 
-                    <button onClick={handleSubmit}>Submeter Confirmação</button>
-                </>
+                    <button onClick={handleSubmit} className="submit-confirmation-btn">Submeter Confirmação</button>
+                </div>
             )}
         </div>
     )

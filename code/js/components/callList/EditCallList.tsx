@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import "../../EditCallList.css"
 
 function getCookie(name: string): string | undefined {
     const value = `; ${document.cookie}`;
@@ -247,108 +248,64 @@ export function EditCallList() {
         });
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setForm((prev: any) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setSubmitting(true);
-        setError(null);
-        try {
-            const token = getCookie("token");
-            if (!token) throw new Error("Token não encontrado. Faça login novamente.");
-            // Montar participantes para envio
-            const updatedParticipants = Object.entries(participantInputs).map(([name, rolesByDay]) => {
-                const userId = nameToUserIdMap[name] ?? 0;
-                const participantAndRole = Object.entries(rolesByDay).map(([date, functionName]) => {
-                    const matchDay = form.matchDaySessions.find((md: any) =>
-                        md.matchDate === date || md.day === date || md.date === date || md.matchDay === date
-                    );
-                    return {
-                        matchDay: matchDay?.matchDate,
-                        function: functionName
-                    };
-                });
-                // Garante que participantAndRole é sempre array (mesmo vazio)
-                return {
-                    userId,
-                    participantAndRole: participantAndRole || []
-                };
-            });
-            
-            const matchDaySessions = (form.matchDaySessions || []).map((md: any) => ({
-                ...md,
-                matchDay: md.matchDate, // ou o campo correto de data
-                sessions: (md.sessions || []).map((s: any) => {
-                    if (typeof s === "string") {
-                        // Verifica se já está no formato HH:mm:ss
-                        if (/^\d{2}:\d{2}(:\d{2})?$/.test(s)) {
-                            return s.length === 5 ? s + ":00" : s;
-                        }
-                        const d = new Date(`1970-01-01T${s}`);
-                        if (!isNaN(d.getTime())) {
-                            return d.toTimeString().slice(0, 8);
-                        }
-                        throw new Error(`Formato de hora inválido: ${s}`);
-                    }
-                    if (s instanceof Date) {
-                        return s.toTimeString().slice(0, 8);
-                    }
-                    if (typeof s === "object" && s.startTime) {
-                        // Usa o startTime do objeto
-                        if (/^\d{2}:\d{2}(:\d{2})?$/.test(s.startTime)) {
-                            return s.startTime.length === 5 ? s.startTime + ":00" : s.startTime;
-                        }
-                        // Se vier como string mas não está no formato, tenta converter
-                        const d = new Date(`1970-01-01T${s.startTime}`);
-                        if (!isNaN(d.getTime())) {
-                            return d.toTimeString().slice(0, 8);
-                        }
-                        throw new Error(`Formato de hora inválido em startTime: ${s.startTime}`);
-                    }
-                    throw new Error(`Formato de sessão inválido: ${JSON.stringify(s)}`);
-                })
-            }));
-            
-            const fullFormData: any = {
-                ...form,
-                participants: updatedParticipants,
-                matchDaySessions: matchDaySessions,
-                equipmentIds: selectedEquipmentIds,
-                callListId: form.callListId || form.id || id
-            };
-            const response = await fetch("/arbnet/callList/update", {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    token,
-                },
-                body: JSON.stringify(fullFormData),
-            });
-            if (!response.ok) {
-                const errorData = await response.json();
+    const handleMatchDayChange = (index: number, value: string) => {
+        setMatchDaySessionsInput((prev) =>
+            prev.map((item, i) =>
+                i === index ? { ...item, matchDay: value } : item
+            )
+        );
+    };
 
-                // Check for specific 'CallList not found' error to redirect
-                if (errorData.title === "Not Found" && errorData.detail && errorData.detail.includes("CallList")) {
-                    alert(errorData.title + ": " + errorData.detail);
+    const handleSessionInputChange = (matchDayIndex: number, sessionIndex: number, value: string) => {
+        setMatchDaySessionsInput((prev) =>
+            prev.map((item, i) => {
+                if (i === matchDayIndex) {
+                    const newSessions = [...item.sessions];
+                    newSessions[sessionIndex] = value;
+                    return { ...item, sessions: newSessions };
                 }
+                return item;
+            })
+        );
+    };
 
-                // For other errors from the backend, display alert and set error state without throwing
-                const backendErrorMessage = errorData.title || "Erro ao atualizar convocatória.";
-                alert("Erro ao salvar: " + backendErrorMessage);
-                setError(backendErrorMessage); // Set error state for display on page
-                return; // Exit the function after handling the error
-            }
-            alert("Convocatória atualizada com sucesso!");
-        } catch (err: any) {
-            // This catch block will primarily handle network errors or unexpected issues
-            const errorMessage = err.message || "Erro inesperado.";
-            alert("Erro ao salvar: " + errorMessage);
-            setError(errorMessage);
-        } finally {
-            setSubmitting(false);
-        }
+    const addMatchDay = () => {
+        setMatchDaySessionsInput((prev) => [...prev, { matchDay: "", sessions: ["", ""] }]);
+    };
+
+    const addSession = (index: number) => {
+        setMatchDaySessionsInput((prev) =>
+            prev.map((item, i) =>
+                i === index ? { ...item, sessions: [...item.sessions, ""] } : item
+            )
+        );
+    };
+
+    const removeMatchDay = (index: number) => {
+        setMatchDaySessionsInput((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const removeSession = (matchDayIndex: number, sessionIndex: number) => {
+        setMatchDaySessionsInput((prev) =>
+            prev.map((item, i) =>
+                i === matchDayIndex
+                    ? { ...item, sessions: item.sessions.filter((_: string, si: number) => si !== sessionIndex) }
+                    : item
+            )
+        );
+    };
+
+    const handleEquipmentChange = (equipmentId: number) => {
+        setSelectedEquipmentIds((prev) =>
+            prev.includes(equipmentId)
+                ? prev.filter((id) => id !== equipmentId)
+                : [...prev, equipmentId]
+        );
     };
 
     // Fetch equipment options on mount
@@ -363,269 +320,400 @@ export function EditCallList() {
                 const data = await res.json();
                 setEquipmentOptions(data);
             } catch (err) {
+                console.error("Failed to fetch equipment:", err);
                 setEquipmentOptions([]);
             }
         };
         fetchEquipment();
     }, []);
 
-    // Sync selectedEquipmentIds with form.equipmentIds ou form.equipment
-    useEffect(() => {
-        if (form) {
-            if (Array.isArray(form.equipmentIds)) {
-                setSelectedEquipmentIds(form.equipmentIds);
-            } else if (Array.isArray(form.equipment)) {
-                setSelectedEquipmentIds(form.equipment.map((eq: any) => eq.id));
-            }
-        }
-        // eslint-disable-next-line
-    }, [form]);
-
-    // Fechar dropdown ao clicar fora
+    // Click outside handler for equipment dropdown
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (equipmentDropdownRef.current && !equipmentDropdownRef.current.contains(event.target as Node)) {
                 setEquipmentDropdownOpen(false);
             }
         }
-        if (equipmentDropdownOpen) {
-            document.addEventListener('mousedown', handleClickOutside);
-        } else {
-            document.removeEventListener('mousedown', handleClickOutside);
-        }
+        document.addEventListener("mousedown", handleClickOutside);
         return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener("mousedown", handleClickOutside);
         };
-    }, [equipmentDropdownOpen]);
+    }, [equipmentDropdownRef]);
 
-    useEffect(() => {
-        if (form) {
-            console.log('EditCallList form:', form);
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitting(true);
+        setError(null);
+
+        if (!form || !form.callListId) {
+            setError("ID da convocatória não encontrado.");
+            setSubmitting(false);
+            return;
         }
-    }, [form]);
 
-    if (loading) return <div>Carregando...</div>;
-    if (!form) return null;
+        // Construir matchDaySessions para o envio
+        const formattedMatchDaySessions = matchDaySessionsInput.map(md => {
+            const matchDate = md.matchDay || md.matchDate || md.day || md.date;
+            if (!matchDate) return null; // Ou lidar com erro
 
-    return (
-        <div className="create-call-list-container">
-            <h2>Editar Convocatória</h2>
-            {error && <div style={{ color: 'red', marginBottom: '10px' }}>Erro: {error}</div>}
-            <form onSubmit={handleSubmit}>
-                <div className="form-group-inline">
-                    <label>Competição:</label>
-                    <input name="competitionName" value={form.competitionName || ''} onChange={handleChange} />
-                </div>
-                <div className="form-group-inline">
-                    <label>Morada:</label>
-                    <input name="address" value={form.address || ''} onChange={handleChange} />
-                </div>
-                <div className="form-group-inline">
-                    <label>Telefone:</label>
-                    <input name="phoneNumber" value={form.phoneNumber || ''} onChange={handleChange} />
-                </div>
-                <div className="form-group-inline">
-                    <label>Associação:</label>
-                    <input name="association" value={form.association || ''} onChange={handleChange} />
-                </div>
-                <div className="form-group-inline">
-                    <label>Local:</label>
-                    <input name="location" value={form.location || ''} onChange={handleChange} />
-                </div>
-                <div className="form-group-inline">
-                    <label>Email:</label>
-                    <input name="email" value={form.email || ''} onChange={handleChange} />
-                </div>
-                <div className="form-group-inline">
-                    <label>Data Limite:</label>
-                    <input className="deadline-input" name="deadline" type="date" value={form.deadline || ''} onChange={handleChange} />
-                </div>
-                {/* Equipment Dropdown */}
-                <div className="form-group-inline">
-                    <label>Equipamentos:</label>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        <div ref={equipmentDropdownRef} style={{ position: 'relative', width: 220 }}>
-                            <button
-                                type="button"
-                                style={{ width: '100%', padding: '6px 10px', borderRadius: 4, border: '1px solid #ccc', background: '#fff', textAlign: 'left', cursor: 'pointer' }}
-                                onClick={() => setEquipmentDropdownOpen(open => !open)}
-                            >
-                                {selectedEquipmentIds.length === 0 ? 'Selecione equipamento(s)' : `${selectedEquipmentIds.length} selecionado(s)`}
-                                <span style={{ float: 'right' }}>▼</span>
-                            </button>
-                            {equipmentDropdownOpen && (
-                                <div style={{
-                                    position: 'absolute',
-                                    top: '110%',
-                                    left: 0,
-                                    width: '100%',
-                                    background: '#fff',
-                                    border: '1px solid #ccc',
-                                    borderRadius: 4,
-                                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                                    zIndex: 20,
-                                    maxHeight: 180,
-                                    overflowY: 'auto',
-                                }}>
-                                    {equipmentOptions.filter(eq => !selectedEquipmentIds.includes(eq.id)).length === 0 ? (
-                                        <div style={{ padding: 8, color: '#888' }}>Sem opções</div>
-                                    ) : equipmentOptions.filter(eq => !selectedEquipmentIds.includes(eq.id)).map(eq => (
-                                        <div
-                                            key={eq.id}
-                                            style={{ padding: '8px 12px', cursor: 'pointer', borderBottom: '1px solid #f0f0f0' }}
-                                            onClick={() => {
-                                                setSelectedEquipmentIds(prev => [...prev, eq.id]);
-                                                setEquipmentDropdownOpen(false);
-                                            }}
-                                        >
-                                            {eq.name}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
-                            {selectedEquipmentIds.map(id => {
-                                const eq = equipmentOptions.find(e => e.id === id);
-                                if (!eq) return null;
-                                return (
-                                    <span key={id} style={{ background: '#e6f0ff', border: '1px solid #007bff', borderRadius: 4, padding: '2px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                        {eq.name}
-                                        <button
-                                            type="button"
-                                            style={{ marginLeft: 4, color: 'red', border: 'none', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}
-                                            onClick={() => setSelectedEquipmentIds(prev => prev.filter(eid => eid !== id))}
-                                        >
-                                            ×
-                                        </button>
-                                    </span>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
-                {/* PARTICIPANTES */}
-                <h3>Participantes</h3>
-                <div style={{position: "relative"}}>
-                    <label>Nomes </label>
-                    <input
-                        value={participantQuery}
-                        onChange={(e) => {
-                            setParticipantQuery(e.target.value);
-                            setNewParticipantName(e.target.value);
-                        }}
-                    />
-                    {userSuggestions.length > 0 && (
-                        <ul style={{
-                            position: "absolute",
-                            background: "white",
-                            border: "1px solid #ccc",
-                            padding: "0.5rem",
-                            margin: 0,
-                            listStyle: "none",
-                            zIndex: 10,
-                            maxHeight: "150px",
-                            overflowY: "auto",
-                            width: "100%"
-                        }}>
-                            {userSuggestions.map((user) => (
-                                <li
-                                    key={user.id}
-                                    style={{cursor: "pointer", padding: "4px"}}
-                                    onClick={() => {
-                                        setNewParticipantName(user.name);
-                                        setParticipantQuery(user.name);
-                                        setUserSuggestions([]);
-                                    }}
-                                >
-                                    {user.name}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-                <button type="button" onClick={addParticipant}>Adicionar Participante</button>
-                <table border={1} cellPadding={5} style={{ borderCollapse: "collapse", marginTop: "1rem", width: "100%" }}>
-                    <thead>
-                        <tr>
-                        <th>Nome</th>
-                        {form.matchDaySessions.map((md: any) => (
-                            <th key={md.id}>{new Date(md.matchDate).toLocaleDateString("pt-PT")}</th>
-                        ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {Object.entries(participantInputs).map(([name, rolesByDay], index) => (
-                        <tr key={index}>
-                            <td>
-                            {name}
-                            <button
-                                style={{ marginLeft: "0.5rem", color: "red" }}
-                                type="button"
-                                onClick={() => removeParticipant(name)}
-                            >
-                                Remover
-                            </button>
-                            </td>
-                            {form.matchDaySessions.map((md: any) => (
-                            <td key={md.id}>
-                                <select
-                                    value={rolesByDay[md.matchDate] || "DEFAULT"}
-                                    onChange={(e) => handleRoleChange(name, md.matchDate, e.target.value)}
-                                    style={{ width: "100%" }}
-                                >
-                                    <option value="DEFAULT" disabled>Selecione uma Função</option>
-                                    {functionOptions.map(func => (
-                                        <option key={func.id} value={func.name}>{func.name}</option>
-                                    ))}
-                                </select>
-                            </td>
-                            ))}
-                        </tr>
-                        ))}
-                    </tbody>
-                    </table>
+            return {
+                matchDay: matchDate,
+                sessions: md.sessions.filter((s: string) => s && s.trim() !== ""),
+            };
+        }).filter(Boolean); // Remover entradas nulas
 
-                <button type="submit" disabled={submitting}>{submitting ? "Salvando..." : "Salvar Alterações"}</button>
-                <button type="button" onClick={handleSealCallList} disabled={submitting} style={{ marginLeft: "10px" }}>Lacrar</button>
-            </form>
-        </div>
-    );
+        // Construir participants para o envio
+        const formattedParticipants = Object.keys(participantInputs).flatMap(name => {
+            const userId = nameToUserIdMap[name];
+            if (!userId) return []; // Should not happen if logic is correct
+
+            return Object.keys(participantInputs[name]).map(dateKey => {
+                const functionName = participantInputs[name][dateKey];
+                const matchDayObj = matchDaySessionsInput.find(md => (md.matchDay || md.matchDate || md.day || md.date) === dateKey);
+                const matchDayId = matchDayObj?.id; // Assuming matchDayObj has an id
+
+                return {
+                    userId,
+                    userName: name,
+                    matchDayId,
+                    functionName,
+                };
+            }).filter(p => p.functionName); // Only include if a function is assigned
+        });
+
+        const payload = {
+            callListId: form.callListId,
+            competitionName: form.competitionName,
+            date: form.date,
+            deadline: form.deadline,
+            local: form.local,
+            description: form.description,
+            equipmentIds: selectedEquipmentIds,
+            matchDaySessions: formattedMatchDaySessions,
+            participants: formattedParticipants,
+        };
+
+        try {
+            const token = getCookie("token");
+            const response = await fetch("/arbnet/callList/edit", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token && { token }),
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.title || "Erro ao atualizar convocatória");
+            }
+            alert("Convocatória atualizada com sucesso!");
+            navigate("/check-callLists");
+        } catch (err: any) {
+            setError(err.message || "Erro desconhecido ao atualizar");
+            console.error("Erro ao submeter convocatória:", err);
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     async function handleSealCallList() {
         setSubmitting(true);
         setError(null);
         try {
             const token = getCookie("token");
-            if (!token) throw new Error("Token não encontrado. Faça login novamente.");
-
-            const callListIdentifier = form.callListId || form.id || id;
-            console.log("Sealing CallList with ID:", callListIdentifier);
-
-            const response = await fetch("/arbnet/callList/updateCallListStage", {
+            const response = await fetch(`/arbnet/callList/seal/${id}`, {
                 method: "PUT",
                 headers: {
-                    "Content-Type": "application/json",
-                    token,
+                    ...(token && { token }),
                 },
-                body: JSON.stringify({ id: callListIdentifier }),
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                const backendErrorMessage = errorData.title || "Erro ao lacrar convocatória.";
-                alert("Erro ao lacrar: " + backendErrorMessage);
-                setError(backendErrorMessage);
-                return;
+                const err = await response.json();
+                throw new Error(err.title || "Erro ao selar convocatória");
             }
-            alert("Convocatória lacrada com sucesso!");
-            navigate(`/arbnet/callList/sealed/${callListIdentifier}`); // Redirect after sealing
+            alert("Convocatória selada com sucesso!");
+            navigate("/check-callLists");
         } catch (err: any) {
-            const errorMessage = err.message || "Erro inesperado ao lacrar.";
-            alert("Erro ao lacrar: " + errorMessage);
-            setError(errorMessage);
+            setError(err.message || "Erro desconhecido ao selar convocatória");
+            console.error("Erro ao selar convocatória:", err);
         } finally {
             setSubmitting(false);
         }
     }
+
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p>Error: {error}</p>;
+
+    return (
+        <div className="edit-call-list-container">
+            <h2>Editar Convocatória</h2>
+            <form onSubmit={handleSubmit}>
+                <div className="form-section">
+                    <h3>Detalhes da Convocatória</h3>
+                    <div className="form-grid">
+                        <div className="form-group">
+                            <label htmlFor="competitionName" className="form-label">Nome da Competição</label>
+                            <input
+                                type="text"
+                                id="competitionName"
+                                name="competitionName"
+                                value={form.competitionName || ""}
+                                onChange={handleChange}
+                                className="form-input"
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="date" className="form-label">Data do Evento</label>
+                            <input
+                                type="date"
+                                id="date"
+                                name="date"
+                                value={form.date || ""}
+                                onChange={handleChange}
+                                className="form-input"
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="deadline" className="form-label">Prazo de Resposta</label>
+                            <input
+                                type="datetime-local"
+                                id="deadline"
+                                name="deadline"
+                                value={form.deadline ? new Date(form.deadline).toISOString().slice(0, 16) : ""}
+                                onChange={handleChange}
+                                className="form-input"
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="local" className="form-label">Local</label>
+                            <input
+                                type="text"
+                                id="local"
+                                name="local"
+                                value={form.local || ""}
+                                onChange={handleChange}
+                                className="form-input"
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div className="form-group single-column">
+                        <label htmlFor="description" className="form-label">Descrição</label>
+                        <textarea
+                            id="description"
+                            name="description"
+                            value={form.description || ""}
+                            onChange={handleChange}
+                            className="form-input"
+                            rows={3}
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">Equipamentos Necessários</label>
+                        <div className="equipment-dropdown-container" ref={equipmentDropdownRef}>
+                            <div
+                                className={`equipment-dropdown-header ${equipmentDropdownOpen ? "open" : ""}`}
+                                onClick={() => setEquipmentDropdownOpen(!equipmentDropdownOpen)}
+                            >
+                                <span>
+                                    {selectedEquipmentIds.length === 0
+                                        ? "Selecionar equipamentos"
+                                        : `Selecionados: ${selectedEquipmentIds.length}`}
+                                </span>
+                                <span>{equipmentDropdownOpen ? "▲" : "▼"}</span>
+                            </div>
+                            {equipmentDropdownOpen && (
+                                <div className="equipment-dropdown-list">
+                                    {equipmentOptions.map((eq) => (
+                                        <label key={eq.id}>
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedEquipmentIds.includes(eq.id)}
+                                                onChange={() => handleEquipmentChange(eq.id)}
+                                            />
+                                            {eq.name}
+                                        </label>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <div className="selected-equipment-tags">
+                            {selectedEquipmentIds.map((id) => {
+                                const eq = equipmentOptions.find((e) => e.id === id);
+                                return eq ? (
+                                    <span key={id} className="equipment-tag">
+                                        {eq.name}
+                                        <button type="button" onClick={() => handleEquipmentChange(id)}>
+                                            x
+                                        </button>
+                                    </span>
+                                ) : null;
+                            })}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="form-section">
+                    <h3>Dias e Sessões</h3>
+                    <table className="matchday-table">
+                        <thead>
+                        <tr>
+                            <th>Data do Dia de Jogo</th>
+                            <th>Sessões (horas)</th>
+                            <th>Ações</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {matchDaySessionsInput.map((md, index) => (
+                            <tr key={index}>
+                                <td>
+                                    <input
+                                        type="date"
+                                        value={md.matchDay || md.matchDate || md.day || md.date || ""}
+                                        onChange={(e) => handleMatchDayChange(index, e.target.value)}
+                                        className="form-input"
+                                        required
+                                    />
+                                </td>
+                                <td>
+                                    {md.sessions.map((session: string, sIndex: number) => (
+                                        <div key={sIndex} style={{ display: "flex", marginBottom: "0.5rem", alignItems: "center" }}>
+                                            <input
+                                                type="time"
+                                                value={session || ""}
+                                                onChange={(e) => handleSessionInputChange(index, sIndex, e.target.value)}
+                                                className="form-input"
+                                                required
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeSession(index, sIndex)}
+                                                className="btn-danger"
+                                                style={{ marginLeft: "0.5rem", padding: "0.3em 0.6em" }}
+                                            >
+                                                -X
+                                            </button>
+                                        </div>
+                                    ))}
+                                    <button type="button" onClick={() => addSession(index)} className="btn btn-secondary">
+                                        Adicionar Sessão
+                                    </button>
+                                </td>
+                                <td>
+                                    <button type="button" onClick={() => removeMatchDay(index)} className="btn btn-danger">
+                                        Remover Dia
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                    <button type="button" onClick={addMatchDay} className="btn btn-primary">
+                        Adicionar Dia de Jogo
+                    </button>
+                </div>
+
+                <div className="form-section">
+                    <h3>Participantes</h3>
+                    <div className="add-participant-section">
+                        <input
+                            type="text"
+                            placeholder="Nome do Participante"
+                            value={newParticipantName}
+                            onChange={(e) => setNewParticipantName(e.target.value)}
+                            className="form-input search-input"
+                        />
+                        <button type="button" onClick={addParticipant} className="btn btn-primary">
+                            Adicionar Participante
+                        </button>
+                    </div>
+                    {userSuggestions.length > 0 && newParticipantName.length >= 2 && (
+                        <ul className="suggestions-list">
+                            {userSuggestions.map((user) => (
+                                <li key={user.id} onClick={() => setNewParticipantName(user.name)}>
+                                    {user.name}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+
+                    {participants.length > 0 && (
+                        <table className="participant-table">
+                            <thead>
+                            <tr>
+                                <th>Nome do Participante</th>
+                                {matchDaySessionsInput.map((md, index) => (
+                                    <th key={index}>{md.matchDay || md.matchDate || md.day || md.date}</th>
+                                ))}
+                                <th>Ações</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {Object.keys(participantInputs).map((name) => (
+                                <tr key={name}>
+                                    <td>{name}</td>
+                                    {matchDaySessionsInput.map((md, index) => {
+                                        const dateKey = md.matchDay || md.matchDate || md.day || md.date;
+                                        return (
+                                            <td key={index}>
+                                                <select
+                                                    value={participantInputs[name][dateKey] || ""}
+                                                    onChange={(e) =>
+                                                        handleRoleChange(name, dateKey, e.target.value)
+                                                    }
+                                                    className="form-select"
+                                                >
+                                                    <option value="">Selecionar Função</option>
+                                                    {functionOptions.map(func => (
+                                                        <option key={func.id} value={func.name}>
+                                                            {func.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </td>
+                                        );
+                                    })}
+                                    <td>
+                                        <button
+                                            type="button"
+                                            onClick={() => removeParticipant(name)}
+                                            className="remove-participant-btn"
+                                        >
+                                            X
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+
+                <div className="button-group">
+                    <button
+                        type="submit"
+                        className="btn btn-primary"
+                        disabled={submitting}
+                    >
+                        {submitting ? "Salvando..." : "Salvar Convocatória"}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleSealCallList}
+                        className="btn btn-secondary"
+                        disabled={submitting}
+                    >
+                        Selar Convocatória
+                    </button>
+                </div>
+            </form>
+        </div>
+    )
 } 

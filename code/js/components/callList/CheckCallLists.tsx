@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react"
 import { useCurrentUser } from "../../src/context/Authn"
 import { useNavigate } from "react-router-dom"
 import {getCookie} from "./CreateCallList";
+import "../../CheckCallLists.css"
 
 interface Session {
     id: number
@@ -87,10 +88,10 @@ export function CheckCallLists() {
     if (loading) return <div>A carregar convocações...</div>
 
     return (
-        <div>
+        <div className="check-call-lists-container">
             <h2>As Minhas Convocações</h2>
             {events.length === 0 ? (
-                <p>Não tens convocações.</p>
+                <p className="no-events-message">Não tens convocações.</p>
             ) : events.map((event, index) => (
                 <div key={index} className="calllist-card">
                     <h3>{event.competitionName}</h3>
