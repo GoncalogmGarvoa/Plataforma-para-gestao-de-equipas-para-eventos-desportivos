@@ -19,21 +19,14 @@ const InfoInContext = createContext<ContextType>({
     setRole: () => {},
 })
 
-// @ts-ignore
-const getEmailFromCookie = (): string | undefined => {
-    const cookie = document.cookie.split('; ').find(row => row.startsWith('email='))
-    return cookie ? cookie.split('=')[1] : undefined
-}
-
-// @ts-ignore
-const getRoleFromCookie = (): string | undefined => {
-    const cookie = document.cookie.split('; ').find(row => row.startsWith('role='))
-    return cookie ? cookie.split('=')[1] : undefined
-}
+const getCookie = (name: string): string | undefined => {
+    const match = document.cookie.split('; ').find(row => row.startsWith(`${name}=`));
+    return match ? match.split('=')[1] : undefined;
+};
 
 export function UserContainer({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState(getEmailFromCookie)
-    const [role, setRole] = useState<string | undefined>(getRoleFromCookie)
+    const [user, setUser] = useState<string | undefined>(() => getCookie('email'));
+    const [role, setRole] = useState<string | undefined>(() => getCookie('role'));
 
     return (
         <InfoInContext.Provider value={{ email: user, setEmail: setUser, role, setRole}}>
