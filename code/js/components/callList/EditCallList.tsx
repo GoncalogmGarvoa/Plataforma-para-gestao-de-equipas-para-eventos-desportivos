@@ -549,11 +549,13 @@ export function EditCallList() {
         setError(null);
         try {
             const token = getCookie("token");
-            const response = await fetch(`/arbnet/callList/seal/${id}`, {
+            const response = await fetch("/arbnet/callList/updateCallListStage", {
                 method: "PUT",
                 headers: {
+                    "Content-Type": "application/json",
                     ...(token && { token }),
                 },
+                body: JSON.stringify({ id: id }),
             });
 
             if (!response.ok) {
@@ -561,7 +563,7 @@ export function EditCallList() {
                 throw new Error(err.title || "Erro ao selar convocatória");
             }
             alert("Convocatória selada com sucesso!");
-            navigate("/check-callLists");
+            navigate("http://localhost:8000/search-calllist-draft");
         } catch (err: any) {
             setError(err.message || "Erro desconhecido ao selar convocatória");
             console.error("Erro ao selar convocatória:", err);
