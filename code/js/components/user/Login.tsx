@@ -24,6 +24,7 @@ export async function authenticate(email: string, password: string): Promise<str
             expirationDate.setHours(expirationDate.getHours() + 1);
             document.cookie = `token=${data.token}; expires=${expirationDate.toUTCString()}; path=/;`;
             document.cookie = `email=${email}; expires=${expirationDate.toUTCString()}; path=/;`;
+            console.log("authenticate: Cookies set. Current document.cookie:", document.cookie);
             return data.token;
         } else {
             return { error: data.title || "Erro ao autenticar." };
@@ -73,6 +74,7 @@ export function Login() {
                 if (typeof res === "string") {
                     setUser(res);
                     setEmail(email);
+                    console.log("handleSubmit: After setUser/setEmail. Current document.cookie:", document.cookie);
                     setRedirect(true);
                     setLocationPath("/select-role");
                 } else {

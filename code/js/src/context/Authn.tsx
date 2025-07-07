@@ -23,8 +23,14 @@ const getCookie = (name: string): string | null => {
 export function AuthnContainer({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState(() => {
         const token = getCookie('token');
+        console.log("AuthnContainer: Initializing user state. Token from cookie: ", token ? "exists" : "does not exist");
         return token ? token + "=" : undefined;
     });
+
+    // Add a useEffect to log user changes
+    React.useEffect(() => {
+        console.log("AuthnContainer: User state changed to: ", user ? "defined" : "undefined");
+    }, [user]);
 
     return (
         <LoggedInContext.Provider value={{ user: user, setUser: setUser }}>
