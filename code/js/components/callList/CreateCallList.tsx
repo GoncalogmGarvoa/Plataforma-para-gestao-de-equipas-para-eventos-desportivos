@@ -43,6 +43,8 @@ export function getCookie(name: string): string | undefined {
 
 export function CreateCallList() {
     const navigate = useNavigate();
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
     const [formData, setFormData] = useState<Omit<CallListInputModel, "participants" | "matchDaySessions" | "equipmentIds">>({
         competitionName: "",
@@ -166,7 +168,11 @@ export function CreateCallList() {
     };
 
     const addMatchDay = () => {
-        if (!newDay || !newSessionTime) return;
+        setErrorMessage(null); // Clear any previous error messages
+        if (!newDay || !newSessionTime) {
+            setErrorMessage("Data e hora do dia da convocatória são obrigatórios.");
+            return;
+        }
 
         setMatchDaySessionsInput((prev) => {
             const existing = prev.find(d => d.matchDay === newDay);
@@ -188,6 +194,7 @@ export function CreateCallList() {
     };
 
     const addParticipant = async () => {
+        setErrorMessage(null); // Clear any previous error messages
         if (!newParticipantName || participantInputs[newParticipantName]) return;
 
         try {
@@ -197,14 +204,25 @@ export function CreateCallList() {
                 headers: {token},
             });
 
-
-            if (!res.ok) throw new Error("Utilizador não foi encontrado.");
+            if (!res.ok) {
+                const errorData = await res.json().catch((): null => null);
+                console.error("Full response on addParticipant error:", res);
+                console.error("Error data from API (addParticipant):", errorData);
+                let errorMessageText = "Erro ao procurar utilizador.";
+                if (errorData) {
+                    errorMessageText = errorData.message || errorData.detail || errorData.title || JSON.stringify(errorData);
+                } else {
+                    errorMessageText = await res.text();
+                }
+                setErrorMessage(errorMessageText);
+                return;
+            }
 
             const users: { name: string, id: number }[] = await res.json();
             const foundUser = users.find(u => u.name.toLowerCase() === newParticipantName.toLowerCase());
 
             if (!foundUser) {
-                alert("Utilizador não encontrado.");
+                setErrorMessage("Utilizador não encontrado.");
                 return;
             }
 
@@ -231,11 +249,10 @@ export function CreateCallList() {
                 [newParticipantName]: userId
             }));
 
-
             setNewParticipantName("");
         } catch (error) {
             console.error(error);
-            alert("Erro ao buscar utilizador.");
+            setErrorMessage("Erro ao buscar utilizador.");
         }
     };
 
@@ -250,9 +267,38 @@ export function CreateCallList() {
     };
 
     const handleSubmit = async () => {
+        setErrorMessage(null); // Clear any previous error messages
+
+        const requiredFields = [
+            "competitionName",
+            "address",
+            "phoneNumber",
+            "email",
+            "association",
+            "location",
+            "deadline",
+        ];
+
+        for (const field of requiredFields) {
+            if (!formData[field as keyof typeof formData]) {
+                setErrorMessage(`O campo '${field}' é obrigatório.`);
+                return;
+            }
+        }
+
+        if (matchDaySessionsInput.length === 0) {
+            setErrorMessage("É necessário adicionar pelo menos um Dia e Hora.");
+            return;
+        }
+
+        if (selectedEquipmentIds.length === 0) {
+            setErrorMessage("É necessário selecionar pelo menos um Equipamento.");
+            return;
+        }
+
         const token = getCookie("token");
         if (!token) {
-            alert("Token não encontrado. Faça login novamente.");
+            setErrorMessage("Token não encontrado. Faça login novamente.");
             return;
         }
 
@@ -288,15 +334,24 @@ export function CreateCallList() {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.title || "Erro ao criar convocatória.");
+                const errorData = await response.json().catch((): null => null); // Attempt to parse JSON, but don't fail if it's not JSON
+                console.error("Full response on error:", response);
+                console.error("Error data from API:", errorData);
+
+                let errorMessageText = "Erro ao criar convocatória.";
+                if (errorData) {
+                    errorMessageText = errorData.message || errorData.detail || errorData.title || JSON.stringify(errorData);
+                } else {
+                    errorMessageText = await response.text(); // Get raw text if JSON parsing failed
+                }
+                setErrorMessage(errorMessageText);
+                return;
             }
 
-            alert("Convocatória criada com sucesso!");
-            navigate("/");
+            setShowSuccessDialog(true); // Show success dialog
         } catch (err) {
             console.error(err);
-            alert(err instanceof Error ? err.message : "Erro inesperado.");
+            setErrorMessage(err instanceof Error ? err.message : "Erro inesperado.");
         }
     };
 
@@ -324,6 +379,45 @@ export function CreateCallList() {
     return (
         <div className="create-call-list-container">
             <h2>Criar Convocatória</h2>
+
+            {errorMessage && (
+                <div style={{ color: 'red', marginBottom: '1rem' }}>
+                    {errorMessage}
+                </div>
+            )}
+
+            {showSuccessDialog && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 1000,
+                }}>
+                    <div style={{
+                        backgroundColor: 'white',
+                        padding: '2rem',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+                        textAlign: 'center',
+                        width: '300px',
+                    }}>
+                        <h3>Sucesso!</h3>
+                        <p>Convocatória criada com sucesso!</p>
+                        <button onClick={() => {
+                            setShowSuccessDialog(false);
+                            navigate("/"); // Navigate on dialog close
+                        }} style={{ marginTop: '1rem', padding: '0.5rem 1rem', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                            OK
+                        </button>
+                    </div>
+                </div>
+            )}
 
             <div className="form-inline-row">
                 <div className="form-group-inline">
@@ -537,7 +631,7 @@ export function CreateCallList() {
             </div>
             <button onClick={addParticipant}>Adicionar Participante</button>
 
-            <form>
+            <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
                 <table border={1} cellPadding={5} style={{borderCollapse: "collapse", marginTop: "1rem"}}>
                     <thead>
                     <tr>
@@ -579,7 +673,7 @@ export function CreateCallList() {
                     </tbody>
                 </table>
 
-                <button type="submit" onClick={handleSubmit}>Criar Convocatória</button>
+                <button type="submit">Criar Convocatória</button>
             </form>
         </div>
     );
