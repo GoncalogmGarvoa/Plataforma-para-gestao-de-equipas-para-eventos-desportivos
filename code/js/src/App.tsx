@@ -70,7 +70,7 @@ const router = createBrowserRouter([
                 "element": <Home/>,
             },
             {
-                "path": "/users",
+                "path": "/users/signup",
                 "element": <CreateUser />
             },
             {

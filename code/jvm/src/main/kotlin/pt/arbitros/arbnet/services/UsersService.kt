@@ -660,8 +660,17 @@ class UsersService(
             message.setText("User with ID ${userStatusInput.userId} has changed status to ${userStatusInput.status} at ${Clock.System.now()}")
             message.setFrom(System.getenv("ARBNET_EMAIL"))
             println("${System.getenv("ARBNET_EMAIL")}, ${System.getenv("ARBNET_EMAIL_PASSWORD")}")
-            mailSender.send(message)
 
+            try {
+                mailSender.send(message)
+            }
+            catch (e: Exception) {
+                it.rollback()
+                return@run failure(ApiError.InternalServerError(
+                    "Email sending failed",
+                    "An error occurred while trying to send the email notification. Please try again later.",
+                ))
+            }
             return@run success(true)
         }
     }
@@ -687,7 +696,7 @@ class UsersService(
             message.setTo(email)
             message.setSubject("Invitation to ArbNet")
             message.setText("You have been invited to join ArbNet use the following URL to register: " +
-                    "${System.getenv("ARBNET_URL")}/signup?inviteToken=${generateInviteToken(email)}")
+                    "${System.getenv("ARBNET_URL")}?inviteToken=${generateInviteToken(email)}")
             message.setFrom(System.getenv("ARBNET_EMAIL"))
             mailSender.send(message)
 
