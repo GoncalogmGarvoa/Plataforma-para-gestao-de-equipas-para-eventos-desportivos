@@ -42,16 +42,28 @@ class CallListController(
     @PutMapping(Uris.CallListUris.UPDATE_PARTICIPANT_CONFIRMATION_STATUS)
     fun updateParticipantConfirmationStatus(
         @RequestBody participantUpdate: ParticipantUpdateInput,
-    ): ResponseEntity<*> {
-        val result =
-            callListService.updateParticipantConfirmationStatus(
-                participantUpdate.days,
-                participantUpdate.participantId,
-                participantUpdate.callListId,
-            )
-        return when (result) {
-            is Success -> ResponseEntity.ok("confirmation status changed")
-            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        @RequestHeader token: String,
+
+        ): ResponseEntity<*> {
+        val userResult = usersService.getUserByToken(token)
+
+        return if (userResult is Success) {
+            val result =
+                callListService.updateParticipantConfirmationStatus(
+                    participantUpdate.days,
+                    userResult.value.id,
+                    participantUpdate.callListId,
+                )
+            return when (result) {
+                is Success -> ResponseEntity.ok("confirmation status changed")
+                is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+            }
+        }
+        else {
+            Problem.fromApiErrorToProblemResponse(
+                ApiError.NotFound(
+                    "User not found or not authorized to update participant confirmation status",
+                ))
         }
     }
 
