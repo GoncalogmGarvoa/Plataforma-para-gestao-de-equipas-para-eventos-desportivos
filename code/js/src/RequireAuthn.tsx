@@ -13,29 +13,15 @@ export function RequireAuthn({ children }: { children: React.ReactNode }): React
 
 
     if (currentUser) {
-        const token = getCookie('token')
-        const email = getCookie('email')
-        const role = getCookie('role')
-
-        if (token && email) {
-            setUser(token + "=")
-            setEmail(email)
-            if (role) {
-                setRole(role)
-            }
-        }
-
         return <>{children}</>
 
     } else {
         console.log("redirecting to login")
         return <Navigate to="/login" state={{source: location.pathname}} replace={true}/>
     }
-
 }
 
 function getCookie(name: string): string | null {
-    // @ts-ignore
     const match = document.cookie.split('; ').find(row => row.startsWith(`${name}=`))
     return match ? match.split('=')[1] : null
 }

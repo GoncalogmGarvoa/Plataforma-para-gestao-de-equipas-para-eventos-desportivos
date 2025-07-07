@@ -14,14 +14,17 @@ const LoggedInContext = createContext<ContextType>({
     setUser: () => { },
 })
 
-// @ts-ignore
-const getTokenFromCookie = () => document.cookie.split('; ').find(row => row.startsWith('token='))==undefined ? document.cookie.split('; ').find(row => row.startsWith('token=')) : document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1]+"="
-
-
+// Function to safely get token from cookie
+const getCookie = (name: string): string | null => {
+    const match = document.cookie.split('; ').find(row => row.startsWith(`${name}=`));
+    return match ? match.split('=')[1] : null;
+};
 
 export function AuthnContainer({ children }: { children: React.ReactNode }) {
-    //const [user, setUser] = useState(undefined)
-    const [user, setUser] = useState(getTokenFromCookie())
+    const [user, setUser] = useState(() => {
+        const token = getCookie('token');
+        return token ? token + "=" : undefined;
+    });
 
     return (
         <LoggedInContext.Provider value={{ user: user, setUser: setUser }}>
