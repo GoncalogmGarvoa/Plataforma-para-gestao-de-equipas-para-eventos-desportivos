@@ -360,9 +360,9 @@ class UsersController(
 
     @PostMapping(Uris.UsersUris.INVITE_NEW_USER)
     fun inviteNewUser(
-        @RequestBody email: String,
+        @RequestBody email: String,  //todo create object for this
     ): ResponseEntity<*> =
-        when (val result = usersService.sendInvite(email)) {
+        when (val result = usersService.sendInvite(email.trim())) {
             is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }

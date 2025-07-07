@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS
     dbp.participant,
     dbp.session,
     dbp.match_day,
+    dbp.notification,
     dbp.call_list,
     dbp.user_token_role,
     dbp.tokens,
