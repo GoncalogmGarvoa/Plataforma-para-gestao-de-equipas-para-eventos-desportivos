@@ -1,8 +1,7 @@
 // src/components/callList/CheckCallLists.tsx
 import React, { useEffect, useState } from "react"
-import { useCurrentUser } from "../../src/context/Authn"
 import { useNavigate } from "react-router-dom"
-import {getCookie} from "./CreateCallList";
+import { getCookie } from "./CreateCallList"
 import "../../CheckCallLists.css"
 
 interface Session {
@@ -50,49 +49,64 @@ interface RefereeCallListsOutputModel {
 }
 
 export function CheckCallLists() {
-    const currentUser = useCurrentUser()
     const [events, setEvents] = useState<RefereeCallListsOutputModel[]>([])
     const [loading, setLoading] = useState(true)
+    const [userId, setUserId] = useState<number | null>(null)
+    const [showPast, setShowPast] = useState(false)
     const navigate = useNavigate()
 
     useEffect(() => {
-        if (!currentUser) return;
+        const token = getCookie("token")
+        if (!token) return
 
         const fetchData = async () => {
-            const token = getCookie("token");
-
             try {
-                const res = await fetch(`/arbnet/callList/referee`, {
+
+                // Buscar convocatórias
+                const resEvents = await fetch("/arbnet/callList/referee", {
                     method: "GET",
-                    headers: {
-                        token: token
-                    }
-                });
+                    headers: { token }
+                })
 
-                if (!res.ok) {
-                    throw new Error("Erro ao obter convocações");
-                }
-
-                const data: RefereeCallListsOutputModel[] = await res.json();
-                setEvents(data);
+                if (!resEvents.ok) throw new Error("Erro ao obter convocações")
+                const data: RefereeCallListsOutputModel[] = await resEvents.json()
+                setEvents(data)
             } catch (err) {
-                console.error(err);
+                console.error(err)
             } finally {
-                setLoading(false);
+                setLoading(false)
             }
-        };
-        fetchData();
-    }, [currentUser]);
+        }
 
+        fetchData()
+    }, [])
+
+    const today = new Date().toISOString().split("T")[0]
+
+    const filteredEvents = events.filter(event => {
+        const dates = event.matchDaySessions.map(md => md.matchDate)
+        const latestDate = dates.sort().at(-1)
+        if (!latestDate) return false
+        return showPast ? latestDate < today : latestDate >= today
+    })
 
     if (loading) return <div>A carregar convocações...</div>
 
     return (
         <div className="check-call-lists-container">
             <h2>As Minhas Convocações</h2>
-            {events.length === 0 ? (
+
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
+                <button onClick={() => setShowPast(prev => !prev)}>
+                    {showPast ? "Ver Convocações Atuais" : "Ver Convocações Antigas"}
+                </button>
+            </div>
+
+            {filteredEvents.length === 0 ? (
                 <p className="no-events-message">Não tens convocações.</p>
-            ) : events.map((event, index) => (
+            ) : filteredEvents.map((event, index) => (
+                // restante código
+
                 <div key={index} className="calllist-card">
                     <h3>{event.competitionName}</h3>
                     <p><strong>Data Limite:</strong> {new Date(event.deadline).toLocaleDateString()}</p>
@@ -101,8 +115,7 @@ export function CheckCallLists() {
                     <ul>
                         {event.matchDaySessions.map((mdf, i) => {
                             const participant = event.participants.find(p =>
-                                p.matchDayId === mdf.id &&
-                                p.userId === 13 // currentUser?.id
+                                p.matchDayId === mdf.id
                             )
 
                             return (
@@ -121,6 +134,3 @@ export function CheckCallLists() {
         </div>
     )
 }
-
-
-
