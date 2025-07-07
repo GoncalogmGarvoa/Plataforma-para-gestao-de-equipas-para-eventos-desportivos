@@ -20,7 +20,7 @@ object Uris {
         const val INACTIVE_USERS = "$PREFIX/users/inactive"
         const val USERS = "$PREFIX/users" // TODO
         const val USER_ROLES_FROM_USER = "$PREFIX/users/roles/fromUser"
-        const val SET_ROLE = "$PREFIX/users/role/set" // TODO
+        const val SET_ROLE = "$PREFIX/users/role/set"
         const val TOKEN = "$PREFIX/users/token"
         const val GET_BY_TOKEN = "$PREFIX/users/me"
         const val LOGOUT = "$PREFIX/users/logout"
