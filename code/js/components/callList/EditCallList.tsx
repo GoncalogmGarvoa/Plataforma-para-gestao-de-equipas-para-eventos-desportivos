@@ -256,7 +256,7 @@ export function EditCallList() {
     const handleMatchDayChange = (index: number, value: string) => {
         setMatchDaySessionsInput((prev) =>
             prev.map((item, i) =>
-                i === index ? { ...item, matchDay: value } : item
+                i === index ? { ...item, matchDate: value } : item
             )
         );
     };
@@ -266,7 +266,7 @@ export function EditCallList() {
             prev.map((item, i) => {
                 if (i === matchDayIndex) {
                     const newSessions = [...item.sessions];
-                    newSessions[sessionIndex] = value;
+                    newSessions[sessionIndex] = { time: value };
                     return { ...item, sessions: newSessions };
                 }
                 return item;
@@ -275,13 +275,13 @@ export function EditCallList() {
     };
 
     const addMatchDay = () => {
-        setMatchDaySessionsInput((prev) => [...prev, { matchDay: "", sessions: ["", ""] }]);
+        setMatchDaySessionsInput((prev) => [...prev, { matchDate: "", sessions: [""] }]);
     };
 
     const addSession = (index: number) => {
         setMatchDaySessionsInput((prev) =>
             prev.map((item, i) =>
-                i === index ? { ...item, sessions: [...item.sessions, ""] } : item
+                i === index ? { ...item, sessions: [...item.sessions, { time: "" }] } : item
             )
         );
     };
@@ -455,262 +455,284 @@ export function EditCallList() {
                     <h3>Detalhes da Convocatória</h3>
                     <div className="form-grid">
                         <div className="form-group">
-                            <label htmlFor="competitionName" className="form-label">Nome da Competição</label>
+                            <label htmlFor="location">Localização:</label>
+                            <input
+                                type="text"
+                                id="location"
+                                className="form-control"
+                                value={form.location || ''}
+                                onChange={(e) => setForm({ ...form, location: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="deadline">Prazo de Resposta:</label>
+                            <input
+                                type="date"
+                                id="deadline"
+                                className="form-control"
+                                value={form.deadline ? new Date(form.deadline).toISOString().substring(0, 10) : ''}
+                                onChange={(e) => setForm({ ...form, deadline: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="competitionName">Nome da Competição:</label>
                             <input
                                 type="text"
                                 id="competitionName"
-                                name="competitionName"
-                                value={form.competitionName || ""}
-                                onChange={handleChange}
-                                className="form-input"
+                                className="form-control"
+                                value={form.competitionName || ''}
+                                onChange={(e) => setForm({ ...form, competitionName: e.target.value })}
                                 required
                             />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="date" className="form-label">Data do Evento</label>
-                            <input
-                                type="date"
-                                id="date"
-                                name="date"
-                                value={form.date || ""}
-                                onChange={handleChange}
-                                className="form-input"
-                                required
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="deadline" className="form-label">Prazo de Resposta</label>
-                            <input
-                                type="datetime-local"
-                                id="deadline"
-                                name="deadline"
-                                value={form.deadline ? new Date(form.deadline).toISOString().slice(0, 16) : ""}
-                                onChange={handleChange}
-                                className="form-input"
-                                required
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="local" className="form-label">Local</label>
+                            <label htmlFor="address">Morada:</label>
                             <input
                                 type="text"
-                                id="local"
-                                name="local"
-                                value={form.local || ""}
-                                onChange={handleChange}
-                                className="form-input"
+                                id="address"
+                                className="form-control"
+                                value={form.address || ''}
+                                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="phoneNumber">Número de Telefone:</label>
+                            <input
+                                type="text"
+                                id="phoneNumber"
+                                className="form-control"
+                                value={form.phoneNumber || ''}
+                                onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="email">Email:</label>
+                            <input
+                                type="email"
+                                id="email"
+                                className="form-control"
+                                value={form.email || ''}
+                                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="association">Associação:</label>
+                            <input
+                                type="text"
+                                id="association"
+                                className="form-control"
+                                value={form.association || ''}
+                                onChange={(e) => setForm({ ...form, association: e.target.value })}
                                 required
                             />
                         </div>
                     </div>
-                    <div className="form-group single-column">
-                        <label htmlFor="description" className="form-label">Descrição</label>
-                        <textarea
-                            id="description"
-                            name="description"
-                            value={form.description || ""}
-                            onChange={handleChange}
-                            className="form-input"
-                            rows={3}
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label className="form-label">Equipamentos Necessários</label>
-                        <div className="equipment-dropdown-container" ref={equipmentDropdownRef}>
-                            <div
-                                className={`equipment-dropdown-header ${equipmentDropdownOpen ? "open" : ""}`}
-                                onClick={() => setEquipmentDropdownOpen(!equipmentDropdownOpen)}
-                            >
-                                <span>
-                                    {selectedEquipmentIds.length === 0
-                                        ? "Selecionar equipamentos"
-                                        : `Selecionados: ${selectedEquipmentIds.length}`}
-                                </span>
-                                <span>{equipmentDropdownOpen ? "▲" : "▼"}</span>
-                            </div>
-                            {equipmentDropdownOpen && (
-                                <div className="equipment-dropdown-list">
-                                    {equipmentOptions.map((eq) => (
-                                        <label key={eq.id}>
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedEquipmentIds.includes(eq.id)}
-                                                onChange={() => handleEquipmentChange(eq.id)}
-                                            />
-                                            {eq.name}
-                                        </label>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                        <div className="selected-equipment-tags">
-                            {selectedEquipmentIds.map((id) => {
-                                const eq = equipmentOptions.find((e) => e.id === id);
-                                return eq ? (
-                                    <span key={id} className="equipment-tag">
-                                        {eq.name}
-                                        <button type="button" onClick={() => handleEquipmentChange(id)}>
-                                            x
-                                        </button>
-                                    </span>
-                                ) : null;
-                            })}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="form-section">
-                    <h3>Dias e Sessões</h3>
+                    <h3 className="section-title" style={{ marginTop: '30px' }}>Dia de Prova</h3>
                     <table className="matchday-table">
                         <thead>
-                        <tr>
-                            <th>Data do Dia de Jogo</th>
-                            <th>Sessões (horas)</th>
-                            <th>Ações</th>
-                        </tr>
+                            <tr>
+                                <th>Data da Prova</th>
+                                <th>Sessões (horas)</th>
+                                <th>Ações</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        {matchDaySessionsInput.map((md, index) => (
-                            <tr key={index}>
-                                <td>
-                                    <input
-                                        type="date"
-                                        value={md.matchDay || md.matchDate || md.day || md.date || ""}
-                                        onChange={(e) => handleMatchDayChange(index, e.target.value)}
-                                        className="form-input"
-                                        required
-                                    />
-                                </td>
-                                <td>
-                                    {md.sessions.map((session: string, sIndex: number) => (
-                                        <div key={sIndex} style={{ display: "flex", marginBottom: "0.5rem", alignItems: "center" }}>
-                                            <input
-                                                type="time"
-                                                value={session || ""}
-                                                onChange={(e) => handleSessionInputChange(index, sIndex, e.target.value)}
-                                                className="form-input"
-                                                required
-                                            />
+                            {matchDaySessionsInput.map((md, mdIndex) => (
+                                <tr key={mdIndex}>
+                                    <td>
+                                        <input
+                                            type="date"
+                                            id={`matchDay-${mdIndex}`}
+                                            className="form-control form-control-sm match-day-date-input"
+                                            value={md.matchDate ? new Date(md.matchDate).toISOString().substring(0, 10) : ''}
+                                            onChange={(e) => handleMatchDayChange(mdIndex, e.target.value)}
+                                            required
+                                        />
+                                    </td>
+                                    <td>
+                                        <div className="sessions-list" style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center' }}>
+                                            {md.sessions.map((session: any, sessionIndex: number) => (
+                                                <div key={sessionIndex} className="session-item" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                    <input
+                                                        type="time"
+                                                        className="form-control form-control-sm session-time-input"
+                                                        style={{ width: '100px' }}
+                                                        value={session.time || ''}
+                                                        onChange={(e) => handleSessionInputChange(mdIndex, sessionIndex, e.target.value)}
+                                                        required
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-danger btn-sm remove-session-btn"
+                                                        onClick={() => removeSession(mdIndex, sessionIndex)}
+                                                    >
+                                                        -
+                                                    </button>
+                                                </div>
+                                            ))}
                                             <button
                                                 type="button"
-                                                onClick={() => removeSession(index, sIndex)}
-                                                className="btn-danger"
-                                                style={{ marginLeft: "0.5rem", padding: "0.3em 0.6em" }}
+                                                className="btn btn-secondary btn-sm add-session-btn"
+                                                onClick={() => addSession(mdIndex)}
                                             >
-                                                -X
+                                                +
                                             </button>
                                         </div>
-                                    ))}
-                                    <button type="button" onClick={() => addSession(index)} className="btn btn-secondary">
-                                        Adicionar Sessão
-                                    </button>
-                                </td>
-                                <td>
-                                    <button type="button" onClick={() => removeMatchDay(index)} className="btn btn-danger">
-                                        Remover Dia
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
+                                    </td>
+                                    <td>
+                                        <button
+                                            type="button"
+                                            className="btn btn-danger btn-sm remove-match-day-btn"
+                                            onClick={() => removeMatchDay(mdIndex)}
+                                        >
+                                            Remover Dia
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
-                    <button type="button" onClick={addMatchDay} className="btn btn-primary">
-                        Adicionar Dia de Jogo
+                    <button
+                        type="button"
+                        className="btn btn-secondary btn-sm add-match-day-btn-bottom"
+                        onClick={addMatchDay}
+                    >
+                        Adicionar Dia de Prova
                     </button>
-                </div>
-
-                <div className="form-section">
-                    <h3>Participantes</h3>
-                    <div className="add-participant-section">
+                    <h3 className="section-title" style={{ marginTop: '30px' }}>Equipamentos</h3>
+                    <div className="form-group dropdown-container" ref={equipmentDropdownRef}>
+                        <label htmlFor="equipment">Equipamentos Necessários:</label>
                         <input
                             type="text"
-                            placeholder="Nome do Participante"
+                            id="equipment"
+                            className="form-control"
+                            placeholder="Selecione equipamentos"
+                            value={selectedEquipmentIds.map(id => equipmentOptions.find(opt => opt.id === id)?.name).filter(Boolean).join(', ')}
+                            onFocus={() => setEquipmentDropdownOpen(true)}
+                            readOnly
+                        />
+                        <button type="button" className="dropdown-toggle-button" onClick={() => setEquipmentDropdownOpen(!equipmentDropdownOpen)}>
+                            {equipmentDropdownOpen ? '▲' : '▼'}
+                        </button>
+                        {equipmentDropdownOpen && (
+                            <div className="dropdown-menu show">
+                                {equipmentOptions.map((equipment) => (
+                                    <div key={equipment.id} className="dropdown-item">
+                                        <input
+                                            type="checkbox"
+                                            id={`equipment-${equipment.id}`}
+                                            checked={selectedEquipmentIds.includes(equipment.id)}
+                                            onChange={() => handleEquipmentChange(equipment.id)}
+                                        />
+                                        <label htmlFor={`equipment-${equipment.id}`}>{equipment.name}</label>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    <div className="selected-equipment-tags" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '10px' }}>
+                        {selectedEquipmentIds.map((id) => {
+                            const eq = equipmentOptions.find((e) => e.id === id);
+                            return eq ? (
+                                <span key={id} className="equipment-tag" style={{ backgroundColor: '#007bff', borderRadius: '4px', padding: '5px 10px', display: 'flex', alignItems: 'center', gap: '5px', color: '#fff' }}>
+                                    {eq.name}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleEquipmentChange(id)}
+                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', fontSize: '14px' }}
+                                    >
+                                        x
+                                    </button>
+                                </span>
+                            ) : null;
+                        })}
+                    </div>
+
+                    <h3 className="section-title" style={{ marginTop: '30px' }}>Participantes e Funções</h3>
+                    {Object.entries(participantInputs).map(([name, days]) => (
+                        <div key={name} className="participant-item">
+                            <h4>{name}</h4>
+                            <button
+                                type="button"
+                                className="btn btn-danger btn-sm"
+                                onClick={() => removeParticipant(name)}
+                            >
+                                Remover Participante
+                            </button>
+                            <div className="participant-roles-grid">
+                                {matchDaySessionsInput.map((md) => {
+                                    const dateKey = md.matchDate; // Use matchDate directly
+                                    return (
+                                        <div key={dateKey} className="participant-role-item">
+                                            <label>{new Date(dateKey).toLocaleDateString()}:</label>
+                                            <select
+                                                className="form-control"
+                                                value={days[dateKey] || ""}
+                                                onChange={(e) => handleRoleChange(name, dateKey, e.target.value)}
+                                            >
+                                                <option value="">Selecione Função</option>
+                                                {functionOptions.map((func) => (
+                                                    <option key={func.id} value={func.name}>
+                                                        {func.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
+
+                    <div className="add-participant-section" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Adicionar Participante (Nome)"
                             value={newParticipantName}
                             onChange={(e) => setNewParticipantName(e.target.value)}
-                            className="form-input search-input"
+                            onInput={(e) => setParticipantQuery((e.target as HTMLInputElement).value)}
                         />
-                        <button type="button" onClick={addParticipant} className="btn btn-primary">
+                        <button
+                            type="button"
+                            className="btn btn-success btn-sm"
+                            onClick={addParticipant}
+                        >
                             Adicionar Participante
                         </button>
                     </div>
-                    {userSuggestions.length > 0 && newParticipantName.length >= 2 && (
-                        <ul className="suggestions-list">
+                    {userSuggestions.length > 0 && participantQuery.length > 1 && (
+                        <ul className="suggestions-list" style={{ listStyle: 'none', padding: '0', margin: '0', border: '1px solid #ccc', borderRadius: '4px', maxHeight: '150px', overflowY: 'auto', zIndex: '1000', backgroundColor: '#fff' }}>
                             {userSuggestions.map((user) => (
-                                <li key={user.id} onClick={() => setNewParticipantName(user.name)}>
+                                <li
+                                    key={user.id}
+                                    onClick={() => {
+                                        setNewParticipantName(user.name);
+                                        setUserSuggestions([]);
+                                    }}
+                                    style={{ padding: '8px 12px', cursor: 'pointer' }}
+                                >
                                     {user.name}
                                 </li>
                             ))}
                         </ul>
                     )}
-
-                    {participants.length > 0 && (
-                        <table className="participant-table">
-                            <thead>
-                            <tr>
-                                <th>Nome do Participante</th>
-                                {matchDaySessionsInput.map((md, index) => (
-                                    <th key={index}>{md.matchDay || md.matchDate || md.day || md.date}</th>
-                                ))}
-                                <th>Ações</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {Object.keys(participantInputs).map((name) => (
-                                <tr key={name}>
-                                    <td>{name}</td>
-                                    {matchDaySessionsInput.map((md, index) => {
-                                        const dateKey = md.matchDay || md.matchDate || md.day || md.date;
-                                        return (
-                                            <td key={index}>
-                                                <select
-                                                    value={participantInputs[name][dateKey] || ""}
-                                                    onChange={(e) =>
-                                                        handleRoleChange(name, dateKey, e.target.value)
-                                                    }
-                                                    className="form-select"
-                                                >
-                                                    <option value="">Selecionar Função</option>
-                                                    {functionOptions.map(func => (
-                                                        <option key={func.id} value={func.name}>
-                                                            {func.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </td>
-                                        );
-                                    })}
-                                    <td>
-                                        <button
-                                            type="button"
-                                            onClick={() => removeParticipant(name)}
-                                            className="remove-participant-btn"
-                                        >
-                                            X
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                    )}
                 </div>
 
                 <div className="button-group">
-                    <button
-                        type="submit"
-                        className="btn btn-primary"
-                        disabled={submitting}
-                    >
-                        {submitting ? "Salvando..." : "Salvar Convocatória"}
+                    <button type="submit" className="btn btn-success" disabled={submitting}>
+                        {submitting ? 'Aguarde...' : 'Atualizar Convocatória'}
                     </button>
-                    <button
-                        type="button"
-                        onClick={handleSealCallList}
-                        className="btn btn-secondary"
-                        disabled={submitting}
-                    >
-                        Selar Convocatória
+                    <button type="button" className="btn btn-info" onClick={handleSealCallList}>
+                        Fechar Convocatória
+                    </button>
+                    <button type="button" className="btn btn-danger" onClick={() => navigate('/calllists-draft')}>
+                        Cancelar
                     </button>
                 </div>
             </form>
