@@ -477,7 +477,7 @@ class UsersRepositoryJdbi(
         return handle
             .createQuery(
                 """
-            SELECT COUNT(*) FROM dbp.users WHERE id IN (<userIds>) AND status = 'ACTIVE'
+            SELECT COUNT(*) FROM dbp.users WHERE id IN (<userIds>) AND status = 'active'
         """,
             ).bindList("userIds", userIds)
             .mapTo<Int>()
