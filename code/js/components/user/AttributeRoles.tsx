@@ -252,19 +252,15 @@ export function AttributeRoles() {
                     <thead>
                     <tr>
                         <th>Nome</th>
-                        <th>Email</th>
-                        <th>Funções</th>
-                        <th>Estado</th>
+                        <th>Perfis</th>
                         <th>Categoria</th>
-                        <th>Ações</th>
+                        <th>Estado</th>
                     </tr>
                     </thead>
                     <tbody>
                     {users.map(user => (
                         <tr key={user.userId}>
                             <td>{user.userName}</td>
-                            <td>{user.userRoles.join(", ")}</td>
-                            <td>{user.status}</td>
                             <td>
                                 {availableRoles.map(role => (
                                     <button
@@ -275,14 +271,6 @@ export function AttributeRoles() {
                                         {role.name}
                                     </button>
                                 ))}
-                            </td>
-                            <td>
-                                <button
-                                    onClick={() => toggleUserStatus(user)}
-                                    className={`user-status-toggle-button ${user.status === "active" ? "active-status" : "inactive-status"}`}
-                                >
-                                    {user.status === "active" ? "Desativar" : "Ativar"}
-                                </button>
                             </td>
                             <td>
                                 <select
@@ -297,6 +285,14 @@ export function AttributeRoles() {
                                         </option>
                                     ))}
                                 </select>
+                            </td>
+                            <td>
+                                <button
+                                    onClick={() => toggleUserStatus(user)}
+                                    className={`user-status-toggle-button ${user.status === "active" ? "active-status" : "inactive-status"}`}
+                                >
+                                    {user.status === "active" ? "Desativar" : "Ativar"}
+                                </button>
                             </td>
                         </tr>
                     ))}
