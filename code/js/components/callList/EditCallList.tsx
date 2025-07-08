@@ -690,7 +690,7 @@ export function EditCallList() {
                                                         type="time"
                                                         className="form-input session-time-input"
                                                         style={{ width: '100px' }}
-                                                        value={session.time || ''}
+                                                        value={session.startTime || ''}
                                                         onChange={(e) => handleSessionInputChange(mdIndex, sessionIndex, e.target.value)}
                                                         required
                                                     />
@@ -740,7 +740,7 @@ export function EditCallList() {
                             id="equipment"
                             className="form-input"
                             placeholder="Selecione equipamentos"
-                            value={selectedEquipmentIds.map(id => equipmentOptions.find(opt => opt.id === id)?.name).filter(Boolean).join(', ')}
+                            value={form.equipments ? form.equipments.map((eq: any) => eq.name).join(', ') : ''}
                             onFocus={() => setEquipmentDropdownOpen(true)}
                             readOnly
                         />

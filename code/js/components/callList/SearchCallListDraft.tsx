@@ -149,16 +149,14 @@ export function SearchCallListDraft() {
                                     <strong>Data Limite:</strong> {new Date(callList.deadline).toLocaleDateString()}
                                 </div>
                             </div>
-                            {activeTab !== "sealedCallList" && (
-                                <div className="call-list-actions">
-                                    <button
-                                        className="btn btn-secondary"
-                                        onClick={() => navigate(`/edit-calllist/${callList.callListId}`)}
-                                    >
-                                        Editar
-                                    </button>
-                                </div>
-                            )}
+                            <div className="call-list-actions">
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() => navigate(`/edit-calllist/${callList.callListId}`)}
+                                >
+                                    Editar
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>
