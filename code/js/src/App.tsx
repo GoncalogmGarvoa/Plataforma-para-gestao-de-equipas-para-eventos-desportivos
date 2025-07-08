@@ -147,7 +147,12 @@ function Home() {
                 {currentEmail ? (
                     <>
                         <li><Link to="/me">Me</Link></li>
+                        <li><Link to="/select-role">Mudar Perfil</Link></li>
+
+
+                        {currentRole && (
                         <li><Link to="/check-callLists">Ver Convocações</Link></li>
+                        )}
 
                         {isConselhoDeArbitragem && (
                             <>
@@ -194,6 +199,8 @@ export function Header() {
                     {currentUser ? (
                         <>
                             <li><Link to="/me">Me</Link></li>
+                            <li><Link to="/select-role">Mudar Perfil</Link></li>
+
                             {currentRole && (
                             <li><Link to="/check-callLists">Ver Convocações</Link></li>
                             )}
@@ -211,9 +218,6 @@ export function Header() {
                                 </>
                             )}
 
-                            {currentRole && (
-                                <li><Link to="/select-role">Mudar Perfil</Link></li>
-                            )}
 
                             {/* Notificações */}
                             <li style={{ position: "relative" }}>

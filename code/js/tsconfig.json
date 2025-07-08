@@ -8,6 +8,6 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "module": "ESNext",
-    "lib": ["DOM", "DOM.Iterable", "ES6"]
+    "lib": ["DOM", "DOM.Iterable", "ES2022"]
   }
 }

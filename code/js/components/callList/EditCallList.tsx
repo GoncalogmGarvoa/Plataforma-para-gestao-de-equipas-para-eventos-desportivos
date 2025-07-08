@@ -563,7 +563,7 @@ export function EditCallList() {
                 throw new Error(err.title || "Erro ao selar convocatória");
             }
             alert("Convocatória selada com sucesso!");
-            navigate("http://localhost:8000/search-calllist-draft");
+            navigate("/search-calllist-draft");
         } catch (err: any) {
             setError(err.message || "Erro desconhecido ao selar convocatória");
             console.error("Erro ao selar convocatória:", err);
@@ -867,6 +867,7 @@ export function EditCallList() {
                 </div>
 
                 <div className="button-group">
+                    {error && <p className="error-message" style={{ color: 'red', marginBottom: '10px' }}>Error: {error}</p>}
                     <button type="submit" className="btn btn-success" disabled={submitting}>
                         {submitting ? 'Aguarde...' : 'Atualizar Convocatória'}
                     </button>
