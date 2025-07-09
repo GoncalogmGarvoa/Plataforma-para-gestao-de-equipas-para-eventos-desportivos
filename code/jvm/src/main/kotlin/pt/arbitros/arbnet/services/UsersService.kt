@@ -26,6 +26,7 @@ import pt.arbitros.arbnet.http.model.users.UserUpdateInputModel
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.transactionRepo
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.Date
 import javax.crypto.SecretKey
@@ -335,7 +336,8 @@ class UsersService(
                     user.address,
                     user.email,
                     passwordValidationInfo,
-                    LocalDate.parse(user.birthDate),
+                    OffsetDateTime.parse(user.birthDate).toLocalDate(),
+                    //LocalDate.parse(user.birthDate),
                     user.iban,
                 )
             return@run success(updated)
