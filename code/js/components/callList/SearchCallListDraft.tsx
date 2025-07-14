@@ -83,7 +83,7 @@ export function SearchCallListDraft() {
 
     const title =
         activeTab === "callList"
-            ? "Convocatórias em Draft/CallList"
+            ? "Convocatórias em Rascunho/CallList"
             : activeTab === "confirmation"
                 ? "Convocatórias em Pré-confirmação"
                 : activeTab === "sealedCallList"
@@ -100,7 +100,7 @@ export function SearchCallListDraft() {
                     onClick={() => fetchCallLists("callList")}
                     className={activeTab === "callList" ? "active-tab" : ""}
                 >
-                    Em draft/callList
+                    Em rascunho/callList
                 </button>
                 <button
                 onClick={() => fetchCallLists("sealedCallList")}

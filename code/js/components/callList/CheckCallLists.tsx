@@ -90,7 +90,7 @@ export function CheckCallLists() {
         return showPast ? latestDate < today : latestDate >= today
     })
 
-    if (loading) return <div>A carregar convocações...</div>
+    if (loading) return <div>A carregar convocatórias...</div>
 
     return (
         <div className="check-call-lists-container">
@@ -98,12 +98,12 @@ export function CheckCallLists() {
 
             <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
                 <button onClick={() => setShowPast(prev => !prev)}>
-                    {showPast ? "Ver Convocações Atuais" : "Ver Convocações Antigas"}
+                    {showPast ? "Ver Convocatórias Atuais" : "Ver Convocatórias Antigas"}
                 </button>
             </div>
 
             {filteredEvents.length === 0 ? (
-                <p className="no-events-message">Não tens convocações.</p>
+                <p className="no-events-message">Não tens convocatórias.</p>
             ) : filteredEvents.map((event, index) => (
                 // restante código
 
