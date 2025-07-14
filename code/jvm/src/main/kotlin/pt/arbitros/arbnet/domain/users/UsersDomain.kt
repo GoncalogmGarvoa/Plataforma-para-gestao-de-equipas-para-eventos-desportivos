@@ -42,7 +42,7 @@ class UsersDomain(
     fun createPasswordValidationInformation(password: String) =
         PasswordValidationInfo(
             validationInfo = passwordEncoder.encode(password),
-        )
+    )
 
     fun isTokenTimeValid(
         clock: Clock,

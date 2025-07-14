@@ -27,6 +27,8 @@ class UsersController(
     fun login(
         @RequestBody input: UserCreateTokenInputModel,
     ): ResponseEntity<*> {
+
+        val aux = usersService.checkPassowrd(input.password)
         val res = usersService.createToken(input.email, input.password)
         return when (res) {
             is Success -> ResponseEntity.ok(UserTokenCreateOutputModel(res.value.tokenValue))
