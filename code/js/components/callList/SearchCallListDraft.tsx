@@ -28,7 +28,7 @@ export function SearchCallListDraft() {
     const [callLists, setCallLists] = useState<CallListDraft[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<"callList" | "confirmation" | "sealedCallList" | null>(null);
+    const [activeTab, setActiveTab] = useState<"callList" | "confirmation" | "sealedCallList" | "finalJury" | null>(null);
 
     useEffect(() => {
         if (currentRole && currentRole !== "Arbitration_Council") {
@@ -36,7 +36,7 @@ export function SearchCallListDraft() {
         }
     }, [currentRole, navigate]);
 
-    const fetchCallLists = async (state: "callList" | "confirmation" | "sealedCallList") => {
+    const fetchCallLists = async (state: "callList" | "confirmation" | "sealedCallList" | "finalJury") => {
         setLoading(true);
         setActiveTab(state);
         try {
@@ -85,10 +85,13 @@ export function SearchCallListDraft() {
         activeTab === "callList"
             ? "Convocatórias em Rascunho/CallList"
             : activeTab === "confirmation"
-                ? "Convocatórias em Pré-confirmação"
+                ? "Convocatórias Confirmadas"
                 : activeTab === "sealedCallList"
                     ? "Convocatórias em Confirmação"
-                    : "Convocatórias";
+                    : activeTab === "finalJury"
+                        ? "Convocatórias Finais"
+                        : "Convocatórias";
+
 
 
     return (
@@ -114,6 +117,13 @@ export function SearchCallListDraft() {
                 >
                     Confirmadas
                 </button>
+                <button
+                    onClick={() => fetchCallLists("finalJury")}
+                    className={activeTab === "finalJury" ? "active-tab" : ""}
+                >
+                    Convocatórias Finais
+                </button>
+
 
             </div>
 

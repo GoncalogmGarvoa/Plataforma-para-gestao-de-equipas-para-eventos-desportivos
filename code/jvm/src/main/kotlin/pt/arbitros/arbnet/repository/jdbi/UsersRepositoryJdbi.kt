@@ -403,13 +403,13 @@ class UsersRepositoryJdbi(
     ): Boolean =
         handle
             .createUpdate(
-                """update dbp.users set name = :name, phone_number= :phoneNumber,address = :address, email = :email, password = :password, birth_date = :birth_date, iban = :iban where id = :id""",
+                """update dbp.users set name = :name, phone_number= :phoneNumber,address = :address, email = :email, password_validation = :password, birth_date = :birth_date, iban = :iban where id = :id""",
             ).bind("name", name)
             .bind("phoneNumber", phoneNumber)
             .bind("address", address)
             .bind("email", email)
-            .bind("password", password)
-            .bind("birth_date", LocalDate.now())
+            .bind("password", password.validationInfo)
+            .bind("birth_date", birthDate)
             .bind("iban", iban)
             .bind("id", id)
             .execute() > 0

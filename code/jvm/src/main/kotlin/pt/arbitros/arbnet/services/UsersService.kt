@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.JavaMailSenderImpl
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.UtilsDomain
 import pt.arbitros.arbnet.domain.adaptable.Category
@@ -26,6 +27,7 @@ import pt.arbitros.arbnet.http.model.users.UserUpdateInputModel
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.transactionRepo
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.Date
 import javax.crypto.SecretKey
@@ -73,6 +75,12 @@ class UsersService(
         "No user found with the provided ID",
     )
 
+    fun checkPassowrd(rawPassword:String){
+        val passwordEncoder = BCryptPasswordEncoder()
+
+        val encodedPassword = passwordEncoder.encode(rawPassword)
+        println("A hash BCrypt para '$rawPassword' é: $encodedPassword")
+    }
 
     fun createToken(
         email: String,
@@ -335,7 +343,8 @@ class UsersService(
                     user.address,
                     user.email,
                     passwordValidationInfo,
-                    LocalDate.parse(user.birthDate),
+                    OffsetDateTime.parse(user.birthDate).toLocalDate(),
+                    //LocalDate.parse(user.birthDate),
                     user.iban,
                 )
             return@run success(updated)

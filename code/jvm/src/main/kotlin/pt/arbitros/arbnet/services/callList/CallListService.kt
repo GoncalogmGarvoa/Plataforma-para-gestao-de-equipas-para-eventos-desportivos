@@ -445,9 +445,13 @@ class CallListService(
                     CallListType.CALL_LIST.callType -> {
                         CallListType.SEALED_CALL_LIST.callType
                     }
+                    CallListType.SEALED_CALL_LIST.callType -> {
+                        CallListType.CONFIRMATION.callType
+                    }
                     CallListType.CONFIRMATION.callType -> {
                         CallListType.FINAL_JURY.callType
                     }
+
                     else -> return@run failure(
                         ApiError.InvalidField(
                             "Invalid call list type",

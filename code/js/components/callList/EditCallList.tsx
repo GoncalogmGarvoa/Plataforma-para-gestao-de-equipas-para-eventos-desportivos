@@ -3,6 +3,15 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../../EditCallList.css"
 
+interface ParticipantInfo {
+    name: string
+    category: string
+    function: string
+    status: string
+    userId: number
+    matchDayId: number
+}
+
 function getCookie(name: string): string | undefined {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -11,6 +20,8 @@ function getCookie(name: string): string | undefined {
     }
     return undefined;
 }
+
+
 
 export function EditCallList() {
     const { id } = useParams<{ id: string }>();
@@ -40,6 +51,32 @@ export function EditCallList() {
 
     // Function dropdown state
     const [functionOptions, setFunctionOptions] = useState<{id: number, name: string}[]>([]);
+
+    function getStatusForParticipantDate(name: string, matchDate: string): string | undefined {
+        const matchDay = matchDaySessionsInput.find(
+            (md) => new Date(md.matchDate).toISOString().substring(0, 10) === matchDate
+        );
+        if (!matchDay) return undefined;
+
+        const participant = (form.participants as ParticipantInfo[])?.find(
+            (p: ParticipantInfo) => p.name === name && p.matchDayId === matchDay.id
+        );
+        return participant?.status;
+    }
+
+    function getStatusEmoji(status?: string): string {
+        switch (status) {
+            case "accepted":
+                return "✔️";
+            case "declined":
+                return "❌";
+            case "waiting":
+                return "⏳";
+            default:
+                return "❔";
+        }
+    }
+
 
     // Carregar dados iniciais
     useEffect(() => {
@@ -574,6 +611,10 @@ export function EditCallList() {
 
     if (loading) return <p>Loading...</p>;
 
+    const isReadOnlyParticipants = form.callListType === 'sealedCallList' || form.callListType === 'finalJury';
+    const hideActionButtons = form.callListType === 'finalJury';
+
+
     return (
         <div className="edit-call-list-container">
             <h2>Editar Convocatória</h2>
@@ -801,18 +842,27 @@ export function EditCallList() {
                                             const dateKey = md.matchDate;
                                             return (
                                                 <td key={dateKey}>
-                                                    <select
-                                                        className="form-input"
-                                                        value={days[dateKey] || ""}
-                                                        onChange={(e) => handleRoleChange(name, dateKey, e.target.value)}
-                                                    >
-                                                        <option value="">Selecione Função</option>
-                                                        {functionOptions.map((func) => (
-                                                            <option key={func.id} value={func.name}>
-                                                                {func.name}
-                                                            </option>
-                                                        ))}
-                                                    </select>
+                                                    <div className="flex flex-col gap-1">
+                                                        <select
+                                                            className="form-input"
+                                                            value={days[dateKey] || ""}
+                                                            onChange={(e) => handleRoleChange(name, dateKey, e.target.value)}
+                                                            disabled={isReadOnlyParticipants}
+                                                        >
+                                                            <option value="">Selecione Função</option>
+                                                            {functionOptions.map((func) => (
+                                                                <option key={func.id} value={func.name}>
+                                                                    {func.name}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+
+                                                        {isReadOnlyParticipants && (
+                                                            <div className="mt-1 text-lg">
+                                                                {getStatusEmoji(getStatusForParticipantDate(name, dateKey))}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </td>
                                             );
                                         })}
@@ -821,34 +871,38 @@ export function EditCallList() {
                                                 type="button"
                                                 className="btn btn-danger btn-sm"
                                                 onClick={() => removeParticipant(name)}
+                                                disabled={isReadOnlyParticipants}
                                             >
                                                 Remover
                                             </button>
+
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
+                    {!isReadOnlyParticipants && (
+                        <div className="add-participant-section" style={{ display: 'flex', alignItems: 'flex-end', gap: '10px', marginTop: '30px', marginBottom: '15px' }}>
+                            <input
+                                type="text"
+                                className="form-input"
+                                placeholder="Adicionar Participante (Nome)"
+                                value={newParticipantName}
+                                onChange={(e) => setNewParticipantName(e.target.value)}
+                                onInput={(e) => setParticipantQuery((e.target as HTMLInputElement).value)}
+                            />
+                            <button
+                                type="button"
+                                className="btn btn-success btn-sm"
+                                onClick={addParticipant}
+                            >
+                                Adicionar
+                            </button>
+                        </div>
+                    )}
 
-                    <div className="add-participant-section" style={{ display: 'flex', alignItems: 'flex-end', gap: '10px', marginTop: '30px', marginBottom: '15px' }}>
-                        <input
-                            type="text"
-                            className="form-input"
-                            placeholder="Adicionar Participante (Nome)"
-                            value={newParticipantName}
-                            onChange={(e) => setNewParticipantName(e.target.value)}
-                            onInput={(e) => setParticipantQuery((e.target as HTMLInputElement).value)}
-                        />
-                        <button
-                            type="button"
-                            className="btn btn-success btn-sm"
-                            onClick={addParticipant}
-                        >
-                            Adicionar
-                        </button>
-                    </div>
-                    {userSuggestions.length > 0 && participantQuery.length > 1 && (
+                    {!isReadOnlyParticipants && userSuggestions.length > 0 && participantQuery.length > 1 && (
                         <ul className="suggestions-list" style={{ listStyle: 'none', padding: '0', margin: '0', border: '1px solid #ccc', borderRadius: '4px', maxHeight: '150px', overflowY: 'auto', zIndex: '1000', backgroundColor: '#fff' }}>
                             {userSuggestions.map((user) => (
                                 <li
@@ -866,18 +920,21 @@ export function EditCallList() {
                     )}
                 </div>
 
-                <div className="button-group">
-                    {error && <p className="error-message" style={{ color: 'red', marginBottom: '10px' }}>Error: {error}</p>}
-                    <button type="submit" className="btn btn-success" disabled={submitting}>
-                        {submitting ? 'Aguarde...' : 'Atualizar Convocatória'}
-                    </button>
-                    <button type="button" className="btn btn-info" onClick={handleSealCallList}>
-                        Lacrar Convocatória
-                    </button>
-                    <button type="button" className="btn btn-danger" onClick={() => navigate('/calllists-draft')}>
-                        Cancelar
-                    </button>
-                </div>
+                {!hideActionButtons && (
+                    <div className="button-group">
+                        {error && <p className="error-message" style={{ color: 'red', marginBottom: '10px' }}>Error: {error}</p>}
+                        <button type="submit" className="btn btn-success" disabled={submitting}>
+                            {submitting ? 'Aguarde...' : 'Atualizar Convocatória'}
+                        </button>
+                        <button type="button" className="btn btn-info" onClick={handleSealCallList}>
+                            Lacrar Convocatória
+                        </button>
+                        <button type="button" className="btn btn-danger" onClick={() => navigate('/calllists-draft')}>
+                            Cancelar
+                        </button>
+                    </div>
+                )}
+
             </form>
         </div>
     )

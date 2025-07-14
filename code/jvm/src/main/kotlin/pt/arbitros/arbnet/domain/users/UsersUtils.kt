@@ -3,6 +3,7 @@ package pt.arbitros.arbnet.domain.users
 import org.springframework.stereotype.Component
 import java.math.BigInteger
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.time.Period
 
 @Component
@@ -16,13 +17,22 @@ class UsersUtils {
         return false
     }
 
+//    fun validBirthDate(birthDate: String): Boolean =
+//        try {
+//            val date = LocalDate.parse(birthDate) // Expects ISO format
+//            val today = LocalDate.now()
+//            !date.isAfter(today) && Period.between(date, today).years >= 18
+//        } catch (e: Exception) {
+//            false // Parsing failed → invalid format or date
+//        }
+
     fun validBirthDate(birthDate: String): Boolean =
         try {
-            val date = LocalDate.parse(birthDate) // Expects ISO format
+            val date = OffsetDateTime.parse(birthDate).toLocalDate()
             val today = LocalDate.now()
             !date.isAfter(today) && Period.between(date, today).years >= 18
         } catch (e: Exception) {
-            false // Parsing failed → invalid format or date
+            false
         }
 
     fun validatePortugueseIban(iban: String): Boolean {
