@@ -461,6 +461,12 @@ class CallListService(
                 }
 
             callListRepository.updateCallListStage(callListId, callType)
+
+                // TODO  temp fix see whats better
+            if(callType == CallListType.CONFIRMATION.callType) {
+                return@run success(true)
+            }
+
             if(callType == CallListType.SEALED_CALL_LIST.callType) {
                 participants.forEach { participant ->
                      notificationRepository.createNotification(
