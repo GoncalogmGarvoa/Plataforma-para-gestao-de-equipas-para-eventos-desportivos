@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.JavaMailSenderImpl
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.UtilsDomain
 import pt.arbitros.arbnet.domain.adaptable.Category
@@ -22,6 +23,7 @@ import pt.arbitros.arbnet.http.invalidFieldError
 import pt.arbitros.arbnet.http.model.UserStatusInput
 import pt.arbitros.arbnet.http.model.UsersParametersOutputModel
 import pt.arbitros.arbnet.http.model.users.UserCreationInputModel
+import pt.arbitros.arbnet.http.model.users.UserOutputModel
 import pt.arbitros.arbnet.http.model.users.UserUpdateInputModel
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.transactionRepo
@@ -74,6 +76,12 @@ class UsersService(
         "No user found with the provided ID",
     )
 
+    fun checkPassowrd(rawPassword: String) {
+        val passwordEncoder = BCryptPasswordEncoder()
+
+        val encodedPassword = passwordEncoder.encode(rawPassword)
+        println("A hash BCrypt para '$rawPassword' é: $encodedPassword")
+    }
 
     fun createToken(
         email: String,
@@ -81,21 +89,37 @@ class UsersService(
     ): Either<ApiError, TokenExternalInfo> =
         transactionManager.run {
             if (email.isBlank() || password.isBlank()) {
-                return@run failure(ApiError.MissingField("Email and password are required", "Either email or password is missing or both"))
+                return@run failure(
+                    ApiError.MissingField(
+                        "Email and password are required",
+                        "Either email or password is missing or both"
+                    )
+                )
             }
             val usersRepository = it.usersRepository
-            val user: User = usersRepository.getUserByEmail(email) ?:
-            return@run failure(ApiError.NotFound("User not found", "No user found with the provided email"))
+            val user: User = usersRepository.getUserByEmail(email) ?: return@run failure(
+                ApiError.NotFound(
+                    "User not found",
+                    "No user found with the provided email"
+                )
+            )
 
             if (user.userStatus == UserStatus.INACTIVE)
-                return@run failure(ApiError.InvalidField(
-                    "User is not active",
-                    "The user is not active and cannot create a token.",
-                ))
+                return@run failure(
+                    ApiError.InvalidField(
+                        "User is not active",
+                        "The user is not active and cannot create a token.",
+                    )
+                )
 
 
             if (!usersDomain.validatePassword(password, user.passwordValidation)) {
-                return@run failure(ApiError.InvalidField("Invalid password", "The provided password does not match the user's password"))
+                return@run failure(
+                    ApiError.InvalidField(
+                        "Invalid password",
+                        "The provided password does not match the user's password"
+                    )
+                )
             }
 
             val tokenValue = usersDomain.generateTokenValue()
@@ -126,10 +150,12 @@ class UsersService(
 
     fun getUserByToken(token: String): Either<ApiError, User> {
         if (!usersDomain.canBeToken(token)) {
-            return failure(ApiError.InvalidField(
-                "Invalid token",
-                "The provided token is not valid or does not match the expected format.",
-            ))
+            return failure(
+                ApiError.InvalidField(
+                    "Invalid token",
+                    "The provided token is not valid or does not match the expected format.",
+                )
+            )
         }
         return transactionManager.run {
             val usersRepository = it.usersRepository
@@ -142,14 +168,16 @@ class UsersService(
 
             val user = usersRepository.getUserByToken(tokenValidationInfo)
 
-            if (token != null && user!= null && usersDomain.isTokenTimeValid(clock, token)) {
+            if (token != null && user != null && usersDomain.isTokenTimeValid(clock, token)) {
                 usersRepository.updateTokenLastUsed(token, clock.now())
                 return@run success(user)
             } else {
-                return@run failure(ApiError.NotFound(
-                    "User not found",
-                    "No user found with the provided token or the token is expired",
-                ))
+                return@run failure(
+                    ApiError.NotFound(
+                        "User not found",
+                        "No user found with the provided token or the token is expired",
+                    )
+                )
             }
         }
     }
@@ -159,7 +187,7 @@ class UsersService(
         token: String,
         roleId: Int,
 
-    ): Either<ApiError, Boolean> =
+        ): Either<ApiError, Boolean> =
         transactionManager.run {
             val usersRepository = it.usersRepository
             val usersRolesRepository = it.usersRolesRepository
@@ -171,20 +199,29 @@ class UsersService(
                 ?: return@run failure(ApiError.NotFound("Token not found", "No token found with the provided value"))
 
             if (!usersDomain.isTokenTimeValid(clock, tokenObj)) {
-                return@run failure(ApiError.InvalidField(
-                    "Invalid token",
-                    "The provided token is expired or invalid.",
-                ))
+                return@run failure(
+                    ApiError.InvalidField(
+                        "Invalid token",
+                        "The provided token is expired or invalid.",
+                    )
+                )
             }
 
             if (tokenObj.userId != userId) {
-                return@run failure(ApiError.InvalidField(
-                    "Token does not match user",
-                    "The provided token does not belong to the specified user.",
-                ))
+                return@run failure(
+                    ApiError.InvalidField(
+                        "Token does not match user",
+                        "The provided token does not belong to the specified user.",
+                    )
+                )
             }
 
-            roleRepository.getRoleName(roleId) ?: return@run failure(ApiError.NotFound("Role not found", "The provided role does not exist"))
+            roleRepository.getRoleName(roleId) ?: return@run failure(
+                ApiError.NotFound(
+                    "Role not found",
+                    "The provided role does not exist"
+                )
+            )
 
             val success = usersRepository.assignRoleToUserToToken(
                 userId,
@@ -211,10 +248,12 @@ class UsersService(
             val usersRepository = it.usersRepository
             val usersRolesRepository = it.usersRolesRepository
             val rolesRepository = it.roleRepository
-            val user = usersRepository.getUserByEmail(email) ?: return@run failure(ApiError.NotFound(
-                "User not found",
-                "No user found with the provided email",
-            ))
+            val user = usersRepository.getUserByEmail(email) ?: return@run failure(
+                ApiError.NotFound(
+                    "User not found",
+                    "No user found with the provided email",
+                )
+            )
             val rolesId = usersRolesRepository.getUserRolesId(user.id)
             val roles = rolesId.mapNotNull { elem -> rolesRepository.getRoleName(elem) }
             return@run success(user to roles)
@@ -225,10 +264,12 @@ class UsersService(
             val usersRepository = it.usersRepository
             val users = usersRepository.getUsersByName(name)
             if (users.isEmpty()) {
-                return@run failure(ApiError.NotFound(
-                    "No users found",
-                    "No users found with the provided name",
-                ))
+                return@run failure(
+                    ApiError.NotFound(
+                        "No users found",
+                        "No users found with the provided name",
+                    )
+                )
             }
             return@run success(users)
         }
@@ -261,10 +302,11 @@ class UsersService(
                 try {
                     usersDomain.createPasswordValidationInformation(user.password)
                 } catch (e: Exception) {
-                    return@run failure(ApiError.InvalidField(
-                        "Invalid password",
-                        "The provided password is incorrect",
-                    )
+                    return@run failure(
+                        ApiError.InvalidField(
+                            "Invalid password",
+                            "The provided password is incorrect",
+                        )
                     )
                 }
 
@@ -273,17 +315,21 @@ class UsersService(
                 val emailFromTokenResult = extractEmailFromInviteToken(user.creationToken)
 
                 if (emailFromTokenResult is Failure) {
-                    return@run failure(ApiError.InvalidField(
-                        "Invalid invite token",
-                        "The provided invite token is invalid or expired.",
-                    ))
+                    return@run failure(
+                        ApiError.InvalidField(
+                            "Invalid invite token",
+                            "The provided invite token is invalid or expired.",
+                        )
+                    )
                 }
 
                 if ((emailFromTokenResult as Success).value != user.email) {
-                    return@run failure(ApiError.InvalidField(
-                        "Invite token does not match email",
-                        "The provided invite token does not match the email.",
-                    ))
+                    return@run failure(
+                        ApiError.InvalidField(
+                            "Invite token does not match email",
+                            "The provided invite token does not match the email.",
+                        )
+                    )
                 }
             }
 
@@ -300,7 +346,7 @@ class UsersService(
 
             val allAdmins = usersRolesRepository.getAdminUsers()
             allAdmins.forEach { admin ->
-                notificationsRepository.createNotification(admin,"New user created, roles are needed")
+                notificationsRepository.createNotification(admin, "New user created, roles are needed")
             }
 
             return@run success(id)
@@ -364,8 +410,14 @@ class UsersService(
                 if (usersRepository.existsByPhoneNumber(phoneNumber)) return@run failure(inUseError("phone number"))
                 if (usersRepository.existsByIban(iban)) return@run failure(inUseError("IBAN"))
             } else {
-                if (usersRepository.existsByEmailExcludingId(email, excludeUserId)) return@run failure( inUseError("email"))
-                if (usersRepository.existsByPhoneNumberExcludingId(phoneNumber, excludeUserId)) { return@run failure(inUseError("phone number")) }
+                if (usersRepository.existsByEmailExcludingId(
+                        email,
+                        excludeUserId
+                    )
+                ) return@run failure(inUseError("email"))
+                if (usersRepository.existsByPhoneNumberExcludingId(phoneNumber, excludeUserId)) {
+                    return@run failure(inUseError("phone number"))
+                }
                 if (usersRepository.existsByIbanExcludingId(iban, excludeUserId)) return@run failure(inUseError("IBAN"))
             }
 
@@ -383,36 +435,54 @@ class UsersService(
             val roleRepository = it.roleRepository
             val usersRolesRepository = it.usersRolesRepository
 
-            roleRepository.getRoleName(roleId) ?: return@run failure(ApiError.NotFound("Role not found", "The provided role does not exist"))
-            usersRepository.getUserById(userId) ?: return@run failure(ApiError.NotFound("User not found", "The provided user does not exist"))
+            roleRepository.getRoleName(roleId) ?: return@run failure(
+                ApiError.NotFound(
+                    "Role not found",
+                    "The provided role does not exist"
+                )
+            )
+            usersRepository.getUserById(userId) ?: return@run failure(
+                ApiError.NotFound(
+                    "User not found",
+                    "The provided user does not exist"
+                )
+            )
 
             val hasRole = usersRolesRepository.userHasRole(userId, roleId)
             val success: Boolean =
                 when {
                     addOrRemove && !hasRole -> usersRolesRepository.addRoleToUser(userId, roleId)
                     !addOrRemove && hasRole -> usersRolesRepository.removeRoleFromUser(userId, roleId)
-                    !hasRole -> return@run failure(ApiError.InvalidField(
-                        "User does not have the role",
-                        "The user does not have the specified role to remove",
-                    ))
-                    else -> return@run failure(ApiError.InvalidField(
-                        "User already has the role",
-                        "The user already has the specified role to add",
-                    ))
+                    !hasRole -> return@run failure(
+                        ApiError.InvalidField(
+                            "User does not have the role",
+                            "The user does not have the specified role to remove",
+                        )
+                    )
+
+                    else -> return@run failure(
+                        ApiError.InvalidField(
+                            "User already has the role",
+                            "The user already has the specified role to add",
+                        )
+                    )
                 }
 
             return@run success(success)
         }
+
     fun updateUserCategory(userId: Int, categoryId: Int): Either<ApiError, Boolean> =
         transactionManager.run {
             val usersRepository = it.usersRepository
             val categoryRepository = it.categoryRepository
             val categoryDirRepository = it.categoryDirRepository
 
-            categoryRepository.getCategoryNameById(categoryId) ?: return@run failure(ApiError.NotFound(
-                "Category not found",
-                "The provided category does not exist",
-            ))
+            categoryRepository.getCategoryNameById(categoryId) ?: return@run failure(
+                ApiError.NotFound(
+                    "Category not found",
+                    "The provided category does not exist",
+                )
+            )
             usersRepository.getUserById(userId) ?: return@run failure(userNotFoundId)
 
             val success: Boolean = categoryDirRepository.updateUserCategory(userId, categoryId)
@@ -427,10 +497,12 @@ class UsersService(
         birthDate: String,
         iban: String,
     ): Either<ApiError, Unit> {
-        if (!name.contains(" ")) return failure(ApiError.InvalidField(
-            "Name must contain at least a first and last name",
-            "The provided name does not contain a space between first and last name.",
-        ))
+        if (!name.contains(" ")) return failure(
+            ApiError.InvalidField(
+                "Name must contain at least a first and last name",
+                "The provided name does not contain a space between first and last name.",
+            )
+        )
         if (!utilsDomain.validName(name)) return failure(invalidFieldError("name"))
         if (!utilsDomain.validPhoneNumber(phoneNumber)) return failure(invalidFieldError("phone number"))
         if (!utilsDomain.validAddress(address)) return failure(invalidFieldError("address"))
@@ -446,10 +518,12 @@ class UsersService(
         transactionManager.run {
             val roleRepository = it.roleRepository
             val roles = roleRepository.getAllRoles()
-            if (roles.isEmpty()) return@run failure(ApiError.NotFound(
-                "No roles found",
-                "There are no roles available in the system.",
-            )) // TODO check if this is the right error
+            if (roles.isEmpty()) return@run failure(
+                ApiError.NotFound(
+                    "No roles found",
+                    "There are no roles available in the system.",
+                )
+            ) // TODO check if this is the right error
             return@run success(roles)
         }
 
@@ -457,10 +531,12 @@ class UsersService(
         transactionManager.run {
             val categoryRepository = it.categoryRepository
             val categories = categoryRepository.getAllCategories()
-            if (categories.isEmpty()) return@run failure(ApiError.NotFound(
-                "No categories found",
-                "There are no categories available in the system.",
-            )) // TODO check if this is the right error
+            if (categories.isEmpty()) return@run failure(
+                ApiError.NotFound(
+                    "No categories found",
+                    "There are no categories available in the system.",
+                )
+            ) // TODO check if this is the right error
             return@run success(categories)
         }
 
@@ -471,15 +547,20 @@ class UsersService(
 
             val user = usersRepository.getUserById(userId) ?: return@run failure(userNotFoundId)
             val category = categoryDirRepository.getCategoryIdByUserId(user.id)
-                ?: return@run failure(ApiError.NotFound(
-                    "Category not found",
-                    "No category found for the provided user ID.",
-                ))
+                ?: return@run failure(
+                    ApiError.NotFound(
+                        "Category not found",
+                        "No category found for the provided user ID.",
+                    )
+                )
 
             return@run success(category)
         }
 
-    fun getUsersByParameters(userName: String, userRoles: List<String>): Either<ApiError, List<UsersParametersOutputModel>> =
+    fun getUsersByParameters(
+        userName: String,
+        userRoles: List<String>
+    ): Either<ApiError, List<UsersParametersOutputModel>> =
         transactionManager.run {
             val usersRepository = it.usersRepository
             val usersRolesRepository = it.usersRolesRepository
@@ -487,13 +568,15 @@ class UsersService(
             val users = usersRepository.getUsersByParameters(userName, userRoles)
 
             if (users.isEmpty()) {
-                return@run failure(ApiError.NotFound(
-                    "No users found",
-                    "No users found with the provided parameters.",
-                ))
+                return@run failure(
+                    ApiError.NotFound(
+                        "No users found",
+                        "No users found with the provided parameters.",
+                    )
+                )
             }
 
-            val usersWithRoles = users.map{ user ->
+            val usersWithRoles = users.map { user ->
                 val userRoles = usersRolesRepository.getUsersRolesName(user.id)
                 UsersParametersOutputModel(
                     user.id,
@@ -506,7 +589,7 @@ class UsersService(
             return@run success(usersWithRoles)
         }
 
-    fun getUsersWithoutRoles( userName: String): Either<ApiError, List<UsersParametersOutputModel>> =
+    fun getUsersWithoutRoles(userName: String): Either<ApiError, List<UsersParametersOutputModel>> =
         transactionManager.run {
             val usersRepository = it.usersRepository
 
@@ -547,28 +630,17 @@ class UsersService(
 
             val success = notificationRepository.updateNotificationStatus(notificationId)
             if (!success) {
-                return@run failure(ApiError.NotFound("Notification not found", "No notification found with the provided ID"))
+                return@run failure(
+                    ApiError.NotFound(
+                        "Notification not found",
+                        "No notification found with the provided ID"
+                    )
+                )
             }
 
             return@run success(success)
         }
 
-//    fun getAllRolesFromPlayer(userId: Int): Either<ApiError.NotFound, List<Pair<Int, String?>>> =
-//        transactionManager.run {
-//            val usersRepository = it.usersRepository
-//            val usersRolesRepository = it.usersRolesRepository
-//            val roleRepository = it.roleRepository
-//
-//            usersRepository.getUserById(userId) ?: return@run failure(userNotFoundId)
-//
-//            val rolesId = usersRolesRepository.getUserRolesId(userId)
-//            if (rolesId.isEmpty()) return@run failure(ApiError.NotFound(
-//                "No roles found",
-//                "The user does not have any roles assigned.",
-//            ))
-//            val roles = rolesId.mapNotNull { elem -> elem to roleRepository.getRoleName(elem) }
-//            return@run success(roles)
-//        }
 
     fun getAllRolesFromUser(userId: Int): Either<ApiError.NotFound, List<Role>> =
         transactionManager.run {
@@ -607,7 +679,7 @@ class UsersService(
             return@run success(roles)
         }
 
-    private fun inUseError (field : String): ApiError =
+    private fun inUseError(field: String): ApiError =
         ApiError.InvalidField(
             "$field in use",
             "The $field is already in use by another user. Please choose a different one.",
@@ -618,10 +690,12 @@ class UsersService(
             val functionRepository = it.functionRepository
             val functions = functionRepository.getAllFunctions()
             if (functions.isEmpty()) {
-                return@run failure(ApiError.NotFound(
-                    "No functions found",
-                    "There are no functions available in the system.",
-                ))
+                return@run failure(
+                    ApiError.NotFound(
+                        "No functions found",
+                        "There are no functions available in the system.",
+                    )
+                )
             }
             return@run success(functions)
         }
@@ -634,25 +708,31 @@ class UsersService(
                 ?: return@run failure(userNotFoundId)
 
             UserStatus.entries.find { it.status == userStatusInput.status }
-                ?: return@run failure(ApiError.InvalidField(
-                    "Invalid status",
-                    "The provided status is not valid. Valid statuses are: ${UserStatus.entries.joinToString(", ") { it.status }}",
-                ))
+                ?: return@run failure(
+                    ApiError.InvalidField(
+                        "Invalid status",
+                        "The provided status is not valid. Valid statuses are: ${UserStatus.entries.joinToString(", ") { it.status }}",
+                    )
+                )
 
 
             if (user.userStatus.status == userStatusInput.status) {
-                return@run failure(ApiError.InvalidField(
-                    "Status already set",
-                    "The user already has the status ${user.userStatus.status}. No changes were made.",
-                ))
+                return@run failure(
+                    ApiError.InvalidField(
+                        "Status already set",
+                        "The user already has the status ${user.userStatus.status}. No changes were made.",
+                    )
+                )
             }
 
             val updated = usersRepository.updateUserStatus(user.id, userStatusInput.status)
             if (!updated) {
-                return@run failure(ApiError.NotFound(
-                    "Some error occurred",
-                    "An error occurred while updating the user status. Please try again later.",
-                ))
+                return@run failure(
+                    ApiError.NotFound(
+                        "Some error occurred",
+                        "An error occurred while updating the user status. Please try again later.",
+                    )
+                )
             }
 
             val message = SimpleMailMessage()
@@ -665,13 +745,14 @@ class UsersService(
 
             try {
                 mailSender.send(message)
-            }
-            catch (e: Exception) {
+            } catch (e: Exception) {
                 it.rollback()
-                return@run failure(ApiError.InternalServerError(
-                    "Email sending failed",
-                    "An error occurred while trying to send the email notification. Please try again later.",
-                ))
+                return@run failure(
+                    ApiError.InternalServerError(
+                        "Email sending failed",
+                        "An error occurred while trying to send the email notification. Please try again later.",
+                    )
+                )
             }
             return@run success(true)
         }
@@ -688,17 +769,21 @@ class UsersService(
 
             val usersRepository = it.usersRepository
             if (usersRepository.existsByEmail(email)) {
-                return@run failure(ApiError.InvalidField(
-                    "Email is already in use",
-                    "Invite are only for users that are not registered in ArbNet.",
-                ))
+                return@run failure(
+                    ApiError.InvalidField(
+                        "Email is already in use",
+                        "Invite are only for users that are not registered in ArbNet.",
+                    )
+                )
             }
 
             val message = SimpleMailMessage()
             message.setTo(email)
             message.setSubject("Invitation to ArbNet")
-            message.setText("You have been invited to join ArbNet use the following URL to register: " +
-                    "${System.getenv("ARBNET_URL")}?inviteToken=${generateInviteToken(email)}")
+            message.setText(
+                "You have been invited to join ArbNet use the following URL to register: " +
+                        "${System.getenv("ARBNET_URL")}?inviteToken=${generateInviteToken(email)}"
+            )
             message.setFrom(System.getenv("ARBNET_EMAIL"))
             mailSender.send(message)
 
@@ -739,14 +824,14 @@ class UsersService(
         }
     }
 
-    fun getInactiveUsers() : Either<ApiError, List<UsersParametersOutputModel>> =
+    fun getInactiveUsers(): Either<ApiError, List<UsersParametersOutputModel>> =
         transactionManager.run {
             val usersRepository = it.usersRepository
             val usersRolesRepository = it.usersRolesRepository
 
             val inactiveUsers = usersRepository.getInactiveUsers()
 
-            val inactiveUsersWithRoles: List<UsersParametersOutputModel> = inactiveUsers.map{ user ->
+            val inactiveUsersWithRoles: List<UsersParametersOutputModel> = inactiveUsers.map { user ->
                 val userRoles = usersRolesRepository.getUsersRolesName(user.id)
                 UsersParametersOutputModel(
                     user.id,
@@ -758,4 +843,36 @@ class UsersService(
             return@run success(inactiveUsersWithRoles)
         }
 
+    fun getAllUsers(): Either<ApiError, List<UserOutputModel>> =
+        transactionManager.run {
+            val usersRepository = it.usersRepository
+            val usersRolesRepository = it.usersRolesRepository
+
+            val users = usersRepository.getAllUsers()
+            if (users.isEmpty()) {
+                return@run failure(
+                    ApiError.NotFound(
+                        "No users found",
+                        "No users found in the system.",
+                    )
+                )
+            }
+
+            val userOutputModels = users.map { user ->
+                val roles = usersRolesRepository.getUsersRolesName(user.id)
+                UserOutputModel(
+                    user.id,
+                    user.name,
+                    user.phoneNumber,
+                    user.address,
+                    user.email,
+                    user.birthDate.toString(),
+                    user.iban,
+                    roles,
+                )
+            }
+
+            return@run success(userOutputModels)
+        }
 }
+

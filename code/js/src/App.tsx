@@ -143,21 +143,20 @@ function Home() {
         <div>
             <h1>Home</h1>
             <ol>
-                <li><Link to="/">Home</Link></li>
                 {currentEmail ? (
                     <>
-                        <li><Link to="/me">Me</Link></li>
+                        <li><Link to="/me">Eu</Link></li>
                         <li><Link to="/select-role">Mudar Perfil</Link></li>
 
 
                         {currentRole && (
-                        <li><Link to="/check-callLists">Ver Convocações</Link></li>
+                        <li><Link to="/check-callLists">Ver Convocatórias</Link></li>
                         )}
 
                         {isConselhoDeArbitragem && (
                             <>
                                 <li><Link to="/create-calllist">Criar Convocatória</Link></li>
-                                <li><Link to="/search-calllist-draft">Ver Convocatórias Draft</Link></li>
+                                <li><Link to="/search-calllist-draft">Ver Convocatórias editáveis</Link></li>
                             </>
                         )}
 
@@ -195,19 +194,19 @@ export function Header() {
         <header>
             <nav>
                 <ul className="horizontal-menu">
-                    <li><Link to="/">Home</Link></li>
+                    <li><Link to="/">Início</Link></li>
                     {currentUser ? (
                         <>
-                            <li><Link to="/me">Me</Link></li>
+                            <li><Link to="/me">Eu</Link></li>
                             <li><Link to="/select-role">Mudar Perfil</Link></li>
 
                             {currentRole && (
-                            <li><Link to="/check-callLists">Ver Convocações</Link></li>
+                            <li><Link to="/check-callLists">Ver Convocatórias</Link></li>
                             )}
                             {isConselhoDeArbitragem && (
                                 <>
                                     <li><Link to="/create-calllist">Criar Convocatória</Link></li>
-                                    <li><Link to="/search-calllist-draft">Ver Convocatórias Draft</Link></li>
+                                    <li><Link to="/search-calllist-draft">Ver Convocatórias editáveis</Link></li>
                                 </>
                             )}
 

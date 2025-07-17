@@ -32,6 +32,15 @@ interface CallListInputModel {
     equipmentIds: number[];
 }
 
+interface UserDetails {
+    userId: number;
+    name?: string;
+    userName?: string;
+    email?: string;
+    phoneNumber?: string;
+    [key: string]: any;
+}
+
 export function getCookie(name: string): string | undefined {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -376,6 +385,28 @@ export function CreateCallList() {
         });
     };
 
+    const [showUserModal, setShowUserModal] = useState(false);
+    const [selectedUserDetails, setSelectedUserDetails] = useState<UserDetails | null>(null);
+    const [loadingUserDetails, setLoadingUserDetails] = useState(false);
+    const [userDetailsError, setUserDetailsError] = useState<string | null>(null);
+
+    const handleShowUserInfo = async (userId: number) => {
+        setLoadingUserDetails(true);
+        setUserDetailsError(null);
+        setShowUserModal(true);
+        try {
+            const res = await fetch(`/arbnet/users/id/${userId}`);
+            if (!res.ok) throw new Error("Erro ao obter detalhes do utilizador");
+            const data = await res.json();
+            setSelectedUserDetails(data);
+        } catch (err: any) {
+            setUserDetailsError(err.message || "Erro desconhecido");
+            setSelectedUserDetails(null);
+        } finally {
+            setLoadingUserDetails(false);
+        }
+    };
+
     return (
         <div className="create-call-list-container">
             <h2>Criar Convocatória</h2>
@@ -642,39 +673,97 @@ export function CreateCallList() {
                     </tr>
                     </thead>
                     <tbody>
-                        {Object.entries(participantInputs).map(([name, rolesByDay], index) => (
-                            <tr key={index}>
-                                <td>
-                                    {name}
-                                    <button
-                                        style={{marginLeft: "0.5rem", color: "red"}}
-                                        type="button"
-                                        onClick={() => removeParticipant(name)}
-                                    >
-                                        Remover
-                                    </button>
-                                </td>
-                                {matchDaySessionsInput.map((md) => (
-                                    <td key={md.matchDay}>
-                                        <select
-                                            value={rolesByDay[md.matchDay] || ""}
-                                            onChange={(e) => handleRoleChange(name, md.matchDay, e.target.value)}
-                                            style={{width: "100%"}}
+                        {Object.entries(participantInputs).map(([name, rolesByDay], index) => {
+                            const userId = nameToUserIdMap[name];
+                            return (
+                                <tr key={index}>
+                                    <td>
+                                        {name}
+                                        {userId && (
+                                            <button
+                                                style={{ marginLeft: "0.5rem", color: "#007bff" }}
+                                                type="button"
+                                                onClick={() => handleShowUserInfo(userId)}
+                                            >
+                                                Info
+                                            </button>
+                                        )}
+                                        <button
+                                            style={{marginLeft: "0.5rem", color: "red"}}
+                                            type="button"
+                                            onClick={() => removeParticipant(name)}
                                         >
-                                            <option value="" disabled>Selecione uma Função</option>
-                                            {functionOptions.map(func => (
-                                                <option key={func.id} value={func.name}>{func.name}</option>
-                                            ))}
-                                        </select>
+                                            Remover
+                                        </button>
                                     </td>
-                                ))}
-                            </tr>
-                        ))}
+                                    {matchDaySessionsInput.map((md) => (
+                                        <td key={md.matchDay}>
+                                            <select
+                                                value={rolesByDay[md.matchDay] || ""}
+                                                onChange={(e) => handleRoleChange(name, md.matchDay, e.target.value)}
+                                                style={{width: "100%"}}
+                                            >
+                                                <option value="" disabled>Selecione uma Função</option>
+                                                {functionOptions.map(func => (
+                                                    <option key={func.id} value={func.name}>{func.name}</option>
+                                                ))}
+                                            </select>
+                                        </td>
+                                    ))}
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
 
                 <button type="submit">Criar Convocatória</button>
             </form>
+
+            {/* Modal de detalhes do utilizador */}
+            {showUserModal && (
+                <div style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100vw",
+                    height: "100vh",
+                    background: "rgba(0,0,0,0.3)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 1000
+                }}
+                    onClick={() => setShowUserModal(false)}
+                >
+                    <div style={{
+                        background: "#fff",
+                        padding: 24,
+                        borderRadius: 8,
+                        minWidth: 320,
+                        maxWidth: 400,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                        position: "relative"
+                    }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <button style={{position: "absolute", top: 8, right: 8}} onClick={() => setShowUserModal(false)}>X</button>
+                        <h3>Informação do Utilizador</h3>
+                        {loadingUserDetails ? (
+                            <p>A carregar...</p>
+                        ) : userDetailsError ? (
+                            <p style={{color: 'red'}}>{userDetailsError}</p>
+                        ) : selectedUserDetails ? (
+                            <div>
+                                <p><b>Nome:</b> {selectedUserDetails.name || selectedUserDetails.userName}</p>
+                                {selectedUserDetails.phoneNumber && <p><b>Número de Telemóvel:</b> {selectedUserDetails.phoneNumber}</p>}
+                                {selectedUserDetails.email && <p><b>Email:</b> {selectedUserDetails.email}</p>}
+                            </div>
+                        ) : (
+                            <p>Sem dados.</p>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

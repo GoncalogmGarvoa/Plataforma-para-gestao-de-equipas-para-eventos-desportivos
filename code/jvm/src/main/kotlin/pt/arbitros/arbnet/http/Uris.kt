@@ -8,6 +8,7 @@ object Uris {
         const val GET_BY_ID = "$PREFIX/users/id/{id}"
         const val GET_BY_EMAIL = "$PREFIX/users/email"
         const val GET_BY_NAME = "$PREFIX/users/name"
+        const val GET_ALL_USERS = "$PREFIX/users/all"
         const val CREATE_USER = "$PREFIX/users/signup"
         const val UPDATE_USER = "$PREFIX/users/update"
         const val USER_ROLES = "$PREFIX/users/roles"

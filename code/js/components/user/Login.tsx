@@ -90,7 +90,7 @@ export function Login() {
     return (
         <div className="center-container">
             <div className="form-container">
-                <h1 className="form-title">Welcome Back</h1>
+                <h1 className="form-title">Bem vindo ao Arbnet</h1>
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label className="form-label" htmlFor="email">
@@ -103,7 +103,7 @@ export function Login() {
                             name="email"
                             value={inputs.email}
                             onChange={handleChange}
-                            placeholder="Enter your email"
+                            placeholder="Introduza o seu email"
                             required
                         />
                     </div>
@@ -118,7 +118,7 @@ export function Login() {
                             name="password"
                             value={inputs.password}
                             onChange={handleChange}
-                            placeholder="Enter your password"
+                            placeholder="Introduza a sua password"
                             required
                         />
                     </div>
@@ -136,11 +136,6 @@ export function Login() {
                         {error}
                     </p>
                 )}
-
-                <p className="link-text">
-                    Don't have an account?{" "}
-                    <Link to="/users">Create an account</Link>
-                </p>
             </div>
         </div>
     )

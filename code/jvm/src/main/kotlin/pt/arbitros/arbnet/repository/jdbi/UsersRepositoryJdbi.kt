@@ -497,4 +497,8 @@ class UsersRepositoryJdbi(
             .bind("id", id)
             .execute() > 0
     }
+
+    override fun getAllUsers(): List<User> {
+        TODO("Not yet implemented")
+    }
 }
