@@ -898,9 +898,9 @@ export function EditCallList() {
                                                                 ))}
                                                             </select>
 
-                                                        {isConfirmedStates && (
+                                                        {isReadOnlyParticipants && (
                                                             <div className="mt-1 text-lg">
-                                                                {getStatusEmoji(getStatusForParticipant(name, md.id))}
+                                                                {getStatusEmoji(getStatusForParticipant(name, dateKey))}
                                                             </div>
                                                         )}
                                                     </div>
@@ -919,7 +919,7 @@ export function EditCallList() {
 
                                         </td>
                                     </tr>
-                                ))}
+                                )})}
                             </tbody>
                         </table>
                     </div>
@@ -977,51 +977,6 @@ export function EditCallList() {
                 )}
 
             </form>
-            {/* Modal de detalhes do utilizador */}
-            {showUserModal && (
-                <div style={{
-                    position: "fixed",
-                    top: 0,
-                    left: 0,
-                    width: "100vw",
-                    height: "100vh",
-                    background: "rgba(0,0,0,0.3)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    zIndex: 1000
-                }}
-                    onClick={() => setShowUserModal(false)}
-                >
-                    <div style={{
-                        background: "#fff",
-                        padding: 24,
-                        borderRadius: 8,
-                        minWidth: 320,
-                        maxWidth: 400,
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-                        position: "relative"
-                    }}
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <button style={{position: "absolute", top: 8, right: 8}} onClick={() => setShowUserModal(false)}>X</button>
-                        <h3>Informação do Utilizador</h3>
-                        {loadingUserDetails ? (
-                            <p>A carregar...</p>
-                        ) : userDetailsError ? (
-                            <p style={{color: 'red'}}>{userDetailsError}</p>
-                        ) : selectedUserDetails ? (
-                            <div>
-                                <p><b>Nome:</b> {selectedUserDetails.name || selectedUserDetails.userName}</p>
-                                {selectedUserDetails.phoneNumber && <p><b>Número de Telemóvel:</b> {selectedUserDetails.phoneNumber}</p>}
-                                {selectedUserDetails.email && <p><b>Email:</b> {selectedUserDetails.email}</p>}
-                            </div>
-                        ) : (
-                            <p>Sem dados.</p>
-                        )}
-                    </div>
-                </div>
-            )}
         </div>
     )
 } 
