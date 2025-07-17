@@ -4,10 +4,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import "../../EditCallList.css"
 
 interface ParticipantInfo {
-    name: string
+    userName: string
     category: string
     function: string
-    status: string
+    confirmationStatus: string
     userId: number
     matchDayId: number
 }
@@ -52,17 +52,13 @@ export function EditCallList() {
     // Function dropdown state
     const [functionOptions, setFunctionOptions] = useState<{id: number, name: string}[]>([]);
 
-    function getStatusForParticipantDate(name: string, matchDate: string): string | undefined {
-        const matchDay = matchDaySessionsInput.find(
-            (md) => new Date(md.matchDate).toISOString().substring(0, 10) === matchDate
-        );
-        if (!matchDay) return undefined;
-
-        const participant = (form.participants as ParticipantInfo[])?.find(
-            (p: ParticipantInfo) => p.name === name && p.matchDayId === matchDay.id
-        );
-        return participant?.status;
+    function getStatusForParticipant(name: string, matchDayId: number): string | undefined {
+        const participant = (form.participants.find(
+            (p: ParticipantInfo) => p.userName === name && p.matchDayId === matchDayId
+        ))
+        return participant?.confirmationStatus;
     }
+
 
     function getStatusEmoji(status?: string): string {
         switch (status) {
@@ -612,6 +608,7 @@ export function EditCallList() {
     if (loading) return <p>Loading...</p>;
 
     const isReadOnlyParticipants = form.callListType === 'sealedCallList' || form.callListType === 'finalJury';
+    const isConfirmedStates = form.callListType === 'sealedCallList' || form.callListType === 'confirmation' ||form.callListType === 'finalJury';
     const hideActionButtons = form.callListType === 'finalJury';
 
 
@@ -857,9 +854,9 @@ export function EditCallList() {
                                                             ))}
                                                         </select>
 
-                                                        {isReadOnlyParticipants && (
+                                                        {isConfirmedStates && (
                                                             <div className="mt-1 text-lg">
-                                                                {getStatusEmoji(getStatusForParticipantDate(name, dateKey))}
+                                                                {getStatusEmoji(getStatusForParticipant(name, md.id))}
                                                             </div>
                                                         )}
                                                     </div>
