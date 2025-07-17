@@ -12,6 +12,15 @@ interface ParticipantInfo {
     matchDayId: number
 }
 
+interface UserDetails {
+    userId: number;
+    name?: string;
+    userName?: string;
+    email?: string;
+    phoneNumber?: string;
+    [key: string]: any;
+}
+
 function getCookie(name: string): string | undefined {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -51,6 +60,11 @@ export function EditCallList() {
 
     // Function dropdown state
     const [functionOptions, setFunctionOptions] = useState<{id: number, name: string}[]>([]);
+
+    const [showUserModal, setShowUserModal] = useState(false);
+    const [selectedUserDetails, setSelectedUserDetails] = useState<UserDetails | null>(null);
+    const [loadingUserDetails, setLoadingUserDetails] = useState(false);
+    const [userDetailsError, setUserDetailsError] = useState<string | null>(null);
 
     function getStatusForParticipantDate(name: string, matchDate: string): string | undefined {
         const matchDay = matchDaySessionsInput.find(
@@ -441,6 +455,23 @@ export function EditCallList() {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [equipmentDropdownRef]);
+
+    const handleShowUserInfo = async (userId: number) => {
+        setLoadingUserDetails(true);
+        setUserDetailsError(null);
+        setShowUserModal(true);
+        try {
+            const res = await fetch(`/arbnet/users/id/${userId}`);
+            if (!res.ok) throw new Error("Erro ao obter detalhes do utilizador");
+            const data = await res.json();
+            setSelectedUserDetails(data);
+        } catch (err: any) {
+            setUserDetailsError(err.message || "Erro desconhecido");
+            setSelectedUserDetails(null);
+        } finally {
+            setLoadingUserDetails(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -835,50 +866,64 @@ export function EditCallList() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {Object.entries(participantInputs).map(([name, days]) => (
-                                    <tr key={name}>
-                                        <td>{name}</td>
-                                        {matchDaySessionsInput.map((md) => {
-                                            const dateKey = md.matchDate;
-                                            return (
-                                                <td key={dateKey}>
-                                                    <div className="flex flex-col gap-1">
-                                                        <select
-                                                            className="form-input"
-                                                            value={days[dateKey] || ""}
-                                                            onChange={(e) => handleRoleChange(name, dateKey, e.target.value)}
-                                                            disabled={isReadOnlyParticipants}
-                                                        >
-                                                            <option value="">Selecione Função</option>
-                                                            {functionOptions.map((func) => (
-                                                                <option key={func.id} value={func.name}>
-                                                                    {func.name}
-                                                                </option>
-                                                            ))}
-                                                        </select>
+                                {Object.entries(participantInputs).map(([name, days]) => {
+                                    const userId = nameToUserIdMap[name];
+                                    return (
+                                        <tr key={name}>
+                                            <td>
+                                                {name}
+                                                {userId && (
+                                                    <button
+                                                        style={{ marginLeft: "0.5rem", color: "#007bff" }}
+                                                        type="button"
+                                                        onClick={() => handleShowUserInfo(userId)}
+                                                    >
+                                                        Info
+                                                    </button>
+                                                )}
+                                            </td>
+                                            {matchDaySessionsInput.map((md) => {
+                                                const dateKey = md.matchDate;
+                                                return (
+                                                    <td key={dateKey}>
+                                                        <div className="flex flex-col gap-1">
+                                                            <select
+                                                                className="form-input"
+                                                                value={days[dateKey] || ""}
+                                                                onChange={(e) => handleRoleChange(name, dateKey, e.target.value)}
+                                                                disabled={isReadOnlyParticipants}
+                                                            >
+                                                                <option value="">Selecione Função</option>
+                                                                {functionOptions.map((func) => (
+                                                                    <option key={func.id} value={func.name}>
+                                                                        {func.name}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
 
-                                                        {isReadOnlyParticipants && (
-                                                            <div className="mt-1 text-lg">
-                                                                {getStatusEmoji(getStatusForParticipantDate(name, dateKey))}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            );
-                                        })}
-                                        <td>
-                                            <button
-                                                type="button"
-                                                className="btn btn-danger btn-sm"
-                                                onClick={() => removeParticipant(name)}
-                                                disabled={isReadOnlyParticipants}
-                                            >
-                                                Remover
-                                            </button>
+                                                            {isReadOnlyParticipants && (
+                                                                <div className="mt-1 text-lg">
+                                                                    {getStatusEmoji(getStatusForParticipantDate(name, dateKey))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                );
+                                            })}
+                                            <td>
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-danger btn-sm"
+                                                    onClick={() => removeParticipant(name)}
+                                                    disabled={isReadOnlyParticipants}
+                                                >
+                                                    Remover
+                                                </button>
 
-                                        </td>
-                                    </tr>
-                                ))}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
@@ -936,6 +981,51 @@ export function EditCallList() {
                 )}
 
             </form>
+            {/* Modal de detalhes do utilizador */}
+            {showUserModal && (
+                <div style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100vw",
+                    height: "100vh",
+                    background: "rgba(0,0,0,0.3)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 1000
+                }}
+                    onClick={() => setShowUserModal(false)}
+                >
+                    <div style={{
+                        background: "#fff",
+                        padding: 24,
+                        borderRadius: 8,
+                        minWidth: 320,
+                        maxWidth: 400,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                        position: "relative"
+                    }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <button style={{position: "absolute", top: 8, right: 8}} onClick={() => setShowUserModal(false)}>X</button>
+                        <h3>Informação do Utilizador</h3>
+                        {loadingUserDetails ? (
+                            <p>A carregar...</p>
+                        ) : userDetailsError ? (
+                            <p style={{color: 'red'}}>{userDetailsError}</p>
+                        ) : selectedUserDetails ? (
+                            <div>
+                                <p><b>Nome:</b> {selectedUserDetails.name || selectedUserDetails.userName}</p>
+                                {selectedUserDetails.phoneNumber && <p><b>Número de Telemóvel:</b> {selectedUserDetails.phoneNumber}</p>}
+                                {selectedUserDetails.email && <p><b>Email:</b> {selectedUserDetails.email}</p>}
+                            </div>
+                        ) : (
+                            <p>Sem dados.</p>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     )
 } 
