@@ -142,6 +142,28 @@ class UsersController(
                 )
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
+    @GetMapping(Uris.UsersUris.GET_ALL_USERS)
+    fun getAllUsers(): ResponseEntity<*> =
+        when (
+            val result = usersService.getAllUsers()
+        ) {
+            is Success ->
+                ResponseEntity.ok(
+                    result.value.map {
+                        UserOutputModel(
+                            id = it.id,
+                            phoneNumber = it.phoneNumber,
+                            address = it.address,
+                            name = it.name,
+                            email = it.email,
+                            birthDate = it.birthDate.toString(),
+                            iban = it.iban,
+                            roles = it.roles,
+                        )
+                    },
+                )
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
 
 
     @GetMapping(Uris.UsersUris.GET_BY_EMAIL)

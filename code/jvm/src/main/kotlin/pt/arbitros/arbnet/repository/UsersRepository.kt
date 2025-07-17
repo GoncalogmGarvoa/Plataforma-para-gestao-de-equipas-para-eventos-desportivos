@@ -104,4 +104,6 @@ interface UsersRepository {
     fun areAllUsersActive(userIds: List<Int>): Boolean
 
     fun updateUserStatus(id: Int, status: String) : Boolean
+
+    fun getAllUsers(): List<User>
 }
