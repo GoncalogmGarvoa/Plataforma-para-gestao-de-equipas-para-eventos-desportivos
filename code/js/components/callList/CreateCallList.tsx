@@ -681,7 +681,7 @@ export function CreateCallList() {
                                         {name}
                                         {userId && (
                                             <button
-                                                style={{ marginLeft: "0.5rem", color: "#007bff" }}
+                                                style={{ marginLeft: "0.5rem", background: "#007bff", color: "#fff", border: "none", borderRadius: 4, padding: "2px 10px", cursor: "pointer" }}
                                                 type="button"
                                                 onClick={() => handleShowUserInfo(userId)}
                                             >

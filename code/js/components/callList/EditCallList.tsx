@@ -2,6 +2,7 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../../EditCallList.css"
+import { useCurrentRole } from "../../src/context/Referee";
 
 interface ParticipantInfo {
     userName: string
@@ -66,6 +67,8 @@ export function EditCallList() {
     const [selectedUserDetails, setSelectedUserDetails] = useState<UserDetails | null>(null);
     const [loadingUserDetails, setLoadingUserDetails] = useState(false);
     const [userDetailsError, setUserDetailsError] = useState<string | null>(null);
+
+    const [respondingUserId, setRespondingUserId] = useState<number | null>(null);
 
 
     function getStatusForParticipant(name: string, matchDayId: number): string | undefined {
@@ -176,7 +179,22 @@ export function EditCallList() {
                 }
                 // Converter dias e sessões
                 if (data.matchDaySessions) {
-                    setMatchDaySessionsInput(data.matchDaySessions);
+                    // Corrigir sessions para garantir que é sempre [{ time: string }]
+                    const fixedSessions = data.matchDaySessions.map((md: any) => ({
+                        ...md,
+                        sessions: (md.sessions || []).map((s: any) => {
+                            if (typeof s === "string") {
+                                return { time: s };
+                            } else if (s && typeof s === "object" && s.time) {
+                                return { time: s.time };
+                            } else if (s && typeof s === "object" && s.startTime) {
+                                return { time: s.startTime };
+                            } else {
+                                return { time: "" };
+                            }
+                        })
+                    }));
+                    setMatchDaySessionsInput(fixedSessions);
 
                     // Populate dateToMatchDayIdMap
                     const tempMap: Record<string, number> = {};
@@ -637,6 +655,107 @@ export function EditCallList() {
         }
     }
 
+    const currentRole = useCurrentRole();
+
+    // Função para o conselho de arbitragem dar resposta para um participante
+    const handleCouncilResponse = async (userId: number) => {
+        const token = getCookie("token");
+        if (!token) {
+            alert("Token não encontrado. Faça login novamente.");
+            return;
+        }
+        // Pega todos os dias desse participante
+        const participant = participants.find(p => p.userId === userId);
+        if (!participant) return;
+        const days = (participant.participantAndRole || []).map((pr: any) => pr.matchDay);
+        const input = {
+            days,
+            callListId: form.callListId,
+            userId: userId
+        };
+        try {
+            const res = await fetch("/arbnet/callList/updateParticipant/ArbitrationCouncil", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    token
+                },
+                body: JSON.stringify(input)
+            });
+            if (!res.ok) throw new Error("Erro ao atualizar confirmação pelo conselho de arbitragem");
+            alert("Confirmação do participante atualizada pelo conselho de arbitragem com sucesso!");
+        } catch (err) {
+            console.error(err);
+            alert("Erro ao enviar confirmação pelo conselho de arbitragem.");
+        }
+    };
+
+    // Adicionar função auxiliar para resposta do conselho por dia
+    const handleCouncilResponseDay = async (userId: number, dayId: number, accept: boolean) => {
+        const token = getCookie("token");
+        if (!token) {
+            alert("Token não encontrado. Faça login novamente.");
+            return;
+        }
+        const input = {
+            days: [{ dayId, status: accept ? 1 : 0 }],
+            callListId: form.callListId,
+            userId: userId
+        };
+        try {
+            const res = await fetch("/arbnet/callList/updateParticipant/ArbitrationCouncil", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    token
+                },
+                body: JSON.stringify(input)
+            });
+            if (!res.ok) throw new Error("Erro ao atualizar confirmação pelo conselho de arbitragem");
+            await refetchCallList();
+        } catch (err) {
+            console.error(err);
+            alert("Erro ao enviar resposta do conselho de arbitragem.");
+        }
+    };
+
+    // Adicionar função auxiliar para refazer o fetch dos dados:
+    const refetchCallList = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch(`/arbnet/callList/get/${id}`);
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.title || "Erro ao buscar convocatória");
+            }
+            const data = await response.json();
+            // Corrigir sessions para garantir que é sempre [{ time: string }]
+            const fixedSessions = data.matchDaySessions.map((md: any) => ({
+                ...md,
+                sessions: (md.sessions || []).map((s: any) => {
+                    if (typeof s === "string") {
+                        return { time: s };
+                    } else if (s && typeof s === "object" && s.time) {
+                        return { time: s.time };
+                    } else if (s && typeof s === "object" && s.startTime) {
+                        return { time: s.startTime };
+                    } else {
+                        return { time: "" };
+                    }
+                })
+            }));
+            setMatchDaySessionsInput(fixedSessions);
+            // Replicar lógica de setForm, setParticipants, etc, se necessário
+            setForm({ ...data, callListId: parseInt(id), callListType: data.callListType || "" });
+            // ... (outros estados se necessário)
+        } catch (err: any) {
+            setError(err.message || "Erro inesperado");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (loading) return <p>Loading...</p>;
 
     const isReadOnlyParticipants = form.callListType === 'sealedCallList' || form.callListType === 'finalJury';
@@ -769,7 +888,7 @@ export function EditCallList() {
                                                         type="time"
                                                         className="form-input session-time-input"
                                                         style={{ width: '100px' }}
-                                                        value={session.startTime || ''}
+                                                        value={session.time || ''}
                                                         onChange={(e) => handleSessionInputChange(mdIndex, sessionIndex, e.target.value)}
                                                         required
                                                     />
@@ -908,29 +1027,61 @@ export function EditCallList() {
                                                                 ))}
                                                             </select>
 
-                                                        {isReadOnlyParticipants && (
-                                                            <div className="mt-1 text-lg">
-                                                                {getStatusEmoji(getStatusForParticipant(name, md.id))}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            );
-                                        })}
-                                        <td>
-                                            <button
-
-                                                type="button"
-                                                className="btn btn-danger btn-sm"
-                                                onClick={() => removeParticipant(name)}
-                                                disabled={isReadOnlyParticipants}
-                                            >
-                                                Remover
-                                            </button>
-
-                                        </td>
-                                    </tr>
-                                )})}
+                                                            {isReadOnlyParticipants && (
+                                                                <div className="mt-1 text-lg" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                                    {getStatusEmoji(getStatusForParticipant(name, md.id))}
+                                                                    {currentRole === "Arbitration_Council" && respondingUserId === userId && (
+                                                                        <>
+                                                                            <button
+                                                                                type="button"
+                                                                                className="btn btn-success btn-xs"
+                                                                                style={{ marginLeft: 4, fontSize: 12, padding: '2px 8px' }}
+                                                                                onClick={async () => {
+                                                                                    await handleCouncilResponseDay(userId, md.id, true);
+                                                                                }}
+                                                                            >
+                                                                                Aceitar
+                                                                            </button>
+                                                                            <button
+                                                                                type="button"
+                                                                                className="btn btn-danger btn-xs"
+                                                                                style={{ marginLeft: 4, fontSize: 12, padding: '2px 8px' }}
+                                                                                onClick={async () => {
+                                                                                    await handleCouncilResponseDay(userId, md.id, false);
+                                                                                }}
+                                                                            >
+                                                                                Recusar
+                                                                            </button>
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                );
+                                            })}
+                                            <td>
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-danger btn-sm"
+                                                    onClick={() => removeParticipant(name)}
+                                                    disabled={isReadOnlyParticipants}
+                                                >
+                                                    Remover
+                                                </button>
+                                                {currentRole === "Arbitration_Council" && isReadOnlyParticipants && (
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-info btn-sm"
+                                                        style={{ marginLeft: 8 }}
+                                                        onClick={() => setRespondingUserId(respondingUserId === userId ? null : userId)}
+                                                    >
+                                                        Responder pelo Utilizador
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    )})}
                             </tbody>
                         </table>
                     </div>
