@@ -16,6 +16,8 @@ interface CallListRepository {
         callType: String,
     ): Int
 
+    fun deleteCallList(id: Int): Boolean
+
     fun updateCallList(
         id: Int,
         deadline: LocalDate,
