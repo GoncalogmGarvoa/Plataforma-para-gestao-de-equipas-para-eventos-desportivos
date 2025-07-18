@@ -9,6 +9,7 @@ import pt.arbitros.arbnet.http.model.calllist.CallListInputModel
 import pt.arbitros.arbnet.http.model.ParticipantUpdateInput
 import pt.arbitros.arbnet.http.model.calllist.CallListIdInput
 import pt.arbitros.arbnet.http.model.calllist.EventOutputModel
+import pt.arbitros.arbnet.http.model.users.ParticipantUpdateInputArbitrationCouncil
 import pt.arbitros.arbnet.services.*
 import pt.arbitros.arbnet.services.callList.CallListService
 
@@ -50,7 +51,7 @@ class CallListController(
         return if (userResult is Success) {
             val result =
                 callListService.updateParticipantConfirmationStatus(
-                    participantUpdate.days,
+                        participantUpdate.days,
                     userResult.value.id,
                     participantUpdate.callListId,
                 )
@@ -66,6 +67,24 @@ class CallListController(
                 ))
         }
     }
+
+    @PutMapping(Uris.CallListUris.UPDATE_PARTICIPANT_CONFIRMATION_STATUS_ARBITRATION_COUNCIL)
+    fun updateParticipantConfirmationStatusFromArbitrationCouncil(
+        @RequestBody participantUpdate: ParticipantUpdateInputArbitrationCouncil,
+        ): ResponseEntity<*> {
+        val result =
+            callListService.updateParticipantConfirmationStatus(
+                participantUpdate.days,
+                participantUpdate.userId,
+                participantUpdate.callListId,
+            )
+        return when (result) {
+            is Success -> ResponseEntity.ok(result.value)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
+    }
+
+
 
     @PutMapping(Uris.CallListUris.UPDATE_CALLLISTSTAGE)
     fun updateCallListStage(

@@ -22,6 +22,7 @@ import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.http.invalidFieldError
 import pt.arbitros.arbnet.http.model.UserStatusInput
 import pt.arbitros.arbnet.http.model.UsersParametersOutputModel
+import pt.arbitros.arbnet.http.model.users.UserCategoryHistoryOutputModel
 import pt.arbitros.arbnet.http.model.users.UserCreationInputModel
 import pt.arbitros.arbnet.http.model.users.UserOutputModel
 import pt.arbitros.arbnet.http.model.users.UserUpdateInputModel
@@ -874,5 +875,26 @@ class UsersService(
 
             return@run success(userOutputModels)
         }
+
+    fun getHistoryCategoryFromUser(id: Int):  Either<ApiError, List<UserCategoryHistoryOutputModel>> {
+        return transactionManager.run {
+            val usersRepository = it.usersRepository
+
+            val user = usersRepository.getUserById(id) ?: return@run failure(userNotFoundId)
+
+            val categoryHistory = usersRepository.getUserCategoryHistory(id)
+            if (categoryHistory.isEmpty()) {
+                return@run failure(
+                    ApiError.NotFound(
+                        "No category history found",
+                        "No category history found for the provided user.",
+                    )
+                )
+            }
+
+
+            return@run success(categoryHistory)
+        }
+    }
 }
 

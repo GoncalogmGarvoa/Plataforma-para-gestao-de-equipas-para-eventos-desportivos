@@ -9,6 +9,7 @@ object Uris {
         const val GET_BY_EMAIL = "$PREFIX/users/email"
         const val GET_BY_NAME = "$PREFIX/users/name"
         const val GET_ALL_USERS = "$PREFIX/users/all"
+        const val GET_HISTORY_CATEGORY_FROM_USER = "$PREFIX/users/historyRolesFromUser/{id}"
         const val CREATE_USER = "$PREFIX/users/signup"
         const val UPDATE_USER = "$PREFIX/users/update"
         const val USER_ROLES = "$PREFIX/users/roles"
@@ -35,7 +36,9 @@ object Uris {
 
     object CallListUris {
         const val CREATE_CALLLIST = "$PREFIX/callList/creation"
-        const val UPDATE_PARTICIPANT_CONFIRMATION_STATUS = "$PREFIX/callList/updateParticipant"
+            const val UPDATE_PARTICIPANT_CONFIRMATION_STATUS = "$PREFIX/callList/updateParticipant"
+            const val UPDATE_PARTICIPANT_CONFIRMATION_STATUS_ARBITRATION_COUNCIL = "$PREFIX/callList/updateParticipant/ArbitrationCouncil"
+
         const val UPDATE_CALLLISTSTAGE = "$PREFIX/callList/updateCallListStage"
         const val GET_CALLLIST = "$PREFIX/callList/get/{id}"
         const val UPDATE_CALLLIST = "$PREFIX/callList/update"

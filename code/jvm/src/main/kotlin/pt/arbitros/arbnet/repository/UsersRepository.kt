@@ -2,6 +2,7 @@ package pt.arbitros.arbnet.repository
 
 import kotlinx.datetime.Instant
 import pt.arbitros.arbnet.domain.users.*
+import pt.arbitros.arbnet.http.model.users.UserCategoryHistoryOutputModel
 import java.time.LocalDate
 
 interface UsersRepository {
@@ -106,4 +107,8 @@ interface UsersRepository {
     fun updateUserStatus(id: Int, status: String) : Boolean
 
     fun getAllUsers(): List<User>
+
+    fun getUserCategoryHistory(
+        userId: Int,
+    ): List<UserCategoryHistoryOutputModel>
 }

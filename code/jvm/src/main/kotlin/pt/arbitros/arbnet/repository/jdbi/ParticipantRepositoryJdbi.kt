@@ -3,6 +3,7 @@ package pt.arbitros.arbnet.repository.jdbi
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.arbitros.arbnet.domain.Participant
+import pt.arbitros.arbnet.http.model.matchDayConfirmation
 import pt.arbitros.arbnet.repository.ParticipantRepository
 
 class ParticipantRepositoryJdbi(
@@ -42,9 +43,9 @@ class ParticipantRepositoryJdbi(
             .execute() > 0
 
     override fun updateParticipantConfirmationStatus(
-        days: List<Int>,
+        days: List<matchDayConfirmation>,
         participantId: Int,
-        callListId: Int,
+        callListId: Int
     ): Boolean {
         if (days.isEmpty()) {
             return handle
@@ -54,28 +55,36 @@ class ParticipantRepositoryJdbi(
                 set confirmation_status = 'declined'
                 where call_list_id = :callListId
                   and user_id = :participantId
-                """.trimIndent(),
-                ).bind("callListId", callListId)
+                """.trimIndent()
+                )
+                .bind("callListId", callListId)
                 .bind("participantId", participantId)
                 .execute() > 0
         }
 
-        return handle
-            .createUpdate(
-                """
-            update dbp.participant
-            set confirmation_status = case 
-                when match_day_id in (<days>) then 'accepted'
-                else 'declined'
-            end
-            where call_list_id = :callListId
-              and user_id = :participantId
-            """.trimIndent(),
-            ).bind("callListId", callListId)
-            .bind("participantId", participantId)
-            .bindList("days", days)
-            .execute() > 0
+        var rowsUpdated = 0
+        for (day in days) {
+            val statusText = if (day.status == 0) "declined" else "accepted"
+            rowsUpdated += handle
+                .createUpdate(
+                    """
+                update dbp.participant
+                set confirmation_status = :status
+                where call_list_id = :callListId
+                  and user_id = :participantId
+                  and match_day_id = :dayId
+                """.trimIndent()
+                )
+                .bind("status", statusText)
+                .bind("callListId", callListId)
+                .bind("participantId", participantId)
+                .bind("dayId", day.dayId)
+                .execute()
+        }
+
+        return rowsUpdated > 0
     }
+
 
 
     override fun getParticipantsByCallList(callListId: Int): List<Participant> =

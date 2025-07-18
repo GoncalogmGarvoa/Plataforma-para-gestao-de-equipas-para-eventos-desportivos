@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import pt.arbitros.arbnet.domain.users.AuthenticatedUser
 import pt.arbitros.arbnet.http.model.UserStatusInput
+import pt.arbitros.arbnet.http.model.UsersParametersOutputModel
 import pt.arbitros.arbnet.http.model.users.UserCategoryUpdateInputModel
 import pt.arbitros.arbnet.http.model.users.UserCreateTokenInputModel
 import pt.arbitros.arbnet.http.model.users.UserCreationInputModel
@@ -75,6 +76,16 @@ class UsersController(
 
     }
 
+    @GetMapping(Uris.UsersUris.GET_HISTORY_CATEGORY_FROM_USER)
+    fun getHistoryCategoryFromUser(
+        @PathVariable id: Int,
+    ): ResponseEntity<*> =
+        when (
+            val result = usersService.getHistoryCategoryFromUser(id)
+        ) {
+            is Success -> ResponseEntity.ok(result.value)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
 
 
     @GetMapping(Uris.UsersUris.GET_BY_TOKEN)
@@ -142,6 +153,7 @@ class UsersController(
                 )
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
+
     @GetMapping(Uris.UsersUris.GET_ALL_USERS)
     fun getAllUsers(): ResponseEntity<*> =
         when (
@@ -304,7 +316,7 @@ class UsersController(
         @RequestParam userRoles: List<String>
     ): ResponseEntity<*> =
         when (
-            val result = usersService.getUsersByParameters(userName, userRoles)
+            val result: Either<ApiError, List<UsersParametersOutputModel>> = usersService.getUsersByParameters(userName, userRoles)
         ) {
             is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)

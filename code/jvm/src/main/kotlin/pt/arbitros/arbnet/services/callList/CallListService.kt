@@ -23,6 +23,7 @@ import pt.arbitros.arbnet.http.model.calllist.CallListInputModel
 import pt.arbitros.arbnet.http.model.calllist.EquipmentOutputModel
 import pt.arbitros.arbnet.http.model.calllist.EventOutputModel
 import pt.arbitros.arbnet.http.model.calllist.ParticipantWithCategory
+import pt.arbitros.arbnet.http.model.matchDayConfirmation
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.repository.mongo.CallListMongoRepository
 import pt.arbitros.arbnet.services.callList.CallListServiceUtils
@@ -155,7 +156,7 @@ class CallListService(
 
 
     fun updateParticipantConfirmationStatus(
-        days: List<Int>,
+        days: List<matchDayConfirmation>,
         participantId: Int,
         callListId: Int,
     ): Either<ApiError, Boolean> =
@@ -182,9 +183,9 @@ class CallListService(
                 )
 
             participantRepository.updateParticipantConfirmationStatus(days, participantId, callListId)
-            if (participantRepository.isCallListDone(callListId)) {
-                callListRepository.updateCallListStatus(callListId)
-            }
+//            if (participantRepository.isCallListDone(callListId)) {  // todo check
+//                callListRepository.updateCallListStatus(callListId)
+//            }
             return@run success(true)
         }
 

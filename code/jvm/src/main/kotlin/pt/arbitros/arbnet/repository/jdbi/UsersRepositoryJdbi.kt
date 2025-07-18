@@ -9,6 +9,7 @@ import org.jdbi.v3.core.mapper.RowMapper
 import org.jdbi.v3.core.mapper.reflect.ColumnName
 import org.jdbi.v3.core.statement.StatementContext
 import pt.arbitros.arbnet.domain.users.*
+import pt.arbitros.arbnet.http.model.users.UserCategoryHistoryOutputModel
 import pt.arbitros.arbnet.repository.UsersRepository
 import java.sql.ResultSet
 import java.time.LocalDate
@@ -498,7 +499,38 @@ class UsersRepositoryJdbi(
             .execute() > 0
     }
 
+
+
     override fun getAllUsers(): List<User> {
-        TODO("Not yet implemented")
+        return handle
+            .createQuery("SELECT * FROM dbp.users")
+            .map(UsersMapper())
+            .list()
     }
+
+    override fun getUserCategoryHistory(userId: Int): List<UserCategoryHistoryOutputModel> =
+        handle
+            .createQuery(
+                """
+            SELECT c.id AS category_id, c.name, cd.start_date, cd.end_date
+            FROM dbp.category_dir cd
+            JOIN dbp.category c ON cd.category_id = c.id
+            WHERE cd.user_id = :userId
+            ORDER BY cd.start_date DESC
+            """
+            )
+            .bind("userId", userId)
+            .map { rs, _ ->
+                UserCategoryHistoryOutputModel(
+                    categoryId = rs.getInt("category_id"),
+                    categoryName = rs.getString("name"),
+                    startDate = rs.getDate("start_date").toLocalDate(),
+                    endDate = rs.getDate("end_date")?.toLocalDate()
+                )
+            }
+            .list()
+
+
+
+
 }

@@ -1,6 +1,7 @@
 package pt.arbitros.arbnet.repository
 
 import pt.arbitros.arbnet.domain.Participant
+import pt.arbitros.arbnet.http.model.matchDayConfirmation
 
 interface ParticipantRepository {
     fun addParticipant(
@@ -18,7 +19,7 @@ interface ParticipantRepository {
     ): Boolean
 
     fun updateParticipantConfirmationStatus(
-        days: List<Int>,
+        days: List<matchDayConfirmation>,
         participantId: Int,
         callListId: Int,
     ): Boolean
