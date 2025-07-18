@@ -25,6 +25,7 @@ import {CallListInfo} from "../components/callList/CallListInfo";
 import {AttributeRoles} from "../components/user/AttributeRoles";
 import {Notifications} from "../components/user/Notifications";
 import {InviteUsers} from "../components/user/InviteUsers";
+import { Reports } from "../components/reports/Reports";
 
 function RequireArbitrationCouncil({ children }: { children: React.ReactNode }) {
     const currentRole = useCurrentRole()
@@ -115,6 +116,10 @@ const router = createBrowserRouter([
                 "element": <RequireAuthn><RequireAdmin ><InviteUsers /></RequireAdmin></RequireAuthn>
             },
             {
+                "path": "/reports",
+                "element": <RequireAuthn><RequireReferee><Reports /></RequireReferee></RequireAuthn>
+            },
+            {
                 "path": "/logout",
                 "element":<Logout />
             }
@@ -166,6 +171,10 @@ function Home() {
                                 <li><Link to="/invite-users">Convidar Utilizadores</Link></li>
                             </>
                         )}
+                        {/* Adiciona link para Relatórios se for Referee */}
+                        {currentRole === "Referee" && (
+                            <li><Link to="/reports">Relatórios</Link></li>
+                        )}
                     </>
 
 
@@ -216,8 +225,10 @@ export function Header() {
                                     <li><Link to="/invite-users">Convidar Utilizadores</Link></li>
                                 </>
                             )}
-
-
+                            {/* Adiciona link para Relatórios se for Referee */}
+                            {currentRole === "Referee" && (
+                                <li><Link to="/reports">Relatórios</Link></li>
+                            )}
                             {/* Notificações */}
                             <li style={{ position: "relative" }}>
                                 <Notifications />
