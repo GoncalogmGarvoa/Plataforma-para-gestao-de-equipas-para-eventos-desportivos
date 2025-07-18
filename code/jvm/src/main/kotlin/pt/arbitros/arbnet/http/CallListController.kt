@@ -10,6 +10,7 @@ import pt.arbitros.arbnet.domain.Competition
 import pt.arbitros.arbnet.http.model.calllist.CallListInputModel
 import pt.arbitros.arbnet.http.model.ParticipantUpdateInput
 import pt.arbitros.arbnet.http.model.calllist.CallListIdInput
+import pt.arbitros.arbnet.http.model.calllist.CancelCallListInputModel
 import pt.arbitros.arbnet.http.model.calllist.EventOutputModel
 import pt.arbitros.arbnet.http.model.users.ParticipantUpdateInputArbitrationCouncil
 import pt.arbitros.arbnet.services.*
@@ -185,13 +186,13 @@ class CallListController(
         }
 
     @PutMapping(Uris.CallListUris.CANCEL_CALLLIST)
-    fun updateCallList(
-        @RequestBody competitionId: Int,
+    fun cancelCallList(
+        @RequestBody request: CancelCallListInputModel,
     ): ResponseEntity<*> =
         when (
-            val result = callListService.cancelCallList(competitionId)
+            val result = callListService.cancelCallList(request.callListId)
         ) {
-            is Success -> ResponseEntity.ok(result)
+            is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 

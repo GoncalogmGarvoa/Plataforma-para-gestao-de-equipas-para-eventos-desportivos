@@ -437,6 +437,19 @@ class CallListService(
                         )
                     )
 
+                ParticipantWithCategory(
+                    callListId = it.callListId,
+                    matchDayId = it.matchDayId,
+                    competitionIdMatchDay = it.competitionIdMatchDay,
+                    userId = it.userId,
+                    userName = user.name,
+                    functionId = it.functionId,
+                    functionName = function,
+                    confirmationStatus = it.confirmationStatus,
+                    category = category,
+                )
+            }
+
             val callType =
                 when (callList.callType) {
                     CallListType.CALL_LIST.callType -> {
@@ -459,32 +472,21 @@ class CallListService(
 
             callListRepository.updateCallListStage(callListId, callType)
 
-                // TODO  temp fix see whats better
+            // TODO  temp fix see whats better
             if(callType == CallListType.CONFIRMATION.callType) {
                 return@run success(true)
             }
 
             if(callType == CallListType.SEALED_CALL_LIST.callType) {
-                participants.forEach { participant ->
-                     notificationRepository.createNotification(
+
+                participants.distinctBy { it.userId }.forEach { participant ->
+                    notificationRepository.createNotification(
                         participant.userId,
                         "Foi convocado para a competição ${callList.competitionId}"
-                     )
+                    )
                 }
             }
 
-                ParticipantWithCategory(
-                    callListId = it.callListId,
-                    matchDayId = it.matchDayId,
-                    competitionIdMatchDay = it.competitionIdMatchDay,
-                    userId = it.userId,
-                    userName = user.name,
-                    functionId = it.functionId,
-                    functionName = function,
-                    confirmationStatus = it.confirmationStatus,
-                    category = category,
-                )
-            }
 
             val matchDays = tx.matchDayRepository.getMatchDaysByCompetition(callListContent.competitionId)
 

@@ -298,3 +298,27 @@ body {
         margin-bottom: 0.25rem;
     }
 }
+
+.reports-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.reports-tab {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  background: #f9f9f9;
+  cursor: pointer;
+  border-radius: 5px 5px 0 0;
+}
+.reports-tab.active {
+  background: #fff;
+  border-bottom: 1px solid #fff;
+  font-weight: bold;
+}
+.reports-list {
+  border: 1px solid #ccc;
+  border-radius: 0 0 5px 5px;
+  padding: 1rem;
+  background: #fff;
+}
