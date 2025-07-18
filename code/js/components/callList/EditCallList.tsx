@@ -642,6 +642,16 @@ export function EditCallList() {
     const isReadOnlyParticipants = form.callListType === 'sealedCallList' || form.callListType === 'finalJury';
     const hideActionButtons = form.callListType === 'finalJury';
 
+    const allParticipantsResponded =
+        form.participants.every((p: ParticipantInfo) => p.confirmationStatus !== "waiting")
+        && form.deadline ;
+
+    const canSealCallList = form.callListType !== "sealedCallList" ||
+        (form.participants.every((p: ParticipantInfo) => p.confirmationStatus !== "waiting") ||
+            new Date(form.deadline) < new Date())
+
+    let a = "hello"
+
 
     return (
         <div className="edit-call-list-container">
@@ -900,7 +910,7 @@ export function EditCallList() {
 
                                                         {isReadOnlyParticipants && (
                                                             <div className="mt-1 text-lg">
-                                                                {getStatusEmoji(getStatusForParticipant(name, dateKey))}
+                                                                {getStatusEmoji(getStatusForParticipant(name, md.id))}
                                                             </div>
                                                         )}
                                                     </div>
@@ -909,6 +919,7 @@ export function EditCallList() {
                                         })}
                                         <td>
                                             <button
+
                                                 type="button"
                                                 className="btn btn-danger btn-sm"
                                                 onClick={() => removeParticipant(name)}
@@ -967,9 +978,15 @@ export function EditCallList() {
                         <button type="submit" className="btn btn-success" disabled={submitting}>
                             {submitting ? 'Aguarde...' : 'Atualizar Convocatória'}
                         </button>
-                        <button type="button" className="btn btn-info" onClick={handleSealCallList}>
+                        <button
+                            type="button"
+                            className="btn btn-info"
+                            onClick={handleSealCallList}
+                            disabled={!canSealCallList}
+                        >
                             Lacrar Convocatória
                         </button>
+
                         <button type="button" className="btn btn-danger" onClick={() => navigate('/calllists-draft')}>
                             Cancelar
                         </button>
@@ -977,6 +994,54 @@ export function EditCallList() {
                 )}
 
             </form>
+            {/* Modal de detalhes do utilizador */}
+            {showUserModal && (
+                <div style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100vw",
+                    height: "100vh",
+                    background: "rgba(0,0,0,0.3)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 1000
+                }}
+                     onClick={() => setShowUserModal(false)}
+                >
+                    <div style={{
+                        background: "#fff",
+                        padding: 24,
+                        borderRadius: 8,
+                        minWidth: 320,
+                        maxWidth: 400,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                        position: "relative"
+                    }}
+                         onClick={e => e.stopPropagation()}
+                    >
+                        <button style={{position: "absolute", top: 8, right: 8}}
+                                onClick={() => setShowUserModal(false)}>X
+                        </button>
+                        <h3>Informação do Utilizador</h3>
+                        {loadingUserDetails ? (
+                            <p>A carregar...</p>
+                        ) : userDetailsError ? (
+                            <p style={{color: 'red'}}>{userDetailsError}</p>
+                        ) : selectedUserDetails ? (
+                            <div>
+                                <p><b>Nome:</b> {selectedUserDetails.name || selectedUserDetails.userName}</p>
+                                {selectedUserDetails.phoneNumber &&
+                                    <p><b>Número de Telemóvel:</b> {selectedUserDetails.phoneNumber}</p>}
+                                {selectedUserDetails.email && <p><b>Email:</b> {selectedUserDetails.email}</p>}
+                            </div>
+                        ) : (
+                            <p>Sem dados.</p>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     )
 } 
