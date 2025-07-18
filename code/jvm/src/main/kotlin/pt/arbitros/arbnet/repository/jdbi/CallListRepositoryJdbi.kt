@@ -29,6 +29,13 @@ class CallListRepositoryJdbi(
             .mapTo<Int>()
             .single()
 
+    override fun deleteCallList(id: Int): Boolean =
+        handle
+            .createUpdate(
+                """delete from dbp.call_list where id = :id""",
+            ).bind("id", id)
+            .execute() > 0
+
     override fun updateCallList(
         id: Int,
         deadline: LocalDate,

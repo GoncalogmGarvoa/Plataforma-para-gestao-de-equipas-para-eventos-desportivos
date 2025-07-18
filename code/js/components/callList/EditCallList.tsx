@@ -488,6 +488,41 @@ export function EditCallList() {
         }
     };
 
+    const handleCancelCallList = async () => {
+        const confirmed = window.confirm("Tem a certeza que pretende cancelar esta convocatória?");
+        if (!confirmed) return;
+
+        try {
+            const token = getCookie("token");
+            if (!token) {
+                setError("Token não encontrado. Faça login novamente.");
+                return;
+            }
+
+            const response = await fetch("/arbnet/callList/cancel", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    token
+                },
+                body: JSON.stringify({ callListId: form.callListId }) // 👈 atualizado aqui
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.title || "Erro ao cancelar convocatória.");
+            }
+
+            // sucesso — voltar à página principal
+            navigate("/search-calllist-draft");
+
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Erro inesperado ao cancelar convocatória.");
+        }
+    };
+
+
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitting(true);
@@ -759,6 +794,7 @@ export function EditCallList() {
     if (loading) return <p>Loading...</p>;
 
     const isReadOnlyParticipants = form.callListType === 'sealedCallList' || form.callListType === 'finalJury';
+    const seeAnswers = form.callListType !== 'callList'
     const hideActionButtons = form.callListType === 'finalJury';
 
     const allParticipantsResponded =
@@ -888,7 +924,7 @@ export function EditCallList() {
                                                         type="time"
                                                         className="form-input session-time-input"
                                                         style={{ width: '100px' }}
-                                                        value={session.time || ''}
+                                                        value={session.startTime || ''}
                                                         onChange={(e) => handleSessionInputChange(mdIndex, sessionIndex, e.target.value)}
                                                         required
                                                     />
@@ -1027,61 +1063,62 @@ export function EditCallList() {
                                                                 ))}
                                                             </select>
 
-                                                            {isReadOnlyParticipants && (
-                                                                <div className="mt-1 text-lg" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                                    {getStatusEmoji(getStatusForParticipant(name, md.id))}
-                                                                    {currentRole === "Arbitration_Council" && respondingUserId === userId && (
-                                                                        <>
-                                                                            <button
-                                                                                type="button"
-                                                                                className="btn btn-success btn-xs"
-                                                                                style={{ marginLeft: 4, fontSize: 12, padding: '2px 8px' }}
-                                                                                onClick={async () => {
-                                                                                    await handleCouncilResponseDay(userId, md.id, true);
-                                                                                }}
-                                                                            >
-                                                                                Aceitar
-                                                                            </button>
-                                                                            <button
-                                                                                type="button"
-                                                                                className="btn btn-danger btn-xs"
-                                                                                style={{ marginLeft: 4, fontSize: 12, padding: '2px 8px' }}
-                                                                                onClick={async () => {
-                                                                                    await handleCouncilResponseDay(userId, md.id, false);
-                                                                                }}
-                                                                            >
-                                                                                Recusar
-                                                                            </button>
-                                                                        </>
-                                                                    )}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                );
-                                            })}
-                                            <td>
+                                                        {seeAnswers && (
+                                                            <div className="mt-1 text-lg">
+                                                                {getStatusEmoji(getStatusForParticipant(name, md.id))}
+                                                                {currentRole === "Arbitration_Council" && respondingUserId === userId && (
+                                                                    <>
+                                                                        <button
+                                                                            type="button"
+                                                                            className="btn btn-success btn-xs"
+                                                                            style={{ marginLeft: 4, fontSize: 12, padding: '2px 8px' }}
+                                                                            onClick={async () => {
+                                                                                await handleCouncilResponseDay(userId, md.id, true);
+                                                                            }}
+                                                                        >
+                                                                            Aceitar
+                                                                        </button>
+                                                                        <button
+                                                                            type="button"
+                                                                            className="btn btn-danger btn-xs"
+                                                                            style={{ marginLeft: 4, fontSize: 12, padding: '2px 8px' }}
+                                                                            onClick={async () => {
+                                                                                await handleCouncilResponseDay(userId, md.id, false);
+                                                                            }}
+                                                                        >
+                                                                            Recusar
+                                                                        </button>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            );
+                                        })}
+                                        <td>
+                                            <button
+
+                                                type="button"
+                                                className="btn btn-danger btn-sm"
+                                                onClick={() => removeParticipant(name)}
+                                                disabled={isReadOnlyParticipants}
+                                            >
+                                                Remover
+                                            </button>
+                                            {currentRole === "Arbitration_Council" && isReadOnlyParticipants && (
                                                 <button
                                                     type="button"
-                                                    className="btn btn-danger btn-sm"
-                                                    onClick={() => removeParticipant(name)}
-                                                    disabled={isReadOnlyParticipants}
+                                                    className="btn btn-info btn-sm"
+                                                    style={{ marginLeft: 8 }}
+                                                    onClick={() => setRespondingUserId(respondingUserId === userId ? null : userId)}
                                                 >
-                                                    Remover
+                                                    Responder pelo Utilizador
                                                 </button>
-                                                {currentRole === "Arbitration_Council" && isReadOnlyParticipants && (
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-info btn-sm"
-                                                        style={{ marginLeft: 8 }}
-                                                        onClick={() => setRespondingUserId(respondingUserId === userId ? null : userId)}
-                                                    >
-                                                        Responder pelo Utilizador
-                                                    </button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    )})}
+                                            )}
+                                        </td>
+                                    </tr>
+                                )})}
                             </tbody>
                         </table>
                     </div>
@@ -1138,9 +1175,14 @@ export function EditCallList() {
                             Lacrar Convocatória
                         </button>
 
-                        <button type="button" className="btn btn-danger" onClick={() => navigate('/calllists-draft')}>
+                        <button
+                            type="button"
+                            className="btn btn-danger"
+                            onClick={handleCancelCallList}
+                        >
                             Cancelar
                         </button>
+
                     </div>
                 )}
 

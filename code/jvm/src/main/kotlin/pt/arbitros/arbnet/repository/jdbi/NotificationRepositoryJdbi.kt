@@ -25,7 +25,7 @@ class NotificationRepositoryJdbi (
     ): List<Notification> =
         handle
             .createQuery(
-                """select * from dbp.notification where user_id = :userId""",
+                """select distinct * from dbp.notification where user_id = :userId""",
             )
             .bind("userId", userId)
             .mapTo<Notification>()
