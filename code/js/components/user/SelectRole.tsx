@@ -21,6 +21,20 @@ function getCookie(name: string): string | undefined {
     return undefined;
 }
 
+// Função utilitária para traduzir o nome do perfil
+function getRoleLabel(roleName: string): string {
+    switch (roleName) {
+        case "Admin":
+            return "Administrador";
+        case "Arbitration_Council":
+            return "Conselho de Arbitragem";
+        case "Referee":
+            return "Árbitro";
+        default:
+            return roleName;
+    }
+}
+
 export function SelectRole() {
     const [roles, setRoles] = useState<Role[]>([]);
     const [selectedRole, setSelectedRole] = useState<number | null>(null);
@@ -145,7 +159,7 @@ export function SelectRole() {
                                 className={`role-card ${selectedRole === role.id ? "selected" : ""}`}
                                 onClick={() => setSelectedRole(role.id)}
                             >
-                                <h3>{role.name}</h3>
+                                <h3>{getRoleLabel(role.name)}</h3>
                             </div>
                         ))}
                     </div>
