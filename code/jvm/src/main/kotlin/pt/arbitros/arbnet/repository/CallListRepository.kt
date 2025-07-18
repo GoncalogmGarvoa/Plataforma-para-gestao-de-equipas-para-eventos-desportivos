@@ -3,7 +3,6 @@ package pt.arbitros.arbnet.repository
 import pt.arbitros.arbnet.domain.CallList
 import pt.arbitros.arbnet.domain.CallListWithUserAndCompetition
 import pt.arbitros.arbnet.http.model.RefereeCallLists
-import pt.arbitros.arbnet.http.model.RefereeCallListsOutputModel
 import java.time.LocalDate
 
 interface CallListRepository {
@@ -40,6 +39,8 @@ interface CallListRepository {
     ): CallList
 
     fun getCallListsByCompetitionId(competitionId: Int): CallList?
+
+    fun getCallListsFinalJuryFunction(userId: Int, callListType: String, functionId:Int ): List<CallList>
 
 //    fun getCallListsByCouncil(councilId: Int): List<CallList>
 //

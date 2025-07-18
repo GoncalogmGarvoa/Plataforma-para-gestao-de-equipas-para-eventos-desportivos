@@ -18,11 +18,7 @@ import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.http.model.ParticipantInfo
 import pt.arbitros.arbnet.http.model.RefereeCallLists
 import pt.arbitros.arbnet.http.model.RefereeCallListsOutputModel
-import pt.arbitros.arbnet.http.model.calllist.CallListIdInput
-import pt.arbitros.arbnet.http.model.calllist.CallListInputModel
-import pt.arbitros.arbnet.http.model.calllist.EquipmentOutputModel
-import pt.arbitros.arbnet.http.model.calllist.EventOutputModel
-import pt.arbitros.arbnet.http.model.calllist.ParticipantWithCategory
+import pt.arbitros.arbnet.http.model.calllist.*
 import pt.arbitros.arbnet.http.model.matchDayConfirmation
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.repository.mongo.CallListMongoRepository
@@ -614,5 +610,54 @@ class CallListService(
     }
 
 
+
+
+    fun getCallListsFinalJuryFunction(
+        userId: Int,
+        callListType: String,
+        function: String
+    ): Either<ApiError, List<CallListReportOutputModel>> =
+        transactionManager.run { tx ->
+
+            val functionId = tx.functionRepository.getFunctionIdByName(function)
+                ?: return@run failure(
+                    ApiError.NotFound(
+                        "Function not found",
+                        "No function found with name $function"
+                    )
+                )
+            val callLists = tx.callListRepository.getCallListsFinalJuryFunction(userId, callListType,functionId)
+
+            if (callLists.isEmpty()) {
+                return@run failure(
+                    ApiError.NotFound(
+                        "No call lists found for user with ID $userId",
+                        "The user with ID $userId has no associated call lists."
+                    )
+                )
+            }
+
+            val callListsReport = callLists.map { callList ->
+                val competition: Competition = tx.competitionRepository.getCompetitionById(callList.competitionId)
+                    ?: return@run failure(
+                        ApiError.NotFound(
+                            "Competition not found",
+                            "No competition found with ID ${callList.competitionId}"
+                        )
+                    )
+                val matchDays: List<MatchDay> = tx.matchDayRepository.getMatchDaysByCompetition(callList.competitionId)
+
+                CallListReportOutputModel(
+                    callListId = callList.id,
+                    competitionId = competition.competitionNumber,
+                    competitionName = competition.name,
+                    matchDays = matchDays
+                )
+
+            }
+
+
+            success(callListsReport)
+        }
 
 }

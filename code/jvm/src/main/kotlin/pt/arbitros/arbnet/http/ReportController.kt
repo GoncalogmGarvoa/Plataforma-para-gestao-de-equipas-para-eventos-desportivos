@@ -15,6 +15,13 @@ import pt.arbitros.arbnet.services.report.ReportService
 import pt.arbitros.arbnet.services.Success
 
 // TODO verify if useful -> @RestControllerAdvice
+
+
+//  2 tipos de relatorio:
+//  - Relatorio do juiz arbitro
+//  - Relatorio do delegado
+
+
 @RestController
 class ReportController(private val reportService : ReportService) {
 

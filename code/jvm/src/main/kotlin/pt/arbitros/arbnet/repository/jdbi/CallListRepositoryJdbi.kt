@@ -134,48 +134,25 @@ class CallListRepositoryJdbi(
             .mapTo<CallList>()
             .singleOrNull()
     }
-}
 
-//    override fun findCallListById(id: Int): CallList? =
-//        handle
-//            .createQuery("""select * from dbp.call_list where id = :id""")
-//            .bind("id", id)
-//            .mapTo<CallList>()
-//            .singleOrNull()
-//
-//    override fun getCallListsByCouncil(councilId: Int): List<CallList> =
-//        handle
-//            .createQuery("""select * from dbp.call_list where council_id = :council_id""")
-//            .bind("council_id", councilId)
-//            .mapTo<CallList>()
-//            .list()
-//
-//    override fun deleteCallList(id: Int): Boolean =
-//        handle
-//            .createUpdate("""delete from dbp.call_list where id = :id""")
-//            .bind("id", id)
-//            .execute() > 0
-//
-//    override fun updateCallList(
-//        id: Int,
-//        deadline: LocalDate,
-//        callType: String,
-//        councilId: Int,
-//        competitionId: Int,
-//    ): Boolean =
-//        handle
-//            .createUpdate(
-//                """update dbp.call_list set deadline = :deadline, call_type = :call_type, council_id = :council_id, competition_id = :competition_id where id = :id""",
-//            ).bind("id", id)
-//            .bind("deadline", deadline)
-//            .bind("call_type", callType)
-//            .bind("council_id", councilId)
-//            .bind("competition_id", competitionId)
-//            .execute() > 0
-//
-//    override fun getCallListReferees(callListId: Int): List<Referee> =
-//        handle
-//            .createQuery("""select * from dbp.referees where call_list_id = :call_list_id""")
-//            .bind("call_list_id", callListId)
-//            .mapTo<Referee>()
-//            .list()
+    override fun getCallListsFinalJuryFunction(userId: Int, callListType: String, functionId: Int): List<CallList> {
+        return handle
+            .createQuery(
+                """
+            SELECT DISTINCT cl.*
+            FROM dbp.call_list cl
+            INNER JOIN dbp.participant p ON cl.id = p.call_list_id
+            WHERE p.user_id = :user_id
+              AND p.function_id = :function_id
+              AND cl.call_type = :call_list_type
+            """
+            )
+            .bind("user_id", userId)
+            .bind("function_id", functionId)
+            .bind("call_list_type", callListType)
+            .mapTo<CallList>()
+            .list()
+    }
+
+
+}

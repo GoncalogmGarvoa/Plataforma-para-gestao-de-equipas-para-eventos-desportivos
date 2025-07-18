@@ -4,6 +4,8 @@ package pt.arbitros.arbnet.http
 
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import pt.arbitros.arbnet.domain.CallList
+import pt.arbitros.arbnet.domain.CallListType
 import pt.arbitros.arbnet.domain.Competition
 import pt.arbitros.arbnet.http.model.calllist.CallListInputModel
 import pt.arbitros.arbnet.http.model.ParticipantUpdateInput
@@ -192,4 +194,29 @@ class CallListController(
             is Success -> ResponseEntity.ok(result)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
+
+
+    @GetMapping(Uris.CallListUris.GET_CALLLISTS_FINAL_JURY_FUNCTION)
+    fun getCallListsFinalJuryJa(
+        @PathVariable function: String,
+        @RequestHeader token: String,
+    ): ResponseEntity<*> {
+        val userResult = usersService.getUserByToken(token)
+        val callListType = CallListType.FINAL_JURY.callType
+        return if (userResult is Success) {
+            when (
+                val result = callListService.getCallListsFinalJuryFunction(userResult.value.id,callListType, function.uppercase())
+            ) {
+                is Success -> ResponseEntity.ok(result.value)
+                is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+            }
+        } else {
+            Problem.fromApiErrorToProblemResponse(
+                ApiError.NotFound(
+                    "User not found or not authorized to get call lists final jury ja",
+                )
+            )
+        }
+    }
+
 }

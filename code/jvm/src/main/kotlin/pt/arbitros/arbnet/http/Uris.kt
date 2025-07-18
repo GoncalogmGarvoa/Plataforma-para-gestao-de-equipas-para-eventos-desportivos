@@ -36,8 +36,8 @@ object Uris {
 
     object CallListUris {
         const val CREATE_CALLLIST = "$PREFIX/callList/creation"
-            const val UPDATE_PARTICIPANT_CONFIRMATION_STATUS = "$PREFIX/callList/updateParticipant"
-            const val UPDATE_PARTICIPANT_CONFIRMATION_STATUS_ARBITRATION_COUNCIL = "$PREFIX/callList/updateParticipant/ArbitrationCouncil"
+        const val UPDATE_PARTICIPANT_CONFIRMATION_STATUS = "$PREFIX/callList/updateParticipant"
+        const val UPDATE_PARTICIPANT_CONFIRMATION_STATUS_ARBITRATION_COUNCIL = "$PREFIX/callList/updateParticipant/ArbitrationCouncil"
 
         const val UPDATE_CALLLISTSTAGE = "$PREFIX/callList/updateCallListStage"
         const val GET_CALLLIST = "$PREFIX/callList/get/{id}"
@@ -45,6 +45,7 @@ object Uris {
         const val GET_SEALED_CALLLIST = "$PREFIX/callList/sealed/{id}"
         const val GET_CALLLIST_DRAFT = "$PREFIX/callListDraft/get"
         const val GET_CALLLISTS_WITH_REFEREE = "$PREFIX/callList/referee"
+        const val GET_CALLLISTS_FINAL_JURY_FUNCTION = "$PREFIX/callList/finalJuryFunction/{function}"
         const val CANCEL_CALLLIST = "$PREFIX/callList/cancel"
 
     }
