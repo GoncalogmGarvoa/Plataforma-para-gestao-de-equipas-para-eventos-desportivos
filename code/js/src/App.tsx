@@ -29,6 +29,7 @@ import { Reports } from "../components/reports/Reports";
 import { CreateReport } from "../components/reports/CreateReport";
 import {CreatePaymentReport} from "../components/reports/CreatePaymentReport";
 
+
 function RequireArbitrationCouncil({ children }: { children: React.ReactNode }) {
     const currentRole = useCurrentRole()
     
