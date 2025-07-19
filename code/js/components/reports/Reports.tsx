@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useCurrentUser } from "../../src/context/Authn";
 import { useCurrentEmail } from "../../src/context/Referee";
 import { getCookie } from "../callList/CreateCallList";
+import { useNavigate } from "react-router-dom";
 
 const BASE_ENDPOINT = "/arbnet/callList/finalJuryFunction";
 
@@ -13,6 +14,7 @@ export function Reports() {
 
   const currentUser = useCurrentUser();
   const currentEmail = useCurrentEmail();
+  const navigate = useNavigate();
 
   const fetchReports = async (functionType: 'Del' | 'Ja') => {
     setLoading(true);
@@ -106,6 +108,20 @@ export function Reports() {
                     <li style={{ color: '#888' }}>Nenhum dia encontrado</li>
                   )}
                 </ul>
+                <button style={{
+                  marginTop: '1rem',
+                  padding: '0.5rem 1.2rem',
+                  background: '#1976d2',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontWeight: 500
+                }}
+                  onClick={() => navigate(`/reports/create/${report.callListId}`, { state: { report } })}
+                >
+                  Criar relatório
+                </button>
               </div>
             ))}
           </div>

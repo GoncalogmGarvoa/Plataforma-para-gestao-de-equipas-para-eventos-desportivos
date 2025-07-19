@@ -918,25 +918,28 @@ export function EditCallList() {
                                     </td>
                                     <td>
                                         <div className="sessions-list" style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center' }}>
-                                            {md.sessions.map((session: any, sessionIndex: number) => (
-                                                <div key={sessionIndex} className="session-item" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                                    <input
-                                                        type="time"
-                                                        className="form-input session-time-input"
-                                                        style={{ width: '100px' }}
-                                                        value={session.startTime || ''}
-                                                        onChange={(e) => handleSessionInputChange(mdIndex, sessionIndex, e.target.value)}
-                                                        required
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-danger btn-sm remove-session-btn"
-                                                        onClick={() => removeSession(mdIndex, sessionIndex)}
-                                                    >
-                                                        -
-                                                    </button>
-                                                </div>
-                                            ))}
+                                            {md.sessions.map((session: any, sessionIndex: number) => {
+                                                console.log('Session debug:', session);
+                                                return (
+                                                    <div key={sessionIndex} className="session-item" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                        <input
+                                                            type="time"
+                                                            className="form-input session-time-input"
+                                                            style={{ width: '100px' }}
+                                                            value={session.time ? session.time.slice(0,5) : ""}
+                                                            onChange={(e) => handleSessionInputChange(mdIndex, sessionIndex, e.target.value)}
+                                                            required
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-danger btn-sm remove-session-btn"
+                                                            onClick={() => removeSession(mdIndex, sessionIndex)}
+                                                        >
+                                                            -
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })}
                                             <button
                                                 type="button"
                                                 className="btn btn-secondary btn-sm add-session-btn"
