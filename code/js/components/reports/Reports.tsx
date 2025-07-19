@@ -118,7 +118,7 @@ export function Reports() {
                   cursor: 'pointer',
                   fontWeight: 500
                 }}
-                  onClick={() => navigate(`/reports/create/${report.callListId}`, { state: { report } })}
+                  onClick={() => navigate(`/reports/create/${report.callListId}`, { state: { report, tipo: activeTab === 'Del' ? 'delegado' : 'juiz' } })}
                 >
                   Criar relatório
                 </button>

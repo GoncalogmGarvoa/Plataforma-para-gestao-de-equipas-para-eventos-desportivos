@@ -9,14 +9,11 @@ export function CreateReport() {
   const location = useLocation();
   const currentUser = useCurrentUser() as { name?: string } | null;
   const currentRole = useCurrentRole();
-  // Determinar tipo de documento
-  let tipoDocumento = "";
-  if (location.state?.tab === 'Del' || currentRole === 'Referee') {
+  let tipoDocumento = "relatorio";
+  if (location.state?.tipo === 'delegado') {
     tipoDocumento = "relatorio delegado";
-  } else if (location.state?.tab === 'Ja') {
+  } else if (location.state?.tipo === 'juiz') {
     tipoDocumento = "relatorio juiz arbitro";
-  } else {
-    tipoDocumento = "relatorio";
   }
 
   // Calcular época automaticamente
@@ -34,7 +31,8 @@ export function CreateReport() {
     tipoDocumento: tipoDocumento,
     estiloProva: "", // sempre vazio
     epoca: epocaPadrao,
-    nomeAutor: currentUser?.name || "",
+    nomeAutor: "",
+    nomeCompeticao: "",
     localizacao: "",
     data: dataHoje,
     numeroJornadas: 0,
@@ -44,6 +42,9 @@ export function CreateReport() {
     avaliacoes: [],
     sessoes: []
   });
+
+  // Para relatorio juiz arbitro: campos para functionBySession e jury
+  const [jury, setJury] = useState<any[]>([]);
 
   // Fetch full callList data
   useEffect(() => {
@@ -78,7 +79,8 @@ export function CreateReport() {
           ...prev,
           estiloProva: '', // sempre em branco
           epoca: epocaPadrao,
-          nomeAutor: currentUser?.name || '',
+          nomeAutor: prev.nomeAutor || currentUser?.name || '',
+          nomeCompeticao: data.competitionName || '',
           localizacao: data.location || '',
           data: dataHoje,
           numeroJornadas: data.matchDaySessions?.length || 0,
@@ -103,7 +105,10 @@ export function CreateReport() {
         const res = await fetch('/arbnet/users/me', { headers: token ? { token } : undefined });
         if (res.ok) {
           const data = await res.json();
-          setForm((prev: any) => ({ ...prev, nomeAutor: data.name || prev.nomeAutor }));
+          setForm((prev: any) => ({
+            ...prev,
+            nomeAutor: data.name || prev.nomeAutor
+          }));
         }
       } catch {}
     };
@@ -133,40 +138,113 @@ export function CreateReport() {
     });
   };
 
+  // Handlers para functionBySession
+  const handleFunctionBySessionChange = (evalIdx: number, sessionId: string, value: string) => {
+    setForm((prev: any) => {
+      const avaliacoes = [...prev.avaliacoes];
+      const fbSession = { ...(avaliacoes[evalIdx].functionBySession || {}) };
+      fbSession[sessionId] = value;
+      avaliacoes[evalIdx] = { ...avaliacoes[evalIdx], functionBySession: fbSession };
+      return { ...prev, avaliacoes };
+    });
+  };
+  // Handlers para jury
+  const handleJuryChange = (juryIdx: number, field: string, value: string) => {
+    setJury((prev) => {
+      const arr = [...prev];
+      arr[juryIdx] = { ...arr[juryIdx], [field]: value };
+      return arr;
+    });
+  };
+  const handleJuryMemberChange = (juryIdx: number, memberIdx: number, field: string, value: string) => {
+    setJury((prev) => {
+      const arr = [...prev];
+      const members = [...(arr[juryIdx].juryMembers || [])];
+      members[memberIdx] = { ...members[memberIdx], [field]: value };
+      arr[juryIdx] = { ...arr[juryIdx], juryMembers: members };
+      return arr;
+    });
+  };
+  const addJurySession = () => {
+    setJury((prev) => ([...prev, { matchDayId: '', sessionId: '', juryMembers: [] }]));
+  };
+  const addJuryMember = (juryIdx: number) => {
+    setJury((prev) => {
+      const arr = [...prev];
+      arr[juryIdx].juryMembers = [...(arr[juryIdx].juryMembers || []), { position: '', name: '', category: '' }];
+      return arr;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!eventData) return;
-    // Montar objeto para envio
-    const body = {
-      reportType: form.tipoDocumento,
-      competitionId: eventData.competitionId || eventData.competition?.competitionNumber,
-      coverSheet: {
-        style: form.estiloProva,
-        councilName: eventData.association,
-        sportsSeason: form.epoca,
-        authorName: form.nomeAutor,
-        location: form.localizacao,
-        year: form.data ? new Date(form.data).getFullYear() : '',
-        month: form.data ? new Date(form.data).getMonth() + 1 : '',
-        numMatchDays: form.numeroJornadas,
-        numSessions: form.numeroSessoes,
-        sessions: form.sessoes.map((s: any) => ({
-          ...s,
-          durationMinutes: s.durationMinutes ? Number(s.durationMinutes) : undefined
-        }))
-      },
-      register: {
-        Resumo: form.resumo,
-        Observações: form.observacoes
-      },
-      refereeEvaluations: form.avaliacoes.map((a: any) => ({
-        name: a.name,
-        category: a.category,
-        grade: a.grade ? Number(a.grade) : undefined,
-        notes: a.notes
-      })),
-      jury: [] as any[]
-    };
+    let body;
+    if (location.state?.tipo === 'delegado') {
+      body = {
+        reportType: form.tipoDocumento,
+        competitionId: eventData.competitionId || eventData.competition?.competitionNumber,
+        coverSheet: {
+          style: form.estiloProva,
+          councilName: eventData.association,
+          sportsSeason: form.epoca,
+          authorName: form.nomeAutor,
+          location: form.localizacao,
+          year: form.data ? new Date(form.data).getFullYear() : '',
+          month: form.data ? new Date(form.data).getMonth() + 1 : '',
+          numMatchDays: form.numeroJornadas,
+          numSessions: form.numeroSessoes,
+          sessions: form.sessoes.map((s: any) => ({
+            ...s,
+            durationMinutes: s.durationMinutes ? Number(s.durationMinutes) : undefined
+          }))
+        },
+        register: {
+          Resumo: form.resumo,
+          Observações: form.observacoes
+        },
+        refereeEvaluations: form.avaliacoes.map((a: any) => ({
+          name: a.name,
+          category: a.category,
+          grade: a.grade ? Number(a.grade) : undefined,
+          notes: a.notes
+        })),
+        jury: [] as any[]
+      };
+    } else {
+      // juiz arbitro
+      body = {
+        reportType: 'Jury Report',
+        competitionId: eventData.competitionId || eventData.competition?.competitionNumber,
+        coverSheet: {
+          style: form.estiloProva,
+          councilName: eventData.association,
+          sportsSeason: form.epoca,
+          authorName: form.nomeAutor,
+          location: form.localizacao,
+          year: form.data ? new Date(form.data).getFullYear() : '',
+          month: form.data ? new Date(form.data).getMonth() + 1 : '',
+          numMatchDays: form.numeroJornadas,
+          numSessions: form.numeroSessoes,
+          sessions: form.sessoes.map((s: any) => ({
+            ...s,
+            durationMinutes: s.durationMinutes ? Number(s.durationMinutes) : undefined
+          }))
+        },
+        register: {
+          Resumo: form.resumo,
+          Observações: form.observacoes
+        },
+        refereeEvaluations: form.avaliacoes.map((a: any) => ({
+          name: a.name,
+          category: a.category,
+          grade: a.grade ? Number(a.grade) : undefined,
+          notes: a.notes,
+          functionBySession: a.functionBySession || {}
+        })),
+        jury: jury
+      };
+    }
     // Enviar para o backend
     const token = getCookie("token");
     await fetch('/arbnet/reports/create', {
@@ -187,9 +265,10 @@ export function CreateReport() {
     <div style={{ maxWidth: 800, margin: '2rem auto', background: '#fff', borderRadius: 8, boxShadow: '0 2px 8px #0001', padding: '2rem' }}>
       <h2>Criar Relatório</h2>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+        {/* Campos comuns */}
         <label>
           Tipo de documento:
-          <input name="tipoDocumento" value={form.tipoDocumento} onChange={handleChange} required />
+          <input name="tipoDocumento" value={tipoDocumento} onChange={handleChange} required disabled />
         </label>
         <label>
           Estilo da prova:
@@ -198,6 +277,10 @@ export function CreateReport() {
         <label>
           Época:
           <input name="epoca" value={form.epoca} onChange={handleChange} required />
+        </label>
+        <label>
+          Nome da competição:
+          <input name="nomeCompeticao" value={form.nomeCompeticao} readOnly />
         </label>
         <label>
           Nome do autor:
@@ -237,6 +320,7 @@ export function CreateReport() {
                 <th style={{ border: '1px solid #ccc', padding: 6 }}>Categoria</th>
                 <th style={{ border: '1px solid #ccc', padding: 6 }}>Avaliação (1-5)</th>
                 <th style={{ border: '1px solid #ccc', padding: 6 }}>Notas</th>
+                {location.state?.tipo === 'juiz' && <th style={{ border: '1px solid #ccc', padding: 6 }}>Função por Sessão</th>}
               </tr>
             </thead>
             <tbody>
@@ -246,6 +330,15 @@ export function CreateReport() {
                   <td style={{ border: '1px solid #ccc', padding: 6 }}>{a.category}</td>
                   <td style={{ border: '1px solid #ccc', padding: 6 }}><input type="number" min={1} max={5} value={a.grade} onChange={e => handleAvaliacaoChange(idx, 'grade', e.target.value)} style={{ width: 60 }} /></td>
                   <td style={{ border: '1px solid #ccc', padding: 6 }}><input type="text" value={a.notes} onChange={e => handleAvaliacaoChange(idx, 'notes', e.target.value)} style={{ width: '100%' }} /></td>
+                  {location.state?.tipo === 'juiz' && (
+                    <td style={{ border: '1px solid #ccc', padding: 6 }}>
+                      {form.sessoes.map((s: any, sidx: number) => (
+                        <div key={sidx} style={{ marginBottom: 4 }}>
+                          Sessão {sidx + 1}: <input type="text" value={a.functionBySession?.[sidx + 1] || ''} onChange={e => handleFunctionBySessionChange(idx, String(sidx + 1), e.target.value)} style={{ width: 60 }} />
+                        </div>
+                      ))}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -265,7 +358,6 @@ export function CreateReport() {
             </thead>
             <tbody>
               {form.sessoes.map((s: any, idx: number) => {
-                // Mostrar apenas hora:minuto no início
                 let inicio = s.startTime;
                 if (inicio && inicio.length > 5) {
                   try {
@@ -273,7 +365,6 @@ export function CreateReport() {
                     inicio = d.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
                   } catch {}
                 }
-                // Calcular duração automaticamente
                 let duracao = '';
                 if (s.endTime && s.startTime) {
                   try {
@@ -294,6 +385,27 @@ export function CreateReport() {
             </tbody>
           </table>
         </div>
+        {/* Tabela de júri para juiz arbitro */}
+        {location.state?.tipo === 'juiz' && jury.length > 0 && (
+          <div>
+            {jury.map((j, jidx) => (
+              <div key={jidx} style={{ border: '1px solid #ccc', borderRadius: 4, margin: '8px 0', padding: 8 }}>
+                <label>MatchDayId: <input value={j.matchDayId} onChange={e => handleJuryChange(jidx, 'matchDayId', e.target.value)} style={{ width: 60 }} /></label>
+                <label style={{ marginLeft: 8 }}>SessionId: <input value={j.sessionId} onChange={e => handleJuryChange(jidx, 'sessionId', e.target.value)} style={{ width: 60 }} /></label>
+                <button type="button" onClick={() => addJuryMember(jidx)} style={{ marginLeft: 8 }}>Adicionar Membro</button>
+                <div style={{ marginTop: 8 }}>
+                  {j.juryMembers && j.juryMembers.map((m: any, midx: number) => (
+                    <div key={midx} style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
+                      <input placeholder="Posição" value={m.position} onChange={e => handleJuryMemberChange(jidx, midx, 'position', e.target.value)} style={{ width: 90 }} />
+                      <input placeholder="Nome" value={m.name} onChange={e => handleJuryMemberChange(jidx, midx, 'name', e.target.value)} style={{ width: 120 }} />
+                      <input placeholder="Categoria" value={m.category} onChange={e => handleJuryMemberChange(jidx, midx, 'category', e.target.value)} style={{ width: 60 }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         <button type="submit" style={{ background: '#1976d2', color: 'white', border: 'none', borderRadius: 4, padding: '0.7rem 1.5rem', fontWeight: 500, fontSize: 16, cursor: 'pointer' }}>
           Guardar Relatório
         </button>
