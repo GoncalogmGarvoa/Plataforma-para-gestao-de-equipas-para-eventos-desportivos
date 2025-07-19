@@ -4,14 +4,9 @@ package pt.arbitros.arbnet.http
 
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import pt.arbitros.arbnet.domain.CallList
 import pt.arbitros.arbnet.domain.CallListType
-import pt.arbitros.arbnet.domain.Competition
-import pt.arbitros.arbnet.http.model.calllist.CallListInputModel
 import pt.arbitros.arbnet.http.model.ParticipantUpdateInput
-import pt.arbitros.arbnet.http.model.calllist.CallListIdInput
-import pt.arbitros.arbnet.http.model.calllist.CancelCallListInputModel
-import pt.arbitros.arbnet.http.model.calllist.EventOutputModel
+import pt.arbitros.arbnet.http.model.calllist.*
 import pt.arbitros.arbnet.http.model.users.ParticipantUpdateInputArbitrationCouncil
 import pt.arbitros.arbnet.services.*
 import pt.arbitros.arbnet.services.callList.CallListService
@@ -204,9 +199,14 @@ class CallListController(
     ): ResponseEntity<*> {
         val userResult = usersService.getUserByToken(token)
         val callListType = CallListType.FINAL_JURY.callType
+        val reportType = if( function.uppercase() == "JA") {
+            "JA_REPORT"
+        } else {
+            "DEL_REPORT"
+        }
         return if (userResult is Success) {
             when (
-                val result = callListService.getCallListsFinalJuryFunction(userResult.value.id,callListType, function.uppercase())
+                val result: Either<ApiError, List<CallListReportOutputModel>> = callListService.getCallListsFinalJuryFunction(userResult.value.id,callListType, function.uppercase(), reportType)
             ) {
                 is Success -> ResponseEntity.ok(result.value)
                 is Failure -> Problem.fromApiErrorToProblemResponse(result.value)

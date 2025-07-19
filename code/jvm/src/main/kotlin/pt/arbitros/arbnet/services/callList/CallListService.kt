@@ -22,7 +22,7 @@ import pt.arbitros.arbnet.http.model.calllist.*
 import pt.arbitros.arbnet.http.model.matchDayConfirmation
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.repository.mongo.CallListMongoRepository
-import pt.arbitros.arbnet.services.callList.CallListServiceUtils
+import pt.arbitros.arbnet.repository.mongo.ReportMongoRepository
 import pt.arbitros.arbnet.services.Either
 import pt.arbitros.arbnet.services.Failure
 import pt.arbitros.arbnet.services.Success
@@ -34,6 +34,7 @@ import pt.arbitros.arbnet.transactionRepo
 class CallListService(
     @Qualifier(transactionRepo) private val transactionManager: TransactionManager,
     private val callListMongoRepository: CallListMongoRepository,
+    private val reportsMongoRepository: ReportMongoRepository,
     private val utilsDomain: UtilsDomain,
     private val callListDomain: CallListDomain,
     private val callListUtils: CallListServiceUtils,
@@ -617,7 +618,8 @@ class CallListService(
     fun getCallListsFinalJuryFunction(
         userId: Int,
         callListType: String,
-        function: String
+        function: String,
+        reportType: String
     ): Either<ApiError, List<CallListReportOutputModel>> =
         transactionManager.run { tx ->
 
@@ -639,6 +641,8 @@ class CallListService(
                 )
             }
 
+
+
             val callListsReport = callLists.map { callList ->
                 val competition: Competition = tx.competitionRepository.getCompetitionById(callList.competitionId)
                     ?: return@run failure(
@@ -647,6 +651,12 @@ class CallListService(
                             "No competition found with ID ${callList.competitionId}"
                         )
                     )
+
+//                val callListsMongo = reportsMongoRepository.findByCompetitionId(
+//                competition.competitionNumber,
+//                reportType == "report"
+//            ) as List<CallListDocument>
+
                 val matchDays: List<MatchDay> = tx.matchDayRepository.getMatchDaysByCompetition(callList.competitionId)
 
                 CallListReportOutputModel(
