@@ -66,6 +66,7 @@ object Uris {
         const val GET_PAYMENT_REPORT_BY_ID = "$PREFIX/payments/id/{id}"
         const val UPDATE_PAYMENT_REPORT = "$PREFIX/payments/update"
         const val SEAL_PAYMENT_REPORT = "$PREFIX/payments/seal/{id}"
+        const val GET_CALL_LISTS_FOR_PAYMENT_BY_USER_ID = "$PREFIX/payments/callLists"
     }
 
     object SessionUris {

@@ -27,6 +27,7 @@ import {Notifications} from "../components/user/Notifications";
 import {InviteUsers} from "../components/user/InviteUsers";
 import { Reports } from "../components/reports/Reports";
 import { CreateReport } from "../components/reports/CreateReport";
+import {CreatePaymentReport} from "../components/reports/CreatePaymentReport";
 
 function RequireArbitrationCouncil({ children }: { children: React.ReactNode }) {
     const currentRole = useCurrentRole()
@@ -123,6 +124,10 @@ const router = createBrowserRouter([
             {
                 "path": "/reports/create/:callListId",
                 "element": <RequireAuthn><RequireReferee><CreateReport /></RequireReferee></RequireAuthn>
+            },
+            {
+                "path": "/payment-reports/create/:callListId",
+                "element": <RequireAuthn><RequireReferee><CreatePaymentReport /></RequireReferee></RequireAuthn>
             },
             {
                 "path": "/logout",

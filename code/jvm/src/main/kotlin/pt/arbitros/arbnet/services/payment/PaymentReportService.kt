@@ -2,9 +2,13 @@ package pt.arbitros.arbnet.services.payment
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
+import pt.arbitros.arbnet.domain.CallListType
+import pt.arbitros.arbnet.domain.Competition
+import pt.arbitros.arbnet.domain.MatchDay
 import pt.arbitros.arbnet.domain.PaymentReportMongo
 import pt.arbitros.arbnet.domain.UtilsDomain
 import pt.arbitros.arbnet.http.ApiError
+import pt.arbitros.arbnet.http.model.calllist.CallListReportOutputModel
 import pt.arbitros.arbnet.http.model.payment_report.PaymentReportInputModel
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.repository.mongo.PaymentReportMongoRepository
@@ -20,6 +24,40 @@ class PaymentReportService(
     private val paymentReportCalculator: PaymentReportCalculator,
     private val utilsDomain: UtilsDomain,
 ) {
+
+    fun getCallListsForPaymentByUserId(userId: Int) : Either<ApiError, List<CallListReportOutputModel>> =
+
+        transactionManager.run { tx ->
+            val callLists = tx.callListRepository.getCallListsByUserIdAndType(userId, CallListType.FINAL_JURY.callType)
+
+            if (callLists.isEmpty()) {
+                return@run failure(
+                    ApiError.NotFound(
+                        "No Call Lists found",
+                        "No call lists found for the user with ID $userId."
+                    )
+                )
+            }
+
+            val callListsReport = callLists.map { callList ->
+                val competition: Competition = tx.competitionRepository.getCompetitionById(callList.competitionId)
+                    ?: return@run failure(
+                        ApiError.NotFound(
+                            "Competition not found",
+                            "No competition found with ID ${callList.competitionId}"
+                        )
+                    )
+                val matchDays: List<MatchDay> = tx.matchDayRepository.getMatchDaysByCompetition(callList.competitionId)
+
+                CallListReportOutputModel(
+                    callListId = callList.callListId,
+                    competitionId = competition.competitionNumber,
+                    competitionName = competition.name,
+                    matchDays = matchDays
+                )
+            }
+            success(callListsReport)
+        }
 
     fun createPaymentReport(report: PaymentReportInputModel): Either<ApiError, PaymentReportMongo> {
         return transactionManager.run {

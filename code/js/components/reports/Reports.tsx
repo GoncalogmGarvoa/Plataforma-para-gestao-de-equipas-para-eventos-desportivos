@@ -5,9 +5,12 @@ import { getCookie } from "../callList/CreateCallList";
 import { useNavigate } from "react-router-dom";
 
 const BASE_ENDPOINT = "/arbnet/callList/finalJuryFunction";
+const PAYMENT_ENDPOINT = "/arbnet/payments/callLists";
+
+type TabType = 'Del' | 'Ja' | 'Pay';
 
 export function Reports() {
-  const [activeTab, setActiveTab] = useState<'Del' | 'Ja'>('Del');
+  const [activeTab, setActiveTab] = useState<TabType>('Del');
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -16,24 +19,35 @@ export function Reports() {
   const currentEmail = useCurrentEmail();
   const navigate = useNavigate();
 
-  const fetchReports = async (functionType: 'Del' | 'Ja') => {
+  const fetchReports = async (functionType: TabType) => {
     setLoading(true);
     setError(null);
     setReports([]);
+
+    const token = getCookie("token");
+    const headers: Record<string, string> = token ? { token } : {};
+
     try {
-      const token = getCookie("token");
-      const endpoint = `${BASE_ENDPOINT}/${functionType}`;
-      const headers: Record<string, string> = token ? { token } : {};
+      let endpoint = '';
+      if (functionType === 'Pay') {
+        endpoint = PAYMENT_ENDPOINT;
+      } else {
+        endpoint = `${BASE_ENDPOINT}/${functionType}`;
+      }
+
       const response = await fetch(endpoint, {
         method: 'GET',
         headers,
       });
+
       if (response.status === 404) {
         setReports([]);
-        setError('Não foram encontradas convocações para fazer o relatório.');
+        setError('Não foram encontrados relatórios.');
         return;
       }
+
       if (!response.ok) throw new Error('Erro ao buscar relatórios');
+
       const data = await response.json();
       setReports(Array.isArray(data) ? data : [data]);
     } catch (e: any) {
@@ -49,20 +63,28 @@ export function Reports() {
   }, [activeTab]);
 
   return (
-    <div>
-      <h2>Relatórios</h2>
-      <div className="reports-tabs">
-        <div
-          className={`reports-tab${activeTab === 'Del' ? ' active' : ''}`}
-          onClick={() => setActiveTab('Del')}
-        >
-          Relatórios de Delegado
-        </div>
-        <div
-          className={`reports-tab${activeTab === 'Ja' ? ' active' : ''}`}
-          onClick={() => setActiveTab('Ja')}
-        >
-          Relatórios de Juiz Árbitro
+      <div>
+        <div>
+        <h2>Relatórios</h2>
+        <div className="reports-tabs" style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+          <button
+              className={`reports-tab${activeTab === 'Del' ? ' active' : ''}`}
+              onClick={() => setActiveTab('Del')}
+          >
+            Delegado
+          </button>
+          <button
+              className={`reports-tab${activeTab === 'Ja' ? ' active' : ''}`}
+              onClick={() => setActiveTab('Ja')}
+          >
+            Juiz Árbitro
+          </button>
+          <button
+              className={`reports-tab${activeTab === 'Pay' ? ' active' : ''}`}
+              onClick={() => setActiveTab('Pay')}
+          >
+            Pagamento
+          </button>
         </div>
       </div>
       <div className="reports-list">
@@ -118,7 +140,11 @@ export function Reports() {
                   cursor: 'pointer',
                   fontWeight: 500
                 }}
-                  onClick={() => navigate(`/reports/create/${report.callListId}`, { state: { report, tipo: activeTab === 'Del' ? 'delegado' : 'juiz' } })}
+                    onClick={() =>
+                        activeTab === 'Pay'
+                            ? navigate(`/payment-reports/create/${report.callListId}`, { state: { report } })
+                            : navigate(`/reports/create/${report.callListId}`, { state: { report } })
+                    }
                 >
                   Criar relatório
                 </button>
