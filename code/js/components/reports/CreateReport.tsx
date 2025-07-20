@@ -406,9 +406,14 @@ export function CreateReport() {
             ))}
           </div>
         )}
-        <button type="submit" style={{ background: '#1976d2', color: 'white', border: 'none', borderRadius: 4, padding: '0.7rem 1.5rem', fontWeight: 500, fontSize: 16, cursor: 'pointer' }}>
-          Guardar Relatório
-        </button>
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+          <button type="submit" style={{ background: '#1976d2', color: 'white', border: 'none', borderRadius: 4, padding: '0.7rem 1.5rem', fontWeight: 500, fontSize: 16, cursor: 'pointer' }}>
+            Guardar Relatório
+          </button>
+          <button type="button" style={{ background: '#b71c1c', color: 'white', border: 'none', borderRadius: 4, padding: '0.7rem 1.5rem', fontWeight: 500, fontSize: 16, cursor: 'pointer' }}>
+            Lacrar
+          </button>
+        </div>
       </form>
     </div>
   );
