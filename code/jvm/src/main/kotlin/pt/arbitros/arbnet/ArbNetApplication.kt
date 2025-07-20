@@ -44,7 +44,7 @@ class ArbNetApplication {
             tokenSizeInBytes = 256 / 8,
             tokenTtl = 24.hours,
             tokenRollingTtl = 1.hours,
-            maxTokensPerUser = 3,
+            maxTokensPerUser = 2,
         )
 }
 
