@@ -38,13 +38,14 @@ create table dbp.role (
 );
 
 CREATE TABLE dbp.user_token_role (
-                             id SERIAL PRIMARY KEY,
                              user_id INT NOT NULL,
                              token_val VARCHAR(256) NOT NULL,
                              role_id INT NOT NULL,
                              FOREIGN KEY (user_id) REFERENCES dbp.users(id),
                              FOREIGN KEY (token_val) REFERENCES dbp.tokens(token_validation),
-                             FOREIGN KEY (role_id) REFERENCES dbp.role(id)
+                             FOREIGN KEY (role_id) REFERENCES dbp.role(id),
+                             UNIQUE (token_val)
+
 );
 
 create table dbp.users_roles (

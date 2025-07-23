@@ -8,6 +8,7 @@ import java.time.Period
 
 @Component
 class UsersUtils {
+
     fun validStatus(status: String): Boolean {
         UserStatus.entries.forEach {
             if (it.status == status) {
@@ -17,23 +18,23 @@ class UsersUtils {
         return false
     }
 
-//    fun validBirthDate(birthDate: String): Boolean =
-//        try {
-//            val date = LocalDate.parse(birthDate) // Expects ISO format
-//            val today = LocalDate.now()
-//            !date.isAfter(today) && Period.between(date, today).years >= 18
-//        } catch (e: Exception) {
-//            false // Parsing failed → invalid format or date
-//        }
-
     fun validBirthDate(birthDate: String): Boolean =
         try {
-            val date = OffsetDateTime.parse(birthDate).toLocalDate()
+            val date = LocalDate.parse(birthDate) // Expects ISO format
             val today = LocalDate.now()
             !date.isAfter(today) && Period.between(date, today).years >= 18
         } catch (e: Exception) {
-            false
+            false // Parsing failed → invalid format or date
         }
+
+//    fun validBirthDate(birthDate: String): Boolean =
+//        try {
+//            val date = OffsetDateTime.parse(birthDate).toLocalDate()
+//            val today = LocalDate.now()
+//            !date.isAfter(today) && Period.between(date, today).years >= 18
+//        } catch (e: Exception) {
+//            false
+//        }
 
     fun validatePortugueseIban(iban: String): Boolean {
         val cleanIban = iban.replace("\\s".toRegex(), "")
@@ -56,75 +57,3 @@ class UsersUtils {
         return BigInteger(numericIban) % BigInteger("97") == BigInteger.ONE
     }
 }
-
-/*
-
-@Component
-class UsersDomain(
-    private val passwordEncoder: PasswordEncoder,
-    private val tokenEncoder: TokenEncoder,
-    private val config: UsersDomainConfig
-) {
-
-    fun generateTokenValue(): String =
-        ByteArray(config.tokenSizeInBytes).let { byteArray ->
-            SecureRandom.getInstanceStrong().nextBytes(byteArray)
-            Base64.getUrlEncoder().encodeToString(byteArray)
-        }
-
-    fun canBeToken(token: String): Boolean = try {
-        Base64.getUrlDecoder()
-            .decode(token).size == config.tokenSizeInBytes
-    } catch (ex: IllegalArgumentException) {
-        false
-    }
-
-    fun validatePassword(password: String, validationInfo: PasswordValidationInfo) = passwordEncoder.matches(
-        password,
-        validationInfo.validationInfo
-    )
-
-    fun createPasswordValidationInformation(password: String) = PasswordValidationInfo(
-        validationInfo = passwordEncoder.encode(password)
-    )
-
-    fun isTokenTimeValid(
-        clock: Clock,
-        token: Token
-    ): Boolean {
-        val now = clock.now()
-        return token.createdAt <= now &&
-                (now - token.createdAt) <= config.tokenTtl &&
-                (now - token.lastUsedAt) <= config.tokenRollingTtl
-    }
-
-    fun getTokenExpiration(token: Token): Instant {
-        val absoluteExpiration = token.createdAt + config.tokenTtl
-        val rollingExpiration = token.lastUsedAt + config.tokenRollingTtl
-        return if (absoluteExpiration < rollingExpiration) {
-            absoluteExpiration
-        } else {
-            rollingExpiration
-        }
-    }
-
-    fun createTokenValidationInformation(token: String): TokenValidationInfo =
-        tokenEncoder.createValidationInformation(token)
-
-    fun isSafePassword(password: String) = password.length > 5 && containsDigits(password) && containsUpperCase(password) && containsLowerCase(password)
-
-    val maxNumberOfTokensPerUser = config.maxTokensPerUser
-
-    fun containsDigits(input: String): Boolean {
-        return input.any { it.isDigit() }
-    }
-
-    fun containsUpperCase(input: String): Boolean {
-        return input.any { it.isUpperCase() }
-    }
-
-    fun containsLowerCase(input: String): Boolean {
-        return input.any { it.isLowerCase() }
-    }
-}
-*/

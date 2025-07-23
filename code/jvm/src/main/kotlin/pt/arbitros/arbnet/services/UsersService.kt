@@ -42,27 +42,6 @@ data class TokenExternalInfo(
 //TODO change this to a Environment variable
 val SECRET_KEY: SecretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256)
 
-@Configuration
-class MailConfig {
-    @Bean
-    fun javaMailSender(): JavaMailSender {
-        val mailSender = JavaMailSenderImpl()
-        mailSender.host = "smtp.gmail.com"
-        mailSender.port = 587
-        mailSender.username =  System.getenv("ARBNET_EMAIL")
-        mailSender.password = System.getenv("ARBNET_EMAIL_PASSWORD")
-
-        val props = mailSender.javaMailProperties
-        props["mail.transport.protocol"] = "smtp"
-        props["mail.smtp.auth"] = "true"
-        props["mail.smtp.starttls.enable"] = "true"
-        props["mail.smtp.ssl.trust"] = "smtp.gmail.com"
-        props["mail.debug"] = "true"
-
-        return mailSender
-    }
-}
-
 @Component
 class UsersService(
     @Qualifier(transactionRepo) private val transactionManager: TransactionManager,
@@ -77,7 +56,7 @@ class UsersService(
         "No user found with the provided ID",
     )
 
-    fun checkPassowrd(rawPassword: String) {
+    fun checkPassword(rawPassword: String) {
         val passwordEncoder = BCryptPasswordEncoder()
 
         val encodedPassword = passwordEncoder.encode(rawPassword)
@@ -161,16 +140,13 @@ class UsersService(
         return transactionManager.run {
             val usersRepository = it.usersRepository
             val tokenValidationInfo = usersDomain.createTokenValidationInformation(token)
-            //val userAndToken = usersRepository.getTokenByTokenValidationInfo(tokenValidationInfo)
-            // ir buscar à tabela token só token
-            // tras que já tras o user e depois ir buscar o user
-            // TODO
-            val token = usersRepository.getTokenByTokenValidationInfo(tokenValidationInfo)
+
+            val tokenValue = usersRepository.getTokenByTokenValidationInfo(tokenValidationInfo)
 
             val user = usersRepository.getUserByToken(tokenValidationInfo)
 
-            if (token != null && user != null && usersDomain.isTokenTimeValid(clock, token)) {
-                usersRepository.updateTokenLastUsed(token, clock.now())
+            if (tokenValue != null && user != null && usersDomain.isTokenTimeValid(clock, tokenValue)) {
+                usersRepository.updateTokenLastUsed(tokenValue, clock.now())
                 return@run success(user)
             } else {
                 return@run failure(
@@ -228,7 +204,7 @@ class UsersService(
                 userId,
                 tokenValidationInfo,
                 roleId,
-            ) ?: return@run failure(ApiError.NotFound("Error", "Error setting role for user and token"))
+            )
 
             return@run success(success)
         }
@@ -892,9 +868,13 @@ class UsersService(
                 )
             }
 
-
             return@run success(categoryHistory)
         }
     }
+
+    fun getUserRoleByToken(
+        token: String,
+    ): Role? = transactionManager.run { return@run it.usersRolesRepository.getRoleByToken(token) }
+
 }
 

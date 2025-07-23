@@ -20,18 +20,13 @@ class RequestTokenProcessor(
         if (parts[0].lowercase() != SCHEME) {
             return null
         }
-//        return usersService.getUserByToken(parts[1])?.let {
-//            AuthenticatedUser(
-//                it,
-//                parts[1],
-//            )
-//        }
-        val result = usersService.getUserByToken(parts[1]) ?: return null //TODO check tomas
-
-        return when (result) {
-            is Failure -> null
+        return when (val result = usersService.getUserByToken(parts[1])) {
             is Success -> AuthenticatedUser(result.value, parts[1])
+            is Failure -> null // Handle failure case, e.g., token not found or invalid
         }
+
+        // TODO also check role
+        //val role = usersService.getUserRoleByToken(parts[1]) ?: throw IllegalStateException()
     }
 
     companion object {
@@ -39,14 +34,3 @@ class RequestTokenProcessor(
     }
 }
 
-// data class Users(
-//    val id: Int,
-//    val phoneNumber: String,
-//    val address: String,
-//    val name: String,
-//    val email: String,
-//    val password: PasswordValidationInfo,
-//    val birthDate: LocalDate,
-//    val iban: String,
-//    val passwordValidation: PasswordValidationInfo,
-// )

@@ -8,6 +8,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.RowMapper
 import org.jdbi.v3.core.mapper.reflect.ColumnName
 import org.jdbi.v3.core.statement.StatementContext
+import pt.arbitros.arbnet.domain.adaptable.Role
 import pt.arbitros.arbnet.domain.users.*
 import pt.arbitros.arbnet.http.model.users.UserCategoryHistoryOutputModel
 import pt.arbitros.arbnet.repository.UsersRepository
@@ -132,7 +133,7 @@ class UsersRepositoryJdbi(
             .bind("offset", maxTokens - 1)
             .execute()
 
-        // Agora sim pode deletar os tokens antigos
+
         handle.createUpdate(
             """
         delete from dbp.tokens
@@ -160,8 +161,6 @@ class UsersRepositoryJdbi(
             .bind("last_used_at", token.lastUsedAt.epochSeconds)
             .execute()
     }
-
-
 
 
     override fun updateTokenLastUsed(

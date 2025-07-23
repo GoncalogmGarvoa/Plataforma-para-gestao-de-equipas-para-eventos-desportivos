@@ -20,8 +20,9 @@ class AuthenticatedUserArgumentResolver : HandlerMethodArgumentResolver {
     ): Any? {
         val request =
             webRequest.getNativeRequest(HttpServletRequest::class.java)
-                ?: throw IllegalStateException("TODO")
-        return getUserFrom(request) ?: throw IllegalStateException("TODO")
+                ?: throw IllegalStateException("Could not extract HttpServletRequest from NativeWebRequest.")
+        return getUserFrom(request) ?:
+        throw IllegalStateException("Missing AuthenticatedUser in request. Ensure it was set before controller execution.")
     }
 
     companion object {

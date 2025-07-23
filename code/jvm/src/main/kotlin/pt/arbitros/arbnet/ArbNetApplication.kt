@@ -12,7 +12,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import pt.arbitros.arbnet.domain.users.AuthenticatedUserArgumentResolver
-import pt.arbitros.arbnet.domain.users.AuthenticationInterceptor
+import pt.arbitros.arbnet.http.pipeline.AuthenticationInterceptor
 import pt.arbitros.arbnet.domain.users.Sha256TokenEncoder
 import pt.arbitros.arbnet.domain.users.UsersDomainConfig
 import pt.arbitros.arbnet.repository.jdbi.configureWithAppRequirements
@@ -44,7 +44,7 @@ class ArbNetApplication {
             tokenSizeInBytes = 256 / 8,
             tokenTtl = 24.hours,
             tokenRollingTtl = 1.hours,
-            maxTokensPerUser = 3,
+            maxTokensPerUser = 2,
         )
 }
 
@@ -60,7 +60,7 @@ class PipelineConfigurer(
     val authenticatedUserArgumentResolver: AuthenticatedUserArgumentResolver,
 ) : WebMvcConfigurer {
     override fun addInterceptors(registry: InterceptorRegistry) {
-        //registry.addInterceptor(authenticationInterceptor)
+        registry.addInterceptor(authenticationInterceptor)
     }
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
@@ -72,9 +72,7 @@ fun main(args: Array<String>) {
     runApplication<ArbNetApplication>(*args)
 }
 
-// TODO : Should be environment variable?
+// Utilized in the repository to select the transaction manager
 @Suppress("ktlint:standard:property-naming")
 const val transactionRepo = "transactionManagerJdbi"
 // transactionManagerMem
-// transactionManagerJdbi
-// aux

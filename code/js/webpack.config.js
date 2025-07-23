@@ -1,4 +1,7 @@
 //const ESLintPlugin = require('eslint-webpack-plugin');
+
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
 function delay(ms) {
     return new Promise((resolve, reject) => {
         setTimeout(resolve, ms);
@@ -6,7 +9,7 @@ function delay(ms) {
 }
 module.exports = {
     entry: './src/index.tsx',
-    mode: 'development',
+    mode: 'production',
     devServer: {
         port: 8000,
         historyApiFallback: true,
@@ -36,11 +39,11 @@ module.exports = {
     resolve: {
         extensions: ['.js', '.ts', '.tsx'],
     },
-    // plugins: [
-    //     new ESLintPlugin({
-    //         extensions: ['js', 'jsx', 'ts', 'tsx'],
-    //     }),
-    // ],
+    plugins: [
+        new HtmlWebpackPlugin({
+          template: './public/index.html', // your HTML template
+        }),
+    ],
     module: {
         rules: [
             {

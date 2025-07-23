@@ -1,0 +1,7 @@
+code/js/node_modules
+code/js/dist
+build
+*.log
+.dockerignore
+Dockerfile
+.env

@@ -24,12 +24,12 @@ class UsersController(
     private val usersService: UsersService,
 ) {
 
-    @PostMapping(Uris.UsersUris.TOKEN) // equal to logging in
+    @PostMapping(Uris.UsersUris.LOGIN) // equal to logging in
     fun login(
         @RequestBody input: UserCreateTokenInputModel,
     ): ResponseEntity<*> {
 
-        val aux = usersService.checkPassowrd(input.password)
+        val aux = usersService.checkPassword(input.password)
         val res = usersService.createToken(input.email, input.password)
         return when (res) {
             is Success -> ResponseEntity.ok(UserTokenCreateOutputModel(res.value.tokenValue))

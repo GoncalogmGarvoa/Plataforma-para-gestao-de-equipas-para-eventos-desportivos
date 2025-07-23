@@ -41,8 +41,20 @@ services:
       - "8080:8080"
     networks:
       - backend-network
+      - frontend-network
     env_file:
       - .env
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend.Dockerfile
+    depends_on:
+      - backend
+    ports:
+      - "8000:80"
+    networks:
+      - frontend-network
 
 volumes:
   pgdata:
@@ -50,3 +62,4 @@ volumes:
 
 networks:
   backend-network:
+  frontend-network:
