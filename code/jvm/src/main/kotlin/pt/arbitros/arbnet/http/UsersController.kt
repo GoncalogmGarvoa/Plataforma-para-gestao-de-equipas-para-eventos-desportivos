@@ -45,9 +45,10 @@ class UsersController(
     data class RoleSelectionRequest(val id: Int)
     @PostMapping(Uris.UsersUris.SET_ROLE)
     fun setRoleUser(
-        @RequestHeader token: String,
+        @RequestHeader("Authorization") authorizationHeader: String,
         @RequestBody roleSelectionRequest: RoleSelectionRequest
     ): ResponseEntity<*> {
+        val token = authorizationHeader.removePrefix("Bearer ").removePrefix("bearer ")
         val userResult = usersService.getUserByToken(token)
         return when (userResult) {
             is Success -> {
@@ -64,8 +65,9 @@ class UsersController(
 
     @GetMapping(Uris.UsersUris.USER_ROLES_FROM_USER)
     fun getAllRolesFromUser(
-        @RequestHeader token: String,
+        @RequestHeader("Authorization") authorizationHeader: String,
     ): ResponseEntity<*> {
+        val token = authorizationHeader.removePrefix("Bearer ").removePrefix("bearer ")
         return when (val userResult = usersService.getUserByToken(token)) {
             is Success -> when (val result = usersService.getAllRolesFromUser(userResult.value.id)) {
                 is Success -> ResponseEntity.ok(result)
@@ -73,7 +75,6 @@ class UsersController(
             }
             is Failure -> Problem.fromApiErrorToProblemResponse(userResult.value)
         }
-
     }
 
     @GetMapping(Uris.UsersUris.GET_HISTORY_CATEGORY_FROM_USER)
@@ -90,10 +91,10 @@ class UsersController(
 
     @GetMapping(Uris.UsersUris.GET_BY_TOKEN)
     fun getUserByToken(
-        @RequestHeader token: String,
+        @RequestHeader("Authorization") authorizationHeader: String,
     ): ResponseEntity<*> =
         when (
-            val result = usersService.getUserByToken(token)
+            val result = usersService.getUserByToken(authorizationHeader.removePrefix("Bearer ").removePrefix("bearer "))
         ) {
             is Success ->
                 ResponseEntity.ok(
@@ -335,9 +336,9 @@ class UsersController(
 
     @GetMapping(Uris.UsersUris.NOTIFICATIONS)
     fun getNotificationsByUser(
-        @RequestHeader token: String,
-
+        @RequestHeader("Authorization") authorizationHeader: String,
         ): ResponseEntity<*> {
+        val token = authorizationHeader.removePrefix("Bearer ").removePrefix("bearer ")
         val userResult = usersService.getUserByToken(token)
         return if (userResult is Success) {
             when (
@@ -346,7 +347,6 @@ class UsersController(
             is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
-
         }
         else {
             Problem.fromApiErrorToProblemResponse(

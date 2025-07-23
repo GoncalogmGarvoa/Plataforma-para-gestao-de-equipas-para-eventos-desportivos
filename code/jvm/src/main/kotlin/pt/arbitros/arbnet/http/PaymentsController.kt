@@ -25,8 +25,9 @@ class PaymentsController(
 
     @GetMapping(Uris.PaymentsUris.GET_CALL_LISTS_FOR_PAYMENT_BY_USER_ID)
     fun getPaymentsForUserId(
-        @RequestHeader token: String
+        @RequestHeader("Authorization") authorizationHeader: String,
     ): ResponseEntity<*> {
+        val token = authorizationHeader.removePrefix("Bearer ").removePrefix("bearer ")
         val userResult = usersService.getUserByToken(token)
         return if (userResult is Success) {
             when (

@@ -20,8 +20,9 @@ class CallListController(
     @PostMapping(Uris.CallListUris.CREATE_CALLLIST)
     fun createCallList(
         @RequestBody callList: CallListInputModel,
-        @RequestHeader token: String,
+        @RequestHeader("Authorization") authorizationHeader: String,
     ): ResponseEntity<*> {
+        val token = authorizationHeader.removePrefix("Bearer ").removePrefix("bearer ")
         val userResult = usersService.getUserByToken(token)
         return if (userResult is Success) {
             when (
@@ -41,9 +42,10 @@ class CallListController(
     @PutMapping(Uris.CallListUris.UPDATE_PARTICIPANT_CONFIRMATION_STATUS)
     fun updateParticipantConfirmationStatus(
         @RequestBody participantUpdate: ParticipantUpdateInput,
-        @RequestHeader token: String,
+        @RequestHeader("Authorization") authorizationHeader: String,
 
         ): ResponseEntity<*> {
+        val token = authorizationHeader.removePrefix("Bearer ").removePrefix("bearer ")
         val userResult = usersService.getUserByToken(token)
 
         return if (userResult is Success) {
@@ -100,8 +102,9 @@ class CallListController(
     @PutMapping(Uris.CallListUris.UPDATE_CALLLIST)
     fun updateCallList(
         @RequestBody callList: CallListInputModel,
-        @RequestHeader token: String,
+        @RequestHeader("Authorization") authorizationHeader: String,
     ): ResponseEntity<*> {
+        val token = authorizationHeader.removePrefix("Bearer ").removePrefix("bearer ")
         val userResult = usersService.getUserByToken(token)
         return if (userResult is Success) {
             when (
@@ -129,10 +132,10 @@ class CallListController(
 
     @GetMapping(Uris.CallListUris.GET_CALLLIST_DRAFT)
     fun getCallListDraft(
-        @RequestHeader token: String,
+        @RequestHeader("Authorization") authorizationHeader: String,
         @RequestParam callType: String,
     ): ResponseEntity<*> {
-
+        val token = authorizationHeader.removePrefix("Bearer ").removePrefix("bearer ")
         val userResult = usersService.getUserByToken(token)
         return if (userResult is Success) {
             when (val result = callListService.getEventsDraft(userResult.value.id, callType)) {
@@ -150,8 +153,9 @@ class CallListController(
 
     @GetMapping(Uris.CallListUris.GET_CALLLISTS_WITH_REFEREE)
     fun getAllCallListsWithReferee(
-        @RequestHeader token: String,
+        @RequestHeader("Authorization") authorizationHeader: String,
     ): ResponseEntity<*> {
+        val token = authorizationHeader.removePrefix("Bearer ").removePrefix("bearer ")
         val userResult = usersService.getUserByToken(token)
         return if (userResult is Success) {
             when (
@@ -195,8 +199,9 @@ class CallListController(
     @GetMapping(Uris.CallListUris.GET_CALLLISTS_FINAL_JURY_FUNCTION)
     fun getCallListsFinalJuryJa(
         @PathVariable function: String,
-        @RequestHeader token: String,
+        @RequestHeader("Authorization") authorizationHeader: String,
     ): ResponseEntity<*> {
+        val token = authorizationHeader.removePrefix("Bearer ").removePrefix("bearer ")
         val userResult = usersService.getUserByToken(token)
         val callListType = CallListType.FINAL_JURY.callType
         val reportType = if( function.uppercase() == "JA") {
