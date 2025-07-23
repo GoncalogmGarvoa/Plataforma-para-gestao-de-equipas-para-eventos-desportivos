@@ -403,4 +403,11 @@ class UsersController(
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
+    @GetMapping(Uris.UsersUris.GET_ALL_POSITIONS)
+    fun getAllPositions(): ResponseEntity<*> =
+        when (val result = usersService.getAllPositions()) {
+            is Success -> ResponseEntity.ok(result.value)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
+
 }

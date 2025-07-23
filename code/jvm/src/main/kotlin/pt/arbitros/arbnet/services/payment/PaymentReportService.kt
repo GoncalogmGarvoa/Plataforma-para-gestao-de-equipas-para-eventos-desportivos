@@ -70,7 +70,13 @@ class PaymentReportService(
 
             val reportMongo = PaymentReportMongo.Companion.fromInputModel(report, paymentListDetails)
 
-            val result = paymentMongoRepository.save(reportMongo)
+            val result: PaymentReportMongo = paymentMongoRepository.save(reportMongo)
+
+            it.reportRepository.createReport(
+                result.id!!,
+                result.reportType,
+                result.competitionId
+            )
 
             return@run success(result)
         }
@@ -154,12 +160,6 @@ class PaymentReportService(
                     )
                 )
             }
-
-            it.reportRepository.createReport(
-                id,
-                report.reportType,
-                report.competitionId
-            )
 
             val updated = paymentMongoRepository.findById(id).orElse(null)
                 ?: return@run failure(

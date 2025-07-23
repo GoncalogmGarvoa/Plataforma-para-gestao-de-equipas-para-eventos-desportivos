@@ -66,4 +66,13 @@ class ReportController(private val reportService : ReportService) {
             is Success -> ResponseEntity.ok(result)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
+
+    @GetMapping(Uris.ReportUris.GET_ALL_REPORTS_BY_TYPE)
+    fun getAllReportsByType(@PathVariable reportType: String): ResponseEntity<*> =
+
+        when (val reports = reportService.getAllReportsByType(reportType)) {
+            is Success -> ResponseEntity.ok(reports.value)
+            is Failure -> Problem.fromApiErrorToProblemResponse(reports.value)
+        }
+
 }

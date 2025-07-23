@@ -43,6 +43,15 @@ class ReportRepositoryJdbi(private val handle: Handle) : ReportRepository{
         .bind("reportType", reportType)
         .execute() > 0
     }
+    override fun getAllReportsByType(
+        reportType: String
+    ): List<ReportSQL> {
+        return handle.createQuery(
+            """ select id, report_type, competition_id from dbp.report where report_type = :reportType"""
+        ).bind("reportType", reportType)
+        .mapTo(ReportSQL::class.java)
+        .list()
+    }
 
 
 }

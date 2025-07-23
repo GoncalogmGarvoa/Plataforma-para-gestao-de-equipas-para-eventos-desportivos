@@ -3,6 +3,7 @@ package pt.arbitros.arbnet.services.report
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.ReportMongo
+import pt.arbitros.arbnet.domain.ReportSQL
 import pt.arbitros.arbnet.domain.UtilsDomain
 import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.http.model.report.ReportInputModel
@@ -40,7 +41,21 @@ class ReportService(
                 return@run failure(validationResult.value)
             }
 
-            val reportCreated = reportMongoRepository.save(reportMongo)
+            val reportCreated: ReportMongo = reportMongoRepository.save(reportMongo)
+
+            val saveReportInDb = it.reportRepository.createReport(
+                reportCreated.id!!,
+                reportCreated.reportType,
+                reportCreated.competitionId
+            )
+            if (!saveReportInDb) {
+                return@run failure(
+                    ApiError.InternalServerError(
+                        "Failed to create report in database",
+                        "An internal error occurred while trying to create the report in the database."
+                    )
+                )
+            }
 
             return@run success(reportCreated)
         }
@@ -143,5 +158,28 @@ class ReportService(
         val reports = reportMongoRepository.findByCompetitionId(competitionId, true).filterIsInstance<ReportMongo>()
         return success(reports)
     }
+
+    fun getAllReportsByType(reportType: String): Either<ApiError, List<ReportMongo>> {
+
+        val reportsSql = transactionManager.run {
+            it.reportRepository.getAllReportsByType(reportType)
+        }
+
+        val reportsMongo = reportsSql.map { reportSql ->
+            reportMongoRepository.findById(reportSql.id).orElse(null)
+        }.filterNotNull()
+
+        return if (reportsMongo.isNotEmpty()) {
+            success(reportsMongo)
+        } else {
+            failure(
+                ApiError.NotFound(
+                    "No reports found",
+                    "No reports found for the specified type: $reportType."
+                )
+            )
+        }
+    }
+
 
 }

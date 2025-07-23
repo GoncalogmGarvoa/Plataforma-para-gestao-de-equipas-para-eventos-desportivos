@@ -19,6 +19,7 @@ object Uris {
         const val USERS_BY_PARAMETERS = "$PREFIX/users/parameters"
         const val USERS_WITHOUT_ROLES = "$PREFIX/users/withoutRoles"
         const val GET_ALL_FUNCTIONS = "$PREFIX/users/functions"
+        const val GET_ALL_POSITIONS = "$PREFIX/users/positions"
         const val INACTIVE_USERS = "$PREFIX/users/inactive"
         const val USERS = "$PREFIX/users" // TODO
         const val USER_ROLES_FROM_USER = "$PREFIX/users/roles/fromUser"
@@ -57,6 +58,7 @@ object Uris {
         const val UPDATE_REPORT = "$PREFIX/reports/update"
         const val SEAL_REPORT = "$PREFIX/reports/seal/{id}"
         const val GET_ALL_REPORTS_BY_COMPETITION = "$PREFIX/reports/competition/{competitionId}"
+        const val GET_ALL_REPORTS_BY_TYPE = "$PREFIX/reports/type/{reportType}"
     }
 
     object PaymentsUris {

@@ -11,6 +11,7 @@ object RefereeEvaluationValidator {
         evaluations: List<RefereeEvaluation>,
         categoryRepository: CategoryRepository,
         functionRepository: FunctionRepository,
+        positionRepository: PositionRepository,
         sessionRepository: SessionsRepository
     ): Either<ApiError, Unit> {
         if (evaluations.isEmpty())
@@ -29,18 +30,21 @@ object RefereeEvaluationValidator {
             if (evaluation.grade !in 0..5)
                 return failure(ApiError.InvalidField("Invalid referee grade", "The referee grade must be an integer between 0 and 5."))
 
-            evaluation.functionBySession?.forEach { (sessionId, function) ->
+            evaluation.functionBySession?.forEach { (sessionId, position) ->
                 if (sessionId <= 0)
                     return failure(ApiError.InvalidField("Invalid session ID in function by session", "The session ID must be a positive integer for session $sessionId in referee evaluation."))
 
                 if (sessionRepository.getSessionById(sessionId) == null)
                     return failure(ApiError.InvalidField("Invalid session ID for referee evaluation", "The provided session ID does not exist or is invalid for session $sessionId in referee evaluation."))
 
-                if (function.isBlank())
+                if (position.isBlank())
                     return failure(ApiError.InvalidField("Function is required for session $sessionId", "The function must not be empty for session $sessionId in referee evaluation."))
 
-                if (functionRepository.getFunctionIdByName(function) == null)
-                    return failure(ApiError.InvalidField("Invalid function for session $sessionId", "The provided function does not exist or is invalid for session $sessionId in referee evaluation."))
+//                if (functionRepository.getFunctionIdByName(function) == null)
+//                    return failure(ApiError.InvalidField("Invalid function for session $sessionId", "The provided function does not exist or is invalid for session $sessionId in referee evaluation."))
+                if (positionRepository.getPositionIdByName(position) == null) {
+                    return failure(ApiError.InvalidField("Invalid position for session $sessionId", "The provided position does not exist or is invalid for session $sessionId in referee evaluation."))
+                }
             }
         }
 

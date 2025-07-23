@@ -18,4 +18,7 @@ interface ReportRepository {
         reportId: String,
         reportType: String,
     ): Boolean
+    fun getAllReportsByType(
+        reportType: String
+    ): List<ReportSQL>
 }

@@ -8,6 +8,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.RowMapper
 import org.jdbi.v3.core.mapper.reflect.ColumnName
 import org.jdbi.v3.core.statement.StatementContext
+import pt.arbitros.arbnet.domain.adaptable.Position
 import pt.arbitros.arbnet.domain.adaptable.Role
 import pt.arbitros.arbnet.domain.users.*
 import pt.arbitros.arbnet.http.model.users.UserCategoryHistoryOutputModel
@@ -161,6 +162,8 @@ class UsersRepositoryJdbi(
             .bind("last_used_at", token.lastUsedAt.epochSeconds)
             .execute()
     }
+
+
 
 
     override fun updateTokenLastUsed(
@@ -529,7 +532,16 @@ class UsersRepositoryJdbi(
             }
             .list()
 
-
+    override fun getAllPositions(): List<Position> =
+        handle
+            .createQuery("SELECT * FROM dbp.positions")
+            .map { rs, _ ->
+                Position(
+                    id = rs.getInt("id"),
+                    name = rs.getString("name"),
+                )
+            }
+            .list()
 
 
 }

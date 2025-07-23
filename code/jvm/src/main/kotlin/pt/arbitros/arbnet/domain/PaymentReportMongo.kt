@@ -7,7 +7,7 @@ import pt.arbitros.arbnet.http.model.payment_report.PaymentReportInputModel
 @Document(collection = "payment_reports")
 data class PaymentReportMongo(
     @Id val id : String? = null,
-    val reportType : String = "Payment",
+    val reportType : String = "PAY_REPORT",
     val competitionId : Int,
     val sealed: Boolean = false,
     val juryRefere: String, //na folha de pagamento é necessário indicar o nome do JÁ

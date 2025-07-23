@@ -2,24 +2,14 @@ package pt.arbitros.arbnet.services.callList
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
-import pt.arbitros.arbnet.domain.CallList
-import pt.arbitros.arbnet.domain.CallListDocument
-import pt.arbitros.arbnet.domain.CallListDomain
-import pt.arbitros.arbnet.domain.CallListType
-import pt.arbitros.arbnet.domain.CallListWithUserAndCompetition
-import pt.arbitros.arbnet.domain.Competition
-import pt.arbitros.arbnet.domain.CompetitionInfo
-import pt.arbitros.arbnet.domain.MatchDay
-import pt.arbitros.arbnet.domain.MatchDayEntry
-import pt.arbitros.arbnet.domain.ParticipantWithFunction
-import pt.arbitros.arbnet.domain.SessionInfo
-import pt.arbitros.arbnet.domain.UtilsDomain
+import pt.arbitros.arbnet.domain.*
 import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.http.model.ParticipantInfo
 import pt.arbitros.arbnet.http.model.RefereeCallLists
 import pt.arbitros.arbnet.http.model.RefereeCallListsOutputModel
 import pt.arbitros.arbnet.http.model.calllist.*
 import pt.arbitros.arbnet.http.model.matchDayConfirmation
+import pt.arbitros.arbnet.repository.ReportRepository
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.repository.mongo.CallListMongoRepository
 import pt.arbitros.arbnet.repository.mongo.ReportMongoRepository
@@ -35,6 +25,8 @@ class CallListService(
     @Qualifier(transactionRepo) private val transactionManager: TransactionManager,
     private val callListMongoRepository: CallListMongoRepository,
     private val reportsMongoRepository: ReportMongoRepository,
+   // private val reportRepository: ReportRepository,
+
     private val utilsDomain: UtilsDomain,
     private val callListDomain: CallListDomain,
     private val callListUtils: CallListServiceUtils,
@@ -642,9 +634,15 @@ class CallListService(
                 )
             }
 
+            val delReportsWithDoc: List<ReportSQL> = tx.reportRepository.getAllReports()
+
+            val aux = callLists.filter{
+                elem-> elem.competitionId !in delReportsWithDoc.map { it.competitionId }
+            }
 
 
-            val callListsReport = callLists.map { callList ->
+
+            val callListsReport = aux.map { callList ->
                 val competition: Competition = tx.competitionRepository.getCompetitionById(callList.competitionId)
                     ?: return@run failure(
                         ApiError.NotFound(

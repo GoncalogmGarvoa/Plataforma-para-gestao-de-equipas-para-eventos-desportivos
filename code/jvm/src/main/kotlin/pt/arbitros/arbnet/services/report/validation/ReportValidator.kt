@@ -101,7 +101,8 @@ object ReportValidator {
             report.refereeEvaluations,
             categoryRepository,
             functionRepository,
-            sessionRepository
+            positionRepository,
+            sessionRepository,
         ).let {
             if (it is Failure) return it
         }

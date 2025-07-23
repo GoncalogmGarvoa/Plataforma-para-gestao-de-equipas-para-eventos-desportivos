@@ -112,4 +112,6 @@ interface UsersRepository {
     fun getUserCategoryHistory(
         userId: Int,
     ): List<UserCategoryHistoryOutputModel>
+
+    fun getAllPositions(): List<Position>
 }

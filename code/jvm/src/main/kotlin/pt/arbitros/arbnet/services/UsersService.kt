@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.UtilsDomain
 import pt.arbitros.arbnet.domain.adaptable.Category
 import pt.arbitros.arbnet.domain.adaptable.Notification
+import pt.arbitros.arbnet.domain.adaptable.Position
 import pt.arbitros.arbnet.domain.adaptable.Role
 import pt.arbitros.arbnet.domain.users.*
 import pt.arbitros.arbnet.http.ApiError
@@ -868,6 +869,7 @@ class UsersService(
                 )
             }
 
+
             return@run success(categoryHistory)
         }
     }
@@ -876,5 +878,21 @@ class UsersService(
         token: String,
     ): Role? = transactionManager.run { return@run it.usersRolesRepository.getRoleByToken(token) }
 
+
+    fun getAllPositions(): Either<ApiError, List<Position>> {
+        return transactionManager.run {
+            val positionRepository = it.positionRepository
+            val positions = positionRepository.getAllPositions()
+            if (positions.isEmpty()) {
+                return@run failure(
+                    ApiError.NotFound(
+                        "No positions found",
+                        "There are no positions available in the system.",
+                    )
+                )
+            }
+            return@run success(positions)
+        }
+    }
 }
 
