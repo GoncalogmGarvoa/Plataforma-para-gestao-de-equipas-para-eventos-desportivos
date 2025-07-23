@@ -83,7 +83,7 @@ export function SearchCallListDraft() {
 
     const title =
         activeTab === "callList"
-            ? "Convocatórias em Rascunho/CallList"
+            ? "Convocatórias em Rascunho"
             : activeTab === "confirmation"
                 ? "Convocatórias Confirmadas"
                 : activeTab === "sealedCallList"

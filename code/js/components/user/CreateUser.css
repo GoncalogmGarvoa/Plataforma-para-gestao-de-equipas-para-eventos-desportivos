@@ -1,0 +1,60 @@
+.create-user-container {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px #0001;
+  padding: 2.5rem 2rem;
+  max-width: 400px;
+  margin: 2.5rem auto;
+}
+.create-user-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  color: #1976d2;
+  text-align: center;
+}
+.create-user-form label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #222;
+}
+.create-user-form input {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  margin-bottom: 1.2rem;
+  font-size: 1rem;
+  background: #f9f9f9;
+  transition: border 0.2s;
+}
+.create-user-form input:focus {
+  border: 1.5px solid #1976d2;
+  outline: none;
+  background: #fff;
+}
+.create-user-form button {
+  width: 100%;
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.9rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background 0.2s;
+}
+.create-user-form button:hover {
+  background: #1256a3;
+}
+@media (max-width: 500px) {
+  .create-user-container {
+    padding: 1.2rem 0.5rem;
+  }
+  .create-user-title {
+    font-size: 1.3rem;
+  }
+} 

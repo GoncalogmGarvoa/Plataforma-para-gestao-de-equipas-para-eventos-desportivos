@@ -262,7 +262,7 @@ export function AttributeRoles() {
 
     return (
         <div className="attribute-roles-container">
-            <h2>User Roles</h2>
+            <h2>Gerir Utilizadores</h2>
 
             <div className="search-controls">
                 <input

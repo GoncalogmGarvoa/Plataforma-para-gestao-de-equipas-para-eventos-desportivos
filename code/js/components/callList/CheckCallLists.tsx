@@ -94,7 +94,7 @@ export function CheckCallLists() {
 
     return (
         <div className="check-call-lists-container">
-            <h2>As Minhas Convocações</h2>
+            <h2>As Minhas Convocatórias</h2>
 
             <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
                 <button onClick={() => setShowPast(prev => !prev)}>

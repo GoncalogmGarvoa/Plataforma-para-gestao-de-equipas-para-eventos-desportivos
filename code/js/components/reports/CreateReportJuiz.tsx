@@ -3,18 +3,15 @@ import { useLocation, useParams } from "react-router-dom";
 import { useCurrentUser } from "../../src/context/Authn";
 import { getCookie } from "../callList/CreateCallList";
 
-export function CreateDelegateReport() {
+export function CreateJuizReport() {
   const { callListId } = useParams();
   const location = useLocation();
   const currentUser = useCurrentUser() as { name?: string } | null;
-  let tipoDocumento = "DEL_REPORT";
+  let tipoDocumento = "relatorio juiz arbitro";
 
-  // Calcular época automaticamente
   const now = new Date();
   const anoAtual = now.getFullYear();
   const epocaPadrao = `${anoAtual}/${anoAtual + 1}`;
-
-  // Calcular data atual no formato YYYY-MM-DD
   const hoje = new Date();
   const dataHoje = hoje.toISOString().split('T')[0];
 
@@ -35,6 +32,8 @@ export function CreateDelegateReport() {
     avaliacoes: [],
     sessoes: []
   });
+  const [jury, setJury] = useState<any[]>([]);
+  const [positionOptions, setPositionOptions] = useState<{id: number, name: string}[]>([]);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -46,13 +45,13 @@ export function CreateDelegateReport() {
         });
         if (!res.ok) throw new Error("Erro ao buscar dados da convocatória");
         const data = await res.json();
-        console.log("eventData", data);
         setEventData(data);
         const avaliacoes = (data.participants || []).map((p: any) => ({
           name: p.userName || p.name,
           category: p.category,
           grade: '',
-          notes: ''
+          notes: '',
+          functionBySession: {}
         }));
         const sessoes = (data.matchDaySessions || []).flatMap((md: any) =>
           (md.sessions || []).map((s: any) => ({
@@ -100,6 +99,26 @@ export function CreateDelegateReport() {
     fetchAuthor();
   }, []);
 
+  const fetchPositions = async () => {
+    try {
+      const token = getCookie("token");
+      const res = await fetch("/arbnet/users/positions", {
+        headers: token ? { token } : undefined
+      });
+      console.log("Status positions fetch:", res.status);
+      if (!res.ok) throw new Error("Erro ao buscar posições");
+      const data = await res.json();
+      console.log("Positions fetched:", data);
+      setPositionOptions(data);
+    } catch (err) {
+      console.error("Erro ao buscar posições:", err);
+      setPositionOptions([]);
+    }
+  };
+  useEffect(() => {
+    fetchPositions();
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -120,6 +139,47 @@ export function CreateDelegateReport() {
     });
   };
 
+  const handleFunctionBySessionChange = (evalIdx: number, sessionId: string, value: string) => {
+    setForm((prev: any) => {
+      const avaliacoes = [...prev.avaliacoes];
+      const fbSession = { ...(avaliacoes[evalIdx].functionBySession || {}) };
+      fbSession[sessionId] = value;
+      avaliacoes[evalIdx] = { ...avaliacoes[evalIdx], functionBySession: fbSession };
+      return { ...prev, avaliacoes };
+    });
+  };
+
+  const handleJuryChange = (juryIdx: number, field: string, value: string) => {
+    setJury((prev) => {
+      const arr = [...prev];
+      arr[juryIdx] = { ...arr[juryIdx], [field]: value };
+      return arr;
+    });
+  };
+  const handleJuryMemberChange = (juryIdx: number, memberIdx: number, field: string, value: string) => {
+    setJury((prev) => {
+      const arr = [...prev];
+      const members = [...(arr[juryIdx].juryMembers || [])];
+      members[memberIdx] = { ...members[memberIdx], [field]: value };
+      arr[juryIdx] = { ...arr[juryIdx], juryMembers: members };
+      return arr;
+    });
+  };
+  const addJurySession = () => {
+    setJury((prev) => ([...prev, { matchDayId: '', sessionId: '', juryMembers: [] }]));
+  };
+  const addJuryMember = (juryIdx: number) => {
+    setJury((prev) => {
+      const arr = [...prev];
+      if (!arr[juryIdx]) {
+        // Inicializa o objeto da sessão se não existir
+        arr[juryIdx] = { matchDayId: '', sessionId: '', juryMembers: [] };
+      }
+      arr[juryIdx].juryMembers = [...(arr[juryIdx].juryMembers || []), { position: '', name: '', category: '' }];
+      return arr;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!eventData) return;
@@ -127,10 +187,10 @@ export function CreateDelegateReport() {
     const backendSessions = (eventData.matchDaySessions || []).flatMap((md: any) =>
       (md.sessions || []).map((sess: any) => ({
         ...sess,
-        matchDate: md.matchDate
+        matchDate: md.matchDate,
+        matchDayId: md.id // garantir que temos o matchDayId
       }))
     );
-
     // Função utilitária para converter data YYYY-MM-DD para DD/MM/YYYY
     function formatDateToDDMMYYYY(dateStr: string) {
       if (!dateStr) return '';
@@ -144,7 +204,6 @@ export function CreateDelegateReport() {
       if (/^\d{2}:\d{2}:\d{2}$/.test(timeStr)) return timeStr.slice(0, 5);
       return timeStr.slice(0, 5);
     }
-
     // Função utilitária para calcular duração em minutos, suportando sessões que atravessam a meia-noite
     function calculateDurationMinutes(start: string, end: string): number | undefined {
       if (!start || !end) return undefined;
@@ -159,9 +218,51 @@ export function CreateDelegateReport() {
       const duration = endMinutes - startMinutes;
       return duration > 0 ? duration : undefined;
     }
-
+    // Montar sessions para o coverSheet
+    const sessions = form.sessoes.map((s: any) => {
+      const backendSession = backendSessions.find((bs: any) =>
+        bs.matchDate === s.date &&
+        (bs.startTime === s.startTime || bs.startTime?.slice(0,5) === s.startTime?.slice(0,5))
+      );
+      return {
+        sessionId: backendSession?.id,
+        date: formatDateToDDMMYYYY(s.date),
+        startTime: formatTimeToHHMM(s.startTime),
+        endTime: formatTimeToHHMM(s.endTime),
+        durationMinutes: calculateDurationMinutes(formatTimeToHHMM(s.startTime), formatTimeToHHMM(s.endTime))
+      };
+    });
+    // Montar refereeEvaluations com functionBySession usando sessionId real
+    const refereeEvaluations = form.avaliacoes.map((a: any) => {
+      let functionBySession: Record<string, string> = {};
+      if (a.functionBySession && sessions.length > 0) {
+        sessions.forEach((sess: any, idx: any) => {
+          const sessionId = sess.sessionId;
+          if (sessionId && a.functionBySession[idx + 1]) {
+            functionBySession[sessionId] = a.functionBySession[idx + 1];
+          }
+        });
+      }
+      return {
+        name: a.name,
+        category: a.category,
+        grade: a.grade ? Number(a.grade) : undefined,
+        notes: a.notes,
+        functionBySession
+      };
+    });
+    // Montar jury no formato correto
+    const juryOut = jury.map(j => ({
+      matchDayId: j.matchDayId,
+      sessionId: j.sessionId,
+      juryMembers: (j.juryMembers || []).map((m: any) => ({
+        position: m.position,
+        name: m.name,
+        category: m.category
+      }))
+    }));
     const body = {
-      reportType: form.tipoDocumento,
+      reportType: "JA_REPORT",
       competitionId: eventData.matchDaySessions?.[0]?.competitionId,
       coverSheet: {
         style: form.estiloProva,
@@ -173,32 +274,14 @@ export function CreateDelegateReport() {
         month: form.data ? new Date(form.data).getMonth() + 1 : '',
         numMatchDays: form.numeroJornadas,
         numSessions: form.numeroSessoes,
-        sessions: form.sessoes.map((s: any) => {
-          // Encontrar a sessão do backend correspondente
-          const backendSession = backendSessions.find((bs: any) =>
-            bs.matchDate === s.date &&
-            (bs.startTime === s.startTime || bs.startTime?.slice(0,5) === s.startTime?.slice(0,5))
-          );
-          return {
-            sessionId: backendSession?.id,
-            date: formatDateToDDMMYYYY(s.date),
-            startTime: formatTimeToHHMM(s.startTime),
-            endTime: formatTimeToHHMM(s.endTime),
-            durationMinutes: calculateDurationMinutes(formatTimeToHHMM(s.startTime), formatTimeToHHMM(s.endTime))
-          };
-        })
+        sessions
       },
       register: {
         Resumo: form.resumo,
         Observações: form.observacoes
       },
-      refereeEvaluations: form.avaliacoes.map((a: any) => ({
-        name: a.name,
-        category: a.category,
-        grade: a.grade ? Number(a.grade) : undefined,
-        notes: a.notes
-      })),
-      jury: [] as unknown[]
+      refereeEvaluations,
+      jury: [] as any[] // garantir que vai sempre vazio e sem erro de tipo
     };
     const token = getCookie("token");
     const response = await fetch('/arbnet/reports/create', {
@@ -230,7 +313,7 @@ export function CreateDelegateReport() {
 
   return (
     <div style={{ maxWidth: 800, margin: '2rem auto', background: '#fff', borderRadius: 8, boxShadow: '0 2px 8px #0001', padding: '2rem' }}>
-      <h2>Criar Relatório do Delegado</h2>
+      <h2>Criar Relatório do Juiz Árbitro</h2>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
         <label>
           Estilo da prova:
@@ -281,6 +364,7 @@ export function CreateDelegateReport() {
                 <th style={{ border: '1px solid #ccc', padding: 6 }}>Categoria</th>
                 <th style={{ border: '1px solid #ccc', padding: 6 }}>Avaliação (1-5)</th>
                 <th style={{ border: '1px solid #ccc', padding: 6 }}>Notas</th>
+                <th style={{ border: '1px solid #ccc', padding: 6 }}>Posição por Sessão</th>
               </tr>
             </thead>
             <tbody>
@@ -290,6 +374,23 @@ export function CreateDelegateReport() {
                   <td style={{ border: '1px solid #ccc', padding: 6 }}>{a.category}</td>
                   <td style={{ border: '1px solid #ccc', padding: 6 }}><input type="number" min={1} max={5} value={a.grade} onChange={e => handleAvaliacaoChange(idx, 'grade', e.target.value)} style={{ width: 60 }} /></td>
                   <td style={{ border: '1px solid #ccc', padding: 6 }}><input type="text" value={a.notes} onChange={e => handleAvaliacaoChange(idx, 'notes', e.target.value)} style={{ width: '100%' }} /></td>
+                  <td style={{ border: '1px solid #ccc', padding: 6 }}>
+                    {form.sessoes.map((s: any, sidx: number) => (
+                      <div key={sidx} style={{ marginBottom: 4 }}>
+                        Sessão {sidx + 1}: 
+                        <select
+                          value={a.functionBySession?.[sidx + 1] || ''}
+                          onChange={e => handleFunctionBySessionChange(idx, String(sidx + 1), e.target.value)}
+                          style={{ width: 160 }}
+                        >
+                          <option value="">Selecione Posição</option>
+                          {positionOptions.map(pos => (
+                            <option key={pos.id} value={pos.name}>{pos.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
+                  </td>
                 </tr>
               ))}
             </tbody>

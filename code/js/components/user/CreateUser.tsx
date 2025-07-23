@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import * as React from "react"
 import {Navigate, useLocation} from "react-router-dom"
+import './CreateUser.css';
 
 export function CreateUser(): JSX.Element {
     const [inputs, setInputs] = useState({
@@ -67,135 +68,36 @@ export function CreateUser(): JSX.Element {
     }
 
     return (
-        <div className="center-container">
-            <div className="form-container">
-                <h1 className="form-title">Create Account</h1>
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="name">
-                            Full Name
-                        </label>
-                        <input
-                            id="name"
-                            className="form-input"
-                            type="text"
-                            name="name"
-                            value={inputs.name}
-                            onChange={handleChange}
-                            placeholder="Enter your full name"
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="phoneNumber">
-                            Phone Number
-                        </label>
-                        <input
-                            id="phoneNumber"
-                            className="form-input"
-                            type="tel"
-                            name="phoneNumber"
-                            value={inputs.phoneNumber}
-                            onChange={handleChange}
-                            placeholder="Enter your phone number"
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="address">
-                            Address
-                        </label>
-                        <input
-                            id="address"
-                            className="form-input"
-                            type="text"
-                            name="address"
-                            value={inputs.address}
-                            onChange={handleChange}
-                            placeholder="Enter your address"
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="email">
-                            Email
-                        </label>
-                        <input
-                            id="email"
-                            className="form-input"
-                            type="email"
-                            name="email"
-                            value={inputs.email}
-                            onChange={handleChange}
-                            placeholder="Enter your email"
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="password">
-                            Password
-                        </label>
-                        <input
-                            id="password"
-                            className="form-input"
-                            type="password"
-                            name="password"
-                            value={inputs.password}
-                            onChange={handleChange}
-                            placeholder="Create a password"
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="birthDate">
-                            Birth Date
-                        </label>
-                        <input
-                            id="birthDate"
-                            className="form-input"
-                            type="date"
-                            name="birthDate"
-                            value={inputs.birthDate}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="iban">
-                            IBAN
-                        </label>
-                        <input
-                            id="iban"
-                            className="form-input"
-                            type="text"
-                            name="iban"
-                            value={inputs.iban}
-                            onChange={handleChange}
-                            placeholder="Enter your IBAN"
-                            required
-                        />
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="btn btn-primary"
-                        disabled={isSubmitting}
-                    >
-                        {isSubmitting ? "Creating Account..." : "Create Account"}
+        <div className="create-user-container">
+            <div>
+                <h1 className="create-user-title">Criar Conta</h1>
+                {error && <p className="error-message">{error}</p>}
+                <form onSubmit={handleSubmit} className="create-user-form">
+                    <label>Nome Completo
+                        <input type="text" name="name" placeholder="Insira o seu nome completo" value={inputs.name} onChange={handleChange} required />
+                    </label>
+                    <label>Número de Telemóvel
+                        <input type="text" name="phoneNumber" placeholder="Insira o seu número de telemóvel" value={inputs.phoneNumber} onChange={handleChange} required />
+                    </label>
+                    <label>Morada
+                        <input type="text" name="address" placeholder="Insira a sua morada" value={inputs.address} onChange={handleChange} required />
+                    </label>
+                    <label>Email
+                        <input type="email" name="email" placeholder="Insira o seu email" value={inputs.email} onChange={handleChange} required />
+                    </label>
+                    <label>Palavra-passe
+                        <input type="password" name="password" placeholder="Crie uma palavra-passe" value={inputs.password} onChange={handleChange} required />
+                    </label>
+                    <label>Data de Nascimento
+                        <input type="date" name="birthDate" placeholder="dd/mm/aaaa" value={inputs.birthDate} onChange={handleChange} required />
+                    </label>
+                    <label>IBAN
+                        <input type="text" name="iban" placeholder="Insira o seu IBAN" value={inputs.iban} onChange={handleChange} required />
+                    </label>
+                    <button type="submit" className="form-button" disabled={isSubmitting}>
+                        Criar Conta
                     </button>
                 </form>
-
-                {error && (
-                    <p className="error-message">
-                        {error}
-                    </p>
-                )}
             </div>
         </div>
     )
