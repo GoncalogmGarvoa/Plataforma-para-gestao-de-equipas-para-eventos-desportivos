@@ -1,5 +1,7 @@
 package pt.arbitros.arbnet.repository
 
+import pt.arbitros.arbnet.domain.adaptable.Role
+
 interface UsersRolesRepository {
     fun userHasRole(
         userId: Int,
@@ -21,4 +23,6 @@ interface UsersRolesRepository {
     ): Boolean
 
     fun getAdminUsers(): List<Int>
+
+    fun getRoleByToken(tokenId: String): Role?
 }

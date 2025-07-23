@@ -23,7 +23,7 @@ object Uris {
         const val USERS = "$PREFIX/users" // TODO
         const val USER_ROLES_FROM_USER = "$PREFIX/users/roles/fromUser"
         const val SET_ROLE = "$PREFIX/users/role/set"
-        const val TOKEN = "$PREFIX/users/token"
+        const val LOGIN = "$PREFIX/users/token"
         const val GET_BY_TOKEN = "$PREFIX/users/me"
         const val LOGOUT = "$PREFIX/users/logout"
         const val HOME = "$PREFIX/me"
@@ -77,4 +77,9 @@ object Uris {
     object EquipmentUris {
         const val GET_ALL_EQUIPMENT = "$PREFIX/equipment"
     }
+
+    val NoAuthUris = setOf(
+        UsersUris.CREATE_USER,
+        UsersUris.LOGIN,
+    )
 }

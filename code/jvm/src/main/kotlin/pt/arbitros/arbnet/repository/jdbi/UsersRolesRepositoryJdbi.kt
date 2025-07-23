@@ -2,6 +2,7 @@ package pt.arbitros.arbnet.repository.jdbi
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
+import pt.arbitros.arbnet.domain.adaptable.Role
 import pt.arbitros.arbnet.repository.UsersRolesRepository
 
 class UsersRolesRepositoryJdbi(
@@ -66,4 +67,21 @@ class UsersRolesRepositoryJdbi(
             )
             .mapTo<Int>()
             .list()
+
+    override fun getRoleByToken(tokenId: String): Role? {
+        return handle
+            .createQuery(
+                """
+                select r.id, r.name from dbp.user_token_role as utr
+                inner join dbp.role as r on utr.role_id = r.id
+                where utr.token_val = :token_id
+            """,
+            ).bind("token_id", tokenId)
+            .map { rs, _ ->
+                Role(
+                    id = rs.getInt("id"),
+                    name = rs.getString("name"),
+                )
+            }.singleOrNull()
+    }
 }

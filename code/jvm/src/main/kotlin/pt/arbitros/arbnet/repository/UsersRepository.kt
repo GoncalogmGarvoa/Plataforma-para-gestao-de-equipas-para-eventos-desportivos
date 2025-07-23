@@ -1,6 +1,7 @@
 package pt.arbitros.arbnet.repository
 
 import kotlinx.datetime.Instant
+import pt.arbitros.arbnet.domain.adaptable.Role
 import pt.arbitros.arbnet.domain.users.*
 import pt.arbitros.arbnet.http.model.users.UserCategoryHistoryOutputModel
 import java.time.LocalDate
