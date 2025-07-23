@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react"
 import { useLocation } from "react-router-dom"
 import "../../CallListInfo.css"
-import {getCookie} from "./CreateCallList";
+import { getCookie } from "../../src/context/Authn"
 import { useCurrentRole } from "../../src/context/Referee"
 
 interface Session {
@@ -125,7 +125,9 @@ export function CallListInfo() {
         try {
             const token = getCookie("token");
             const response = await fetch(`/arbnet/callList/get/${event.callListId}`, {
-                headers: token ? { token } : undefined
+                headers: {
+                    Authorization: `bearer ${getCookie("token")}`,
+                }
             });
             if (!response.ok) throw new Error("Erro ao buscar convocatória atualizada");
             const data = await response.json();
@@ -168,7 +170,7 @@ export function CallListInfo() {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                token
+                Authorization: `bearer ${getCookie("token")}`,
             },
             body: JSON.stringify(input)
         })
@@ -208,7 +210,7 @@ export function CallListInfo() {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                token
+                Authorization: `bearer ${getCookie("token")}`,
             },
             body: JSON.stringify(input)
         })

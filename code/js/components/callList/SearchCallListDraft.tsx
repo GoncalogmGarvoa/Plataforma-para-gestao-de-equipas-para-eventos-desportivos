@@ -50,7 +50,7 @@ export function SearchCallListDraft() {
             const response = await fetch(`/arbnet/callListDraft/get?callType=${state}`, {
                 method: "GET",
                 headers: {
-                    token,
+                    Authorization: `bearer ${getCookie("token")}`,
                     "Content-Type": "application/json"
                 }
             });

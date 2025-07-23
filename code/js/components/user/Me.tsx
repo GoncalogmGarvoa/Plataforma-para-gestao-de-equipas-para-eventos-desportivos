@@ -2,6 +2,7 @@ import {useEffect, useState, useCallback} from "react"
 import * as React from "react"
 
 import { useCurrentEmail } from "../../src/context/Referee"
+import { getCookie } from "../../src/context/Authn"
 
 
 export function Me() {
@@ -28,7 +29,11 @@ export function Me() {
 
     const fetchUser = useCallback(async () => {
         try {
-            const response = await fetch(`/arbnet/users/email?email=${encodeURIComponent(email!)}`)
+            const response = await fetch(`/arbnet/users/email?email=${encodeURIComponent(email!)}`,{
+                headers: {
+                    Authorization: `bearer ${getCookie("token")}`,
+                }
+            })
 
             const data = await response.json()
 
@@ -55,13 +60,14 @@ export function Me() {
             fetchUser()
         }
     }, [email, fetchUser])
-
+    const token = getCookie("token");
     const handleSave = async () => {
         setError(undefined) // Clear previous errors
         try {
             const response = await fetch("/arbnet/users/update", {
                 method: "PUT",
                 headers: {
+                    Authorization: `bearer ${token}`,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { useCurrentUser } from "../../src/context/Authn";
-import { getCookie } from "../callList/CreateCallList";
+import { getCookie } from "../../src/context/Authn";
 
 export function CreateJuizReport() {
   const { callListId } = useParams();
@@ -41,7 +41,9 @@ export function CreateJuizReport() {
       try {
         const token = getCookie("token");
         const res = await fetch(`/arbnet/callList/get/${callListId}`, {
-          headers: token ? { token } : undefined
+          headers: {
+            Authorization: `bearer ${getCookie("token")}`,
+          }
         });
         if (!res.ok) throw new Error("Erro ao buscar dados da convocatória");
         const data = await res.json();
@@ -86,7 +88,9 @@ export function CreateJuizReport() {
     const fetchAuthor = async () => {
       try {
         const token = getCookie("token");
-        const res = await fetch('/arbnet/users/me', { headers: token ? { token } : undefined });
+        const res = await fetch('/arbnet/users/me', { headers: {
+          Authorization: `bearer ${getCookie("token")}`,
+        } });
         if (res.ok) {
           const data = await res.json();
           setForm((prev: any) => ({
@@ -103,7 +107,9 @@ export function CreateJuizReport() {
     try {
       const token = getCookie("token");
       const res = await fetch("/arbnet/users/positions", {
-        headers: token ? { token } : undefined
+        headers: {
+          Authorization: `bearer ${getCookie("token")}`,
+        }
       });
       console.log("Status positions fetch:", res.status);
       if (!res.ok) throw new Error("Erro ao buscar posições");
@@ -288,7 +294,7 @@ export function CreateJuizReport() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(token ? { token } : {})
+        Authorization: `bearer ${getCookie("token")}`,
       },
       body: JSON.stringify(body)
     });

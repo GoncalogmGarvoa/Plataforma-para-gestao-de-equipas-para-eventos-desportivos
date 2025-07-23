@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import { getCookie } from "../callList/CreateCallList";
+import { getCookie } from "../../src/context/Authn";
 
 export function CreatePaymentReport() {
     const { callListId } = useParams();
@@ -31,7 +31,9 @@ export function CreatePaymentReport() {
             try {
                 const token = getCookie("token");
                 const res = await fetch(`/arbnet/callList/get/${callListId}`, {
-                    headers: token ? { token } : {}
+                    headers: {
+                        Authorization: `bearer ${getCookie("token")}`,
+                    }
                 });
                 if (!res.ok) throw new Error("Erro ao buscar convocatória");
                 const data = await res.json();
@@ -141,7 +143,7 @@ export function CreatePaymentReport() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    ...(token ? { token } : {})
+                    Authorization: `bearer ${getCookie("token")}`,
                 },
                 body: JSON.stringify(form)
             });

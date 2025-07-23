@@ -98,7 +98,11 @@ export function EditCallList() {
             setLoading(true);
             setError(null);
             try {
-                const response = await fetch(`/arbnet/callList/get/${id}`);
+                const response = await fetch(`/arbnet/callList/get/${id}`,{
+                    headers: {
+                        Authorization: `bearer ${getCookie("token")}`,
+                    }
+                });
                 if (!response.ok) {
                     const err = await response.json();
                     throw new Error(err.title || "Erro ao buscar convocatória");
@@ -230,7 +234,9 @@ export function EditCallList() {
             try {
                 const token = getCookie("token");
                 const res = await fetch("/arbnet/users/functions", {
-                    headers: token ? { token } : undefined
+                    headers: {
+                        Authorization: `bearer ${getCookie("token")}`,
+                    }
                 });
                 if (!res.ok) throw new Error("Erro ao buscar funções");
                 const data = await res.json();
@@ -254,7 +260,9 @@ export function EditCallList() {
                 const token = getCookie("token");
                 const res = await fetch(`/arbnet/users/name?name=${encodeURIComponent(participantQuery)}`, {
                     method: "GET",
-                    headers: {token}
+                    headers: {
+                        Authorization: `bearer ${getCookie("token")}`,
+                    }
                 });
                 if (!res.ok) throw new Error("Erro ao procurar utilizadores");
                 const users: { name: string, id: number }[] = await res.json();
@@ -272,7 +280,9 @@ export function EditCallList() {
             const token = getCookie("token");
             const res = await fetch(`/arbnet/users/name?name=${encodeURIComponent(newParticipantName)}`, {
                 method: "GET",
-                headers: { token },
+                headers: {
+                    Authorization: `bearer ${getCookie("token")}`,
+                }
             });
             if (!res.ok) throw new Error("Utilizador não foi encontrado.");
             const users: { name: string, id: number }[] = await res.json();
@@ -445,7 +455,9 @@ export function EditCallList() {
             try {
                 const token = getCookie("token");
                 const res = await fetch("/arbnet/equipment", {
-                    headers: token ? { token } : undefined
+                    headers: {
+                        Authorization: `bearer ${getCookie("token")}`,
+                    }
                 });
                 if (!res.ok) throw new Error("Erro ao buscar equipamentos");
                 const data = await res.json();
@@ -476,7 +488,11 @@ export function EditCallList() {
         setUserDetailsError(null);
         setShowUserModal(true);
         try {
-            const res = await fetch(`/arbnet/users/id/${userId}`);
+            const res = await fetch(`/arbnet/users/id/${userId}`,{
+                headers: {
+                    Authorization: `bearer ${getCookie("token")}`,
+                }
+            });
             if (!res.ok) throw new Error("Erro ao obter detalhes do utilizador");
             const data = await res.json();
             setSelectedUserDetails(data);
@@ -503,7 +519,7 @@ export function EditCallList() {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    token
+                    Authorization: `bearer ${getCookie("token")}`,
                 },
                 body: JSON.stringify({ callListId: form.callListId }) // 👈 atualizado aqui
             });
@@ -644,7 +660,7 @@ export function EditCallList() {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    ...(token && { token }),
+                    Authorization: `bearer ${getCookie("token")}`,
                 },
                 body: JSON.stringify(payload),
             });
@@ -671,7 +687,7 @@ export function EditCallList() {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    ...(token && { token }),
+                    Authorization: `bearer ${getCookie("token")}`,
                 },
                 body: JSON.stringify({ id: id }),
             });
@@ -713,7 +729,7 @@ export function EditCallList() {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    token
+                    Authorization: `bearer ${getCookie("token")}`,
                 },
                 body: JSON.stringify(input)
             });
@@ -742,7 +758,7 @@ export function EditCallList() {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    token
+                    Authorization: `bearer ${getCookie("token")}`,
                 },
                 body: JSON.stringify(input)
             });
@@ -759,7 +775,11 @@ export function EditCallList() {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch(`/arbnet/callList/get/${id}`);
+            const response = await fetch(`/arbnet/callList/get/${id}`,{
+                headers: {
+                    Authorization: `bearer ${getCookie("token")}`,
+                }
+            });
             if (!response.ok) {
                 const err = await response.json();
                 throw new Error(err.title || "Erro ao buscar convocatória");

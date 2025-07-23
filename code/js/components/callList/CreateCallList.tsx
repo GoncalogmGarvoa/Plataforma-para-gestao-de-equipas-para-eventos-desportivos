@@ -1,6 +1,7 @@
 import * as React from "react";
 import {useState, useEffect} from "react";
 import {useNavigate} from "react-router-dom";
+import { getCookie } from "../../src/context/Authn";
 
 interface ParticipantChoice {
     userId: number;
@@ -41,6 +42,7 @@ interface UserDetails {
     [key: string]: any;
 }
 
+/*
 export function getCookie(name: string): string | undefined {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -49,6 +51,7 @@ export function getCookie(name: string): string | undefined {
     }
     return undefined;
 }
+*/
 
 export function CreateCallList() {
     const navigate = useNavigate();
@@ -116,7 +119,9 @@ export function CreateCallList() {
                 const token = getCookie("token");
                 const res = await fetch(`/arbnet/users/name?name=${encodeURIComponent(participantQuery)}`, {
                     method: "GET",
-                    headers: {token}
+                    headers: {
+                        Authorization: `bearer ${getCookie("token")}`,
+                    }
                 });
 
                 if (!res.ok) throw new Error("Erro ao procurar utilizadores");
@@ -138,7 +143,9 @@ export function CreateCallList() {
             try {
                 const token = getCookie("token");
                 const res = await fetch("/arbnet/equipment", {
-                    headers: token ? { token } : undefined
+                    headers: {
+                        Authorization: `bearer ${getCookie("token")}`,
+                    }
                 });
                 if (!res.ok) throw new Error("Erro ao buscar equipamentos");
                 const data = await res.json();
@@ -156,7 +163,9 @@ export function CreateCallList() {
             try {
                 const token = getCookie("token");
                 const res = await fetch("/arbnet/users/functions", {
-                    headers: token ? { token } : undefined
+                    headers: {
+                        Authorization: `bearer ${getCookie("token")}`,
+                    }
                 });
                 if (!res.ok) throw new Error("Erro ao buscar funções");
                 const data = await res.json();
@@ -210,7 +219,9 @@ export function CreateCallList() {
             const token = getCookie("token");
             const res = await fetch(`/arbnet/users/name?name=${encodeURIComponent(newParticipantName)}`, {
                 method: "GET",
-                headers: {token},
+                headers: {
+                    Authorization: `bearer ${getCookie("token")}`,
+                }
             });
 
             if (!res.ok) {
@@ -337,7 +348,7 @@ export function CreateCallList() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    token
+                    Authorization: `bearer ${getCookie("token")}`,
                 },
                 body: JSON.stringify(fullFormData)
             });
@@ -395,7 +406,11 @@ export function CreateCallList() {
         setUserDetailsError(null);
         setShowUserModal(true);
         try {
-            const res = await fetch(`/arbnet/users/id/${userId}`);
+            const res = await fetch(`/arbnet/users/id/${userId}`,{
+                headers: {
+                    Authorization: `bearer ${getCookie("token")}`,
+                }
+            });
             if (!res.ok) throw new Error("Erro ao obter detalhes do utilizador");
             const data = await res.json();
             setSelectedUserDetails(data);

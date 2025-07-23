@@ -65,7 +65,7 @@ export function SelectRole() {
 
                 const response = await fetch("/arbnet/users/roles/fromUser", {
                     headers: {
-                        token: token,
+                        Authorization: `bearer ${token}`,
                         "Content-Type": "application/json"
                     }
                 });
@@ -105,7 +105,7 @@ export function SelectRole() {
             const response = await fetch("/arbnet/users/role/set", {
                 method: "POST",
                 headers: {
-                    token: token,
+                    Authorization: `bearer ${token}`,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({ id: roleId })  // enviando JSON

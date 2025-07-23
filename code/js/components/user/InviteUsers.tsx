@@ -35,8 +35,8 @@ export function InviteUsers() {
             const response = await fetch("/arbnet/users/invite", {
                 method: "POST",
                 headers: {
+                    Authorization: `bearer ${token}`,
                     "Content-Type": "application/json",
-                    token: token,
                 },
                 body: JSON.stringify(email), // envia como string bruta
             });

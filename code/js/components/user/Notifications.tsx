@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { FaBell } from "react-icons/fa"
 import { useCurrentRole } from "../../src/context/Referee"
 import React from "react"
-import {getCookie} from "../callList/CreateCallList";
+import { getCookie } from "../../src/context/Authn";
 import "./Notifications.css"
 
 
@@ -29,7 +29,11 @@ export function Notifications() {
     const token = getCookie("token");
 
     useEffect(() => {
-        fetch("/arbnet/users/roles")
+        fetch("/arbnet/users/roles", {
+            headers: {
+                Authorization: `bearer ${token}`
+            }
+        })
             .then(res => res.json())
             .then(data => setRoles(data))
             .catch(err => {
@@ -46,7 +50,9 @@ export function Notifications() {
 
         fetch(`/arbnet/users/notifications`, {
             method: "GET",
-            headers: {token}
+            headers: {
+                Authorization: `bearer ${token}`,
+        }
             })
             .then(res => res.json())
             .then(data => {
@@ -61,7 +67,10 @@ export function Notifications() {
 
     const markAsRead = (notificationId: number) => {
         fetch(`/arbnet/users/notifications/read/${notificationId}`, {
-            method: "PUT"
+            method: "PUT",
+            headers: {
+                Authorization: `bearer ${token}`
+            }
         })
             .then(() => {
                 setNotifications(prev => prev.filter(n => n.id !== notificationId))

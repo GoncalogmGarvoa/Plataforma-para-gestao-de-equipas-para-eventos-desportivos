@@ -15,10 +15,19 @@ const LoggedInContext = createContext<ContextType>({
 })
 
 // Function to safely get token from cookie
-const getCookie = (name: string): string | null => {
-    const match = document.cookie.split('; ').find(row => row.startsWith(`${name}=`));
-    return match ? match.split('=')[1] : null;
-};
+//const getCookie = (name: string): string | null => {
+//    const match = document.cookie.split('; ').find(row => row.startsWith(`${name}=`));
+//    return match ? match.split('=')[1] : null;
+//};
+
+export function getCookie(name: string): string | undefined {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+        return parts.pop()?.split(";").shift();
+    }
+    return undefined;
+}
 
 export function AuthnContainer({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState(() => {

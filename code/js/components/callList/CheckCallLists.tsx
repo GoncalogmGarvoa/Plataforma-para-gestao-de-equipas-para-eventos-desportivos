@@ -1,7 +1,7 @@
 // src/components/callList/CheckCallLists.tsx
 import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { getCookie } from "./CreateCallList"
+import { getCookie } from "../../src/context/Authn"
 import "../../CheckCallLists.css"
 
 interface Session {
@@ -65,7 +65,9 @@ export function CheckCallLists() {
                 // Buscar convocatórias
                 const resEvents = await fetch("/arbnet/callList/referee", {
                     method: "GET",
-                    headers: { token }
+                    headers: {
+                        Authorization: `bearer ${getCookie("token")}`,
+                    }
                 })
 
                 if (!resEvents.ok) throw new Error("Erro ao obter convocações")

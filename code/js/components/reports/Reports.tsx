@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useCurrentUser } from "../../src/context/Authn";
 import { useCurrentEmail } from "../../src/context/Referee";
-import { getCookie } from "../callList/CreateCallList";
+import { getCookie } from "../../src/context/Authn";
 import { useNavigate } from "react-router-dom";
 
 const BASE_ENDPOINT = "/arbnet/callList/finalJuryFunction";
@@ -42,7 +42,9 @@ export function Reports() {
 
       const response = await fetch(endpoint, {
         method: 'GET',
-        headers,
+        headers: {
+          Authorization: `bearer ${getCookie("token")}`,
+        },
       });
 
       if (response.status === 404) {
@@ -121,7 +123,9 @@ export function Reports() {
                 try {
                   const token = getCookie("token");
                   const res = await fetch(`/arbnet/reports/type/${selectedType}`, {
-                    headers: token ? { token } : undefined
+                    headers: {
+                      Authorization: `bearer ${getCookie("token")}`,
+                    }
                   });
                   if (!res.ok) throw new Error('Não foram encontrados relatórios.');
                   const data = await res.json();

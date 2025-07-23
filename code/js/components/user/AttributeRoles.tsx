@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react"
 import "./AttributeRoles.css"
+import { getCookie } from "../../src/context/Authn"
 
 interface Role {
     id: number
@@ -54,7 +55,12 @@ export function AttributeRoles() {
 
 
     useEffect(() => {
-        fetch("/arbnet/users/roles")
+        const token = getCookie("token");
+        fetch("/arbnet/users/roles",{
+            headers: {
+                Authorization: `bearer ${getCookie("token")}`,
+            }
+        })
             .then(res => {
                 if (!res.ok) throw new Error("Erro ao carregar roles")
                 return res.json()
@@ -65,7 +71,11 @@ export function AttributeRoles() {
                 alert("Erro ao obter lista de roles")
             })
 
-        fetch("/arbnet/users/categories")
+        fetch("/arbnet/users/categories",{
+            headers: {
+                Authorization: `bearer ${getCookie("token")}`,
+            }
+        })
             .then(res => {
                 if (!res.ok) throw new Error("Erro ao carregar categorias")
                 return res.json()
@@ -82,7 +92,13 @@ export function AttributeRoles() {
 
         await Promise.all(users.map(async (user) => {
             try {
-                const res = await fetch(`/arbnet/users/category?userId=${user.userId}`)
+                const res = await fetch(`/arbnet/users/category?userId=${user.userId}`,
+                    {
+                        headers: {
+                            Authorization: `bearer ${getCookie("token")}`,
+                        }
+                    }
+                )
                 if (!res.ok) throw new Error("Erro ao obter categoria")
                 const categoryId = await res.json()
                 categoriesMap[user.userId] = categoryId
@@ -95,7 +111,13 @@ export function AttributeRoles() {
     }
 
     const handleSearch = () => {
-        fetch(`/arbnet/users/parameters?userName=${userNameSearch}&userRoles=${selectedRoles.join(",")}`)
+        fetch(`/arbnet/users/parameters?userName=${userNameSearch}&userRoles=${selectedRoles.join(",")}`,
+            {
+                headers: {
+                    Authorization: `bearer ${getCookie("token")}`,
+                }
+            }
+        )
             .then(res => {
                 if (!res.ok) throw new Error("Erro ao pesquisar utilizadores")
                 return res.json()
@@ -111,7 +133,11 @@ export function AttributeRoles() {
     }
 
     const handleFetchUsersWithoutRoles = () => {
-        fetch(`/arbnet/users/withoutRoles?userName=${userNameSearch}`)
+        fetch(`/arbnet/users/withoutRoles?userName=${userNameSearch}`,{
+            headers: {
+                Authorization: `bearer ${getCookie("token")}`,
+            }
+        })
             .then(res => {
                 if (!res.ok) throw new Error("Erro ao obter utilizadores sem roles")
                 return res.json()
@@ -127,7 +153,11 @@ export function AttributeRoles() {
     }
 
     const handleFetchInactiveUsers = () => {
-        fetch("/arbnet/users/inactive")
+        fetch("/arbnet/users/inactive",{
+            headers: {
+                Authorization: `bearer ${getCookie("token")}`,
+            }
+        })
             .then(res => {
                 if (!res.ok) throw new Error("Erro ao obter utilizadores inativos")
                 return res.json()
@@ -147,6 +177,7 @@ export function AttributeRoles() {
         fetch("/arbnet/users/roles", {
             method: "PUT",
             headers: {
+                Authorization: `bearer ${getCookie("token")}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
@@ -182,6 +213,7 @@ export function AttributeRoles() {
         fetch("/arbnet/users/status", {
             method: "PUT",
             headers: {
+                Authorization: `bearer ${getCookie("token")}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
@@ -212,6 +244,7 @@ export function AttributeRoles() {
         fetch("/arbnet/users/category", {
             method: "POST",
             headers: {
+                Authorization: `bearer ${getCookie("token")}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({ userId, categoryId: newCategoryId })
@@ -231,7 +264,11 @@ export function AttributeRoles() {
         setUserDetailsError(null);
         setShowUserModal(true);
         try {
-            const res = await fetch(`/arbnet/users/id/${userId}`);
+            const res = await fetch(`/arbnet/users/id/${userId}`,{
+                headers: {
+                    Authorization: `bearer ${getCookie("token")}`,
+                }
+            });
             if (!res.ok) throw new Error("Erro ao obter detalhes do utilizador");
             const data = await res.json();
             setSelectedUserDetails(data);
@@ -247,8 +284,13 @@ export function AttributeRoles() {
         setLoadingCategoryHistory(true);
         setCategoryHistoryError(null);
         setShowCategoryHistoryModal(true);
+
         try {
-            const res = await fetch(`/arbnet/users/historyRolesFromUser/${userId}`);
+            const res = await fetch(`/arbnet/users/historyRolesFromUser/${userId}`, {
+                headers: {
+                    Authorization: `bearer ${getCookie("token")}`,
+                }
+            });
             if (!res.ok) throw new Error("Erro ao obter histórico de categorias");
             const data = await res.json();
             setCategoryHistory(data);
