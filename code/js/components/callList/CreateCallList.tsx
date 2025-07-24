@@ -479,11 +479,11 @@ export function CreateCallList() {
                     <input name="phoneNumber" onChange={handleChange}/>
                 </div>
                 <div className="form-group-inline">
-                    <label>Associação:</label>
+                    <label>Conselho:</label>
                     <input name="association" onChange={handleChange}/>
                 </div>
                 <div className="form-group-inline">
-                    <label>Local:</label>
+                    <label>Estabelecimento:</label>
                     <input name="location" onChange={handleChange}/>
                 </div>
                 <div className="form-group-inline">

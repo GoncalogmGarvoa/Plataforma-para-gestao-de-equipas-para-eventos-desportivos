@@ -6,6 +6,7 @@ import pt.arbitros.arbnet.domain.CallListType
 import pt.arbitros.arbnet.domain.Competition
 import pt.arbitros.arbnet.domain.MatchDay
 import pt.arbitros.arbnet.domain.PaymentReportMongo
+import pt.arbitros.arbnet.domain.ReportMongo
 import pt.arbitros.arbnet.domain.UtilsDomain
 import pt.arbitros.arbnet.http.ApiError
 import pt.arbitros.arbnet.http.model.calllist.CallListReportOutputModel
@@ -78,7 +79,35 @@ class PaymentReportService(
                 result.competitionId
             )
 
+            it.reportRepository.createReport(
+                result.id!!,
+                result.reportType,
+                result.competitionId
+            )
+
             return@run success(result)
+        }
+    }
+
+    fun getAllReportsByType(reportType: String): Either<ApiError, List<PaymentReportMongo>> {
+
+        val reportsSql = transactionManager.run {
+            it.reportRepository.getAllReportsByType(reportType)
+        }
+
+        val reportsMongo = reportsSql.mapNotNull { reportSql ->
+            paymentMongoRepository.findById(reportSql.id).orElse(null)
+        }
+
+        return if (reportsMongo.isNotEmpty()) {
+            success(reportsMongo)
+        } else {
+            failure(
+                ApiError.NotFound(
+                    "No reports found",
+                    "No reports found for the specified type: $reportType."
+                )
+            )
         }
     }
 

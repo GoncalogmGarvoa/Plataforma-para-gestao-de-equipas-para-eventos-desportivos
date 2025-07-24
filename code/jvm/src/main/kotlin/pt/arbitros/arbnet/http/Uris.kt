@@ -62,6 +62,7 @@ object Uris {
     }
 
     object PaymentsUris {
+        const val GET_ALL_PAYMENT_REPORTS_BY_TYPE = "$PREFIX/payments/type/{type}"
         const val GET_ALL_PAYMENT_REPORTS = "$PREFIX/payments"
         const val CREATE_PAYMENT_REPORT = "$PREFIX/payments/create"
         const val GET_PAYMENT_REPORTS_BY_COMPETITION = "$PREFIX/payments/competition/{competitionId}"

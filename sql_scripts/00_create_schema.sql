@@ -154,13 +154,13 @@ create table dbp.equipment (
                            name varchar(100) not null
 );
 
-    create table dbp.competition_equipment (
-                               competition_id int,
-                               equipment_id int,
-                               primary key (equipment_id, competition_id),
-                               foreign key (competition_id) references dbp.competition(competition_number) on delete cascade,
-                               foreign key (equipment_id) references dbp.equipment(id)
-    );
+create table dbp.competition_equipment (
+                           competition_id int,
+                           equipment_id int,
+                           primary key (equipment_id, competition_id),
+                           foreign key (competition_id) references dbp.competition(competition_number) on delete cascade,
+                           foreign key (equipment_id) references dbp.equipment(id)
+);
 
 create table dbp.payment_values (
                            name varchar(50) not null primary key,

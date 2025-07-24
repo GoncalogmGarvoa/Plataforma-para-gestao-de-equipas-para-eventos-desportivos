@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import pt.arbitros.arbnet.http.model.payment_report.PaymentReportInputModel
 import pt.arbitros.arbnet.services.Failure
@@ -85,6 +86,15 @@ class PaymentsController(
     fun sealPaymentReport(@PathVariable id: String): ResponseEntity<*> =
         when (val result = paymentReportService.sealPaymentReport(id)) {
             is Success -> ResponseEntity.ok(result)
+            is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+        }
+
+    @GetMapping(Uris.PaymentsUris.GET_ALL_PAYMENT_REPORTS_BY_TYPE)
+    fun getAllPaymentReportsByType(
+        @PathVariable type: String
+    ): ResponseEntity<*> =
+        when (val result = paymentReportService.getAllReportsByType(type)) {
+            is Success -> ResponseEntity.ok(result.value)
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 }

@@ -114,29 +114,36 @@ export function Reports() {
               <option value="PAY_REPORT">Pagamento</option>
             </select>
             <button
-              onClick={async () => {
-                setSelectedReport(null);
-                setSearchResults([]);
-                setSearchClicked(true);
-                setLoading(true);
-                setError(null);
-                try {
-                  const token = getCookie("token");
-                  const res = await fetch(`/arbnet/reports/type/${selectedType}`, {
-                    headers: {
-                      Authorization: `bearer ${getCookie("token")}`,
+                onClick={async () => {
+                  setSelectedReport(null);
+                  setSearchResults([]);
+                  setSearchClicked(true);
+                  setLoading(true);
+                  setError(null);
+                  try {
+                    const token = getCookie("token");
+
+                    let endpoint = `/arbnet/reports/type/${selectedType}`;
+                    if (selectedType === "PAY_REPORT") {
+                      endpoint = `/arbnet/payments/type/${selectedType}`;
                     }
-                  });
-                  if (!res.ok) throw new Error('Não foram encontrados relatórios.');
-                  const data = await res.json();
-                  setSearchResults(Array.isArray(data) ? data : [data]);
-                } catch (e: any) {
-                  setError(e.message);
-                } finally {
-                  setLoading(false);
-                }
-              }}
-              style={{ padding: '8px 16px', borderRadius: 4, background: '#1976d2', color: 'white', border: 'none' }}
+
+                    const res = await fetch(endpoint, {
+                      headers: {
+                        Authorization: `bearer ${token}`,
+                      },
+                    });
+
+                    if (!res.ok) throw new Error('Não foram encontrados relatórios.');
+                    const data = await res.json();
+                    setSearchResults(Array.isArray(data) ? data : [data]);
+                  } catch (e: any) {
+                    setError(e.message);
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                style={{ padding: '8px 16px', borderRadius: 4, background: '#1976d2', color: 'white', border: 'none' }}
             >Pesquisar</button>
           </div>
           {loading && <div>Carregando...</div>}

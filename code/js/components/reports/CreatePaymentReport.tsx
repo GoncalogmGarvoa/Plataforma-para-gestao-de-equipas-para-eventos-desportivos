@@ -2,13 +2,49 @@ import React, { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { getCookie } from "../../src/context/Authn";
 
+interface PaymentReportInputModel {
+    id?: string | null;
+    competitionId: number;
+    sealed?: boolean;
+    juryRefere: string;
+    paymentCoverSheet: PaymentCoverSheet;
+    paymentInfoPerReferee: PaymentInfoPerReferee[];
+}
+
+interface PaymentCoverSheet {
+    style: string;
+    councilName: string;
+    eventName: string;
+    venue: string;
+    eventDate: string; // "YYYY-MM-DD"
+    eventTime: string; // "HH:mm"
+    location: string;
+    organization: string;
+}
+
+interface PaymentInfoPerReferee {
+    name: string;
+    nib: string;
+    numberOfMeals: number;
+    payedAmount: number;
+    sessionsPresence: SessionsPresence[];
+}
+
+interface SessionsPresence {
+    matchDay: number;
+    morning: boolean;
+    morningTime: string; // "HH:mm"
+    afternoon: boolean;
+    afternoonTime: string; // "HH:mm"
+}
+
 export function CreatePaymentReport() {
     const { callListId } = useParams();
     const location = useLocation();
     const [loading, setLoading] = useState(true);
     const [eventData, setEventData] = useState<any>(null);
-    const [form, setForm] = useState<any>({
-        reportType: "Relatório de Pagamentos",
+    const [form, setForm] = useState<PaymentReportInputModel>({
+        competitionId: 0,
         sealed: false,
         juryRefere: "",
         paymentCoverSheet: {
@@ -21,7 +57,7 @@ export function CreatePaymentReport() {
             location: "",
             organization: ""
         },
-        paymentPerReferee: []
+        paymentInfoPerReferee: []
     });
 
     // Fetch callList
@@ -39,8 +75,8 @@ export function CreatePaymentReport() {
                 const data = await res.json();
                 setEventData(data);
 
-                const firstDate = data.matchDays?.[0]?.matchDate || "";
-                const parsedDate = firstDate ? new Date(firstDate).toISOString().split("T")[0] : "";
+                const firstDate = data.matchDaySessions?.[0].matchDate;
+                const firstTime = data.matchDaySessions?.[0].sessions?.[0]?.startTime;
 
                 const groupedParticipantsMap = new Map();
 
@@ -56,6 +92,8 @@ export function CreatePaymentReport() {
                 const defaultReferees = Array.from(groupedParticipantsMap.values()).map((ref: any) => ({
                     name: ref.name,
                     nib: "",
+                    numberOfMeals: 0,
+                    payedAmount: 0,
                     sessionsPresence: (data.matchDaySessions || []).map((md: any) => ({
                         matchDay: md.id,
                         morning: false,
@@ -68,16 +106,17 @@ export function CreatePaymentReport() {
 
                 setForm((prev: any) => ({
                     ...prev,
-                    competitionId: data.competitionId,
+                    competitionId: data.matchDaySessions[0].competitionId,
                     paymentCoverSheet: {
                         ...prev.paymentCoverSheet,
                         eventName: data.competitionName,
-                        location: data.location,
-                        eventDate: parsedDate,
+                        location: data.address,
+                        venue: data.location,
+                        eventDate: firstDate,
+                        eventTime: firstTime,
                         councilName: data.association,
-                        organization: data.association,
                     },
-                    paymentPerReferee: defaultReferees
+                    paymentInfoPerReferee: defaultReferees
                 }));
             } catch (e) {
                 console.error(e);
@@ -103,40 +142,64 @@ export function CreatePaymentReport() {
         }));
     };
 
-    const handleRefereeChange = (idx: number, field: string, value: string) => {
-        setForm((prev: any) => {
-            const refs = [...prev.paymentPerReferee];
-            refs[idx] = { ...refs[idx], [field]: value };
-            return { ...prev, paymentPerReferee: refs };
+    const handleRefereeChange = (idx: number, field: string, value: any) => {
+        setForm((prev) => {
+            const refs = [...prev.paymentInfoPerReferee];
+            refs[idx] = {
+                ...refs[idx],
+                [field]: ["numberOfMeals", "payedAmount"].includes(field)
+                    ? Number(value)
+                    : value
+            };
+            return { ...prev, paymentInfoPerReferee: refs };
         });
     };
 
     const handlePresenceChange = (refIdx: number, sessionIdx: number, period: "morning" | "afternoon", value: boolean) => {
         setForm((prev: any) => {
-            const refs = [...prev.paymentPerReferee];
+            const refs = [...prev.paymentInfoPerReferee];
             const sessions = [...refs[refIdx].sessionsPresence];
             sessions[sessionIdx] = {
                 ...sessions[sessionIdx],
                 [period]: value
             };
             refs[refIdx].sessionsPresence = sessions;
-            return { ...prev, paymentPerReferee: refs };
+            return { ...prev, paymentInfoPerReferee: refs };
         });
     };
 
     const handleTimeChange = (refIdx: number, sessionIdx: number, field: "morningTime" | "afternoonTime", value: string) => {
         setForm((prev: any) => {
-            const refs = [...prev.paymentPerReferee];
+            const refs = [...prev.paymentInfoPerReferee];
             const sessions = [...refs[refIdx].sessionsPresence];
             sessions[sessionIdx][field] = value;
             refs[refIdx].sessionsPresence = sessions;
-            return { ...prev, paymentPerReferee: refs };
+            return { ...prev, paymentInfoPerReferee: refs };
         });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const token = getCookie("token");
+
+        // Garantir que o form tem o tipo correto
+        const payload: PaymentReportInputModel = {
+            ...form,
+            sealed: form.sealed ?? false, // garantir que existe mesmo que seja opcional
+            paymentInfoPerReferee: form.paymentInfoPerReferee.map((ref) => ({
+                name: ref.name,
+                nib: ref.nib,
+                numberOfMeals: ref.numberOfMeals,
+                payedAmount: ref.payedAmount,
+                sessionsPresence: ref.sessionsPresence.map((sess) => ({
+                    matchDay: sess.matchDay,
+                    morning: sess.morning,
+                    morningTime: sess.morningTime,
+                    afternoon: sess.afternoon,
+                    afternoonTime: sess.afternoonTime
+                })) as SessionsPresence[]
+            })) as PaymentInfoPerReferee[]
+        };
 
         try {
             const response = await fetch("/arbnet/payments/create", {
@@ -145,20 +208,17 @@ export function CreatePaymentReport() {
                     "Content-Type": "application/json",
                     Authorization: `bearer ${getCookie("token")}`,
                 },
-                body: JSON.stringify(form)
+                body: JSON.stringify(payload)
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                console.error("Erro do servidor:", errorData);
-                alert("Erro ao submeter relatório de pagamento.");
-                return;
+                throw new Error("Erro ao submeter relatório.");
             }
 
-            alert("Relatório de pagamento enviado com sucesso!");
+            alert("Relatório de pagamento enviado!");
         } catch (err) {
-            console.error("Erro de rede:", err);
-            alert("Erro ao submeter relatório de pagamento.");
+            alert("Erro ao submeter relatório.");
+            console.error(err);
         }
     };
 
@@ -183,15 +243,15 @@ export function CreatePaymentReport() {
                     <label>Nome da Prova: <input value={form.paymentCoverSheet.eventName} readOnly /></label>
                     <label>Data: <input type="date" value={form.paymentCoverSheet.eventDate} onChange={e => handleCoverChange("eventDate", e.target.value)} /></label>
                     <label>Hora: <input type="time" value={form.paymentCoverSheet.eventTime} onChange={e => handleCoverChange("eventTime", e.target.value)} /></label>
-                    <label>Local: <input value={form.paymentCoverSheet.location} onChange={e => handleCoverChange("location", e.target.value)} /></label>
-                    <label>Concelho: <input onChange={e => handleCoverChange("councilName", e.target.value)} /></label>
-                    <label>Organização: <input value={form.paymentCoverSheet.organization} onChange={e => handleCoverChange("organization", e.target.value)} /></label>
-                    <label>Estabelecimento: <input onChange={e => handleCoverChange("venue", e.target.value)} /></label>
+                    <label>Morada: <input value={form.paymentCoverSheet.location} onChange={e => handleCoverChange("location", e.target.value)} /></label>
+                    <label>Conselho: <input value = {form.paymentCoverSheet.councilName} onChange={e => handleCoverChange("councilName", e.target.value)} /></label>
+                    <label>Associação: <input  onChange={e => handleCoverChange("organization", e.target.value)} /></label>
+                    <label>Estabelecimento: <input value = {form.paymentCoverSheet.venue} onChange={e => handleCoverChange("venue", e.target.value)} /></label>
                 </fieldset>
 
                 <div>
                     <h3>Presenças e NIBs dos Árbitros</h3>
-                    {form.paymentPerReferee.map((ref: any, idx: number) => (
+                    {form.paymentInfoPerReferee.map((ref: any, idx: number) => (
                         <div
                             key={idx}
                             style={{
@@ -217,8 +277,8 @@ export function CreatePaymentReport() {
                                         Nº de refeições:{" "}
                                         <input
                                             type="number"
-                                            value={ref.meals ?? ""}
-                                            onChange={(e) => handleRefereeChange(idx, "meals", e.target.value)}
+                                            value={ref.numberOfMeals ?? ""}
+                                            onChange={(e) => handleRefereeChange(idx, "numberOfMeals", e.target.value)}
                                             style={{ width: 100 }}
                                             min={0}
                                         />
@@ -229,8 +289,8 @@ export function CreatePaymentReport() {
                                         <input
                                             type="number"
                                             step="0.01"
-                                            value={ref.amountPaid ?? ""}
-                                            onChange={(e) => handleRefereeChange(idx, "amountPaid", e.target.value)}
+                                            value={ref.payedAmount ?? ""}
+                                            onChange={(e) => handleRefereeChange(idx, "payedAmount", e.target.value)}
                                             style={{ width: 120 }}
                                             min={0}
                                         />
