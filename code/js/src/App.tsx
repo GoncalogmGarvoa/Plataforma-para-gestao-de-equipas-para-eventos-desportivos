@@ -1,159 +1,298 @@
-import * as React from 'react'
-import '../components/Components.css'
-import '../components/SelectRole.css'
-import '../components/CreateCallList.css'
-import { FaBell } from "react-icons/fa"
+import * as React from 'react';
+import '../components/Components.css';
+import '../components/SelectRole.css';
+import '../components/CreateCallList.css';
+import { FaBell } from "react-icons/fa";
+
+import {
+    createBrowserRouter,
+    Link,
+    Outlet,
+    RouterProvider,
+    Navigate,
+} from 'react-router-dom';
+
+import { AuthnContainer } from './context/Authn';
+import { useCurrentUser } from "./context/Authn";
+import { useCurrentRole, useCurrentEmail, UserContainer } from "./context/Referee";
+import { RequireAuthn } from './RequireAuthn';
+import { Logout } from '../components/user/Logout';
+
+// Lazy-loaded components
+const CreateUser = React.lazy(() =>
+    import("../components/user/CreateUser").then(m => ({ default: m.CreateUser }))
+);
+
+const Login = React.lazy(() =>
+    import("../components/user/Login").then(m => ({ default: m.Login }))
+);
+
+const Me = React.lazy(() =>
+    import("../components/user/Me").then(m => ({ default: m.Me }))
+);
+
+const SelectRole = React.lazy(() =>
+    import("../components/user/SelectRole").then(m => ({ default: m.SelectRole }))
+);
+
+const CreateCallList = React.lazy(() =>
+    import("../components/callList/CreateCallList").then(m => ({ default: m.CreateCallList }))
+);
+
+const SearchCallListDraft = React.lazy(() =>
+    import("../components/callList/SearchCallListDraft").then(m => ({ default: m.SearchCallListDraft }))
+);
+
+const EditCallList = React.lazy(() =>
+    import("../components/callList/EditCallList").then(m => ({ default: m.EditCallList }))
+);
+
+const CheckCallLists = React.lazy(() =>
+    import("../components/callList/CheckCallLists").then(m => ({ default: m.CheckCallLists }))
+);
+
+const CallListInfo = React.lazy(() =>
+    import("../components/callList/CallListInfo").then(m => ({ default: m.CallListInfo }))
+);
+
+const AttributeRoles = React.lazy(() =>
+    import("../components/user/AttributeRoles").then(m => ({ default: m.AttributeRoles }))
+);
+
+const InviteUsers = React.lazy(() =>
+    import("../components/user/InviteUsers").then(m => ({ default: m.InviteUsers }))
+);
+
+const Notifications = React.lazy(() =>
+    import("../components/user/Notifications").then(m => ({ default: m.Notifications }))
+);
+
+const Reports = React.lazy(() =>
+    import("../components/reports/Reports").then(m => ({ default: m.Reports }))
+);
+
+const CreateReportRouter = React.lazy(() =>
+    import("../components/reports/CreateReportRouter").then(m => ({ default: m.CreateReportRouter }))
+);
+
+const CreatePaymentReport = React.lazy(() =>
+    import("../components/reports/CreatePaymentReport").then(m => ({ default: m.CreatePaymentReport }))
+);
 
 
-import {createBrowserRouter, Link, Outlet, RouterProvider, Navigate} from 'react-router-dom'
-import { AuthnContainer} from './context/Authn'
-import { CreateUser } from "../components/user/CreateUser"
-import { Login } from "../components/user/Login"
-import { Me } from "../components/user/Me"
-import { useCurrentUser } from "./context/Authn"
-import { RequireAuthn } from './RequireAuthn'
-import { Logout } from '../components/user/Logout'
-import { CreateCallList } from "../components/callList/CreateCallList";
-import { SearchCallListDraft } from "../components/callList/SearchCallListDraft";
-import { useCurrentRole } from "./context/Referee";
+// Optional: Wrapper para Suspense
+function SuspenseWrapper({ children }: { children: React.ReactNode }) {
+    return (
+        <React.Suspense fallback={<div>Carregando...</div>}>
+            {children}
+        </React.Suspense>
+    );
+}
 
-import {useCurrentEmail, UserContainer} from "./context/Referee";
-import {SelectRole} from "../components/user/SelectRole";
-import { EditCallList } from "../components/callList/EditCallList";
-import {CheckCallLists} from "../components/callList/CheckCallLists";
-import {CallListInfo} from "../components/callList/CallListInfo";
-import {AttributeRoles} from "../components/user/AttributeRoles";
-import {Notifications} from "../components/user/Notifications";
-import {InviteUsers} from "../components/user/InviteUsers";
-import { Reports } from "../components/reports/Reports";
-import { CreateReportRouter } from "../components/reports/CreateReportRouter";
-import { CreatePaymentReport } from "../components/reports/CreatePaymentReport";
-
-
+// Proteção por role
 function RequireArbitrationCouncil({ children }: { children: React.ReactNode }) {
-    const currentRole = useCurrentRole()
-    
-    if (currentRole !== "Arbitration_Council") {
-        return <Navigate to="/" replace={true} />
-    }
-    
-    return <>{children}</>
+    const currentRole = useCurrentRole();
+    return currentRole === "Arbitration_Council" ? <>{children}</> : <Navigate to="/" replace />;
 }
 
 function RequireReferee({ children }: { children: React.ReactNode }) {
-    const currentRole = useCurrentRole()
-
-    if (currentRole !== "Referee") {
-        return <Navigate to="/" replace={true} />
-    }
-
-    return <>{children}</>
+    const currentRole = useCurrentRole();
+    return currentRole === "Referee" ? <>{children}</> : <Navigate to="/" replace />;
 }
 
 function RequireAdmin({ children }: { children: React.ReactNode }) {
-    const currentRole = useCurrentRole()
-
-    if (currentRole !== "Admin") {
-        return <Navigate to="/" replace={true} />
-    }
-
-    return <>{children}</>
+    const currentRole = useCurrentRole();
+    return currentRole === "Admin" ? <>{children}</> : <Navigate to="/" replace />;
 }
 
+// Router
 const router = createBrowserRouter([
     {
-        "path": "/",
-        "element":
+        path: "/",
+        element: (
             <AuthnContainer>
                 <UserContainer>
-                    <Header /><Outlet />
+                    <Header />
+                    <Outlet />
                 </UserContainer>
-            </AuthnContainer>,
-        "children": [
+            </AuthnContainer>
+        ),
+        children: [
             {
-                "path": "/",
-                "element": <Home/>,
+                path: "/",
+                element: <Home />,
             },
             {
-                "path": "/users/signup",
-                "element": <CreateUser />
+                path: "/users/signup",
+                element: (
+                    <SuspenseWrapper>
+                        <CreateUser />
+                    </SuspenseWrapper>
+                ),
             },
             {
-                "path": "/login",
-                "element": <Login />
+                path: "/login",
+                element: (
+                    <SuspenseWrapper>
+                        <Login />
+                    </SuspenseWrapper>
+                ),
             },
             {
-                "path": "/select-role",
-                "element": <RequireAuthn><SelectRole /></RequireAuthn>
+                path: "/select-role",
+                element: (
+                    <RequireAuthn>
+                        <SuspenseWrapper>
+                            <SelectRole />
+                        </SuspenseWrapper>
+                    </RequireAuthn>
+                ),
             },
             {
-                "path": "/Me",
-                "element": <RequireAuthn><Me /></RequireAuthn>
+                path: "/me",
+                element: (
+                    <RequireAuthn>
+                        <SuspenseWrapper>
+                            <Me />
+                        </SuspenseWrapper>
+                    </RequireAuthn>
+                ),
             },
             {
-                "path": "/create-callList",
-                "element": <RequireAuthn><RequireArbitrationCouncil><CreateCallList /></RequireArbitrationCouncil></RequireAuthn>
+                path: "/create-calllist",
+                element: (
+                    <RequireAuthn>
+                        <RequireArbitrationCouncil>
+                            <SuspenseWrapper>
+                                <CreateCallList />
+                            </SuspenseWrapper>
+                        </RequireArbitrationCouncil>
+                    </RequireAuthn>
+                ),
             },
             {
-                "path": "/search-callList-draft",
-                "element": <RequireAuthn><RequireArbitrationCouncil><SearchCallListDraft /></RequireArbitrationCouncil></RequireAuthn>
+                path: "/search-calllist-draft",
+                element: (
+                    <RequireAuthn>
+                        <RequireArbitrationCouncil>
+                            <SuspenseWrapper>
+                                <SearchCallListDraft />
+                            </SuspenseWrapper>
+                        </RequireArbitrationCouncil>
+                    </RequireAuthn>
+                ),
             },
             {
-                "path": "/check-callLists",
-                "element": <RequireAuthn><CheckCallLists /></RequireAuthn>
+                path: "/check-callLists",
+                element: (
+                    <RequireAuthn>
+                        <SuspenseWrapper>
+                            <CheckCallLists />
+                        </SuspenseWrapper>
+                    </RequireAuthn>
+                ),
             },
             {
-                "path": "/callList-info",
-                "element": <RequireAuthn><CallListInfo /></RequireAuthn>
+                path: "/callList-info",
+                element: (
+                    <RequireAuthn>
+                        <SuspenseWrapper>
+                            <CallListInfo />
+                        </SuspenseWrapper>
+                    </RequireAuthn>
+                ),
             },
             {
-                "path": "/edit-calllist/:id",
-                "element": <RequireAuthn><RequireArbitrationCouncil><EditCallList /></RequireArbitrationCouncil></RequireAuthn>
+                path: "/edit-calllist/:id",
+                element: (
+                    <RequireAuthn>
+                        <RequireArbitrationCouncil>
+                            <SuspenseWrapper>
+                                <EditCallList />
+                            </SuspenseWrapper>
+                        </RequireArbitrationCouncil>
+                    </RequireAuthn>
+                ),
             },
             {
-                "path": "/attribute-roles",
-                "element": <RequireAuthn><RequireAdmin ><AttributeRoles /></RequireAdmin></RequireAuthn>
+                path: "/attribute-roles",
+                element: (
+                    <RequireAuthn>
+                        <RequireAdmin>
+                            <SuspenseWrapper>
+                                <AttributeRoles />
+                            </SuspenseWrapper>
+                        </RequireAdmin>
+                    </RequireAuthn>
+                ),
             },
             {
-                "path": "/invite-users",
-                "element": <RequireAuthn><RequireAdmin ><InviteUsers /></RequireAdmin></RequireAuthn>
+                path: "/invite-users",
+                element: (
+                    <RequireAuthn>
+                        <RequireAdmin>
+                            <SuspenseWrapper>
+                                <InviteUsers />
+                            </SuspenseWrapper>
+                        </RequireAdmin>
+                    </RequireAuthn>
+                ),
             },
             {
-                "path": "/reports",
-                "element": <RequireAuthn><RequireReferee><Reports /></RequireReferee></RequireAuthn>
+                path: "/reports",
+                element: (
+                    <RequireAuthn>
+                        <RequireReferee>
+                            <SuspenseWrapper>
+                                <Reports />
+                            </SuspenseWrapper>
+                        </RequireReferee>
+                    </RequireAuthn>
+                ),
             },
             {
-                "path": "/reports/create/:callListId",
-                "element": <RequireAuthn><RequireReferee><CreateReportRouter /></RequireReferee></RequireAuthn>
+                path: "/reports/create/:callListId",
+                element: (
+                    <RequireAuthn>
+                        <RequireReferee>
+                            <SuspenseWrapper>
+                                <CreateReportRouter />
+                            </SuspenseWrapper>
+                        </RequireReferee>
+                    </RequireAuthn>
+                ),
             },
             {
-                "path": "/payment-reports/create/:callListId",
-                "element": <RequireAuthn><RequireReferee><CreatePaymentReport /></RequireReferee></RequireAuthn>
+                path: "/payment-reports/create/:callListId",
+                element: (
+                    <RequireAuthn>
+                        <RequireReferee>
+                            <SuspenseWrapper>
+                                <CreatePaymentReport />
+                            </SuspenseWrapper>
+                        </RequireReferee>
+                    </RequireAuthn>
+                ),
             },
             {
-                "path": "/logout",
-                "element":<Logout />
-            }
-        ]
-    }
-])
+                path: "/logout",
+                element: <Logout />,
+            },
+        ],
+    },
+]);
 
-
+// App
 export function App() {
-    return (
-        <RouterProvider router={router} />
-    )
+    return <RouterProvider router={router} />;
 }
 
-
-
-
+// Home
 function Home() {
-    const currentEmail = useCurrentEmail()
-    const currentRole = useCurrentRole()
-    
-    const isConselhoDeArbitragem = currentRole === "Arbitration_Council"
-    const isAdmin = currentRole === "Admin"
+    const currentEmail = useCurrentEmail();
+    const currentRole = useCurrentRole();
+    const isConselho = currentRole === "Arbitration_Council";
+    const isAdmin = currentRole === "Admin";
 
     return (
         <div>
@@ -164,12 +303,9 @@ function Home() {
                         <li><Link to="/me">Eu</Link></li>
                         <li><Link to="/select-role">Mudar Perfil</Link></li>
 
+                        {currentRole && <li><Link to="/check-callLists">Ver Convocatórias</Link></li>}
 
-                        {currentRole && (
-                        <li><Link to="/check-callLists">Ver Convocatórias</Link></li>
-                        )}
-
-                        {isConselhoDeArbitragem && (
+                        {isConselho && (
                             <>
                                 <li><Link to="/create-calllist">Criar Convocatória</Link></li>
                                 <li><Link to="/search-calllist-draft">Ver Convocatórias editáveis</Link></li>
@@ -182,33 +318,26 @@ function Home() {
                                 <li><Link to="/invite-users">Convidar Utilizadores</Link></li>
                             </>
                         )}
-                        {/* Adiciona link para Relatórios se for Referee */}
-                        {currentRole === "Referee" && (
-                            <li><Link to="/reports">Relatórios</Link></li>
-                        )}
+
+                        {currentRole === "Referee" && <li><Link to="/reports">Relatórios</Link></li>}
                     </>
-
-
                 ) : (
-                    <>
-                        {<li><Link to="/login">Login</Link></li>}
-                    </>
+                    <li><Link to="/login">Login</Link></li>
                 )}
             </ol>
         </div>
-    )
+    );
 }
 
-
-
+// Header
 export function Header() {
-    const currentUser = useCurrentUser()
-    const currentEmail = useCurrentEmail()
-    const currentRole = useCurrentRole()
+    const currentUser = useCurrentUser();
+    const currentEmail = useCurrentEmail();
+    const currentRole = useCurrentRole();
 
-    const isConselhoDeArbitragem = currentRole === "Arbitration_Council"
-    const isReferee = currentRole === "Referee"
-    const isAdmin = currentRole === "Admin"
+    const isConselho = currentRole === "Arbitration_Council";
+    const isReferee = currentRole === "Referee";
+    const isAdmin = currentRole === "Admin";
 
     return (
         <header>
@@ -220,45 +349,32 @@ export function Header() {
                             <li><Link to="/me">Eu</Link></li>
                             <li><Link to="/select-role">Mudar Perfil</Link></li>
 
-                            {currentRole && (
-                            <li><Link to="/check-callLists">Ver Convocatórias</Link></li>
-                            )}
-                            {isConselhoDeArbitragem && (
+                            {currentRole && <li><Link to="/check-callLists">Ver Convocatórias</Link></li>}
+                            {isConselho && (
                                 <>
                                     <li><Link to="/create-calllist">Criar Convocatória</Link></li>
                                     <li><Link to="/search-calllist-draft">Ver Convocatórias editáveis</Link></li>
                                 </>
                             )}
-
                             {isAdmin && (
                                 <>
                                     <li><Link to="/attribute-roles">Gerir Utilizadores</Link></li>
                                     <li><Link to="/invite-users">Convidar Utilizadores</Link></li>
                                 </>
                             )}
-                            {/* Adiciona link para Relatórios se for Referee */}
-                            {currentRole === "Referee" && (
-                                <li><Link to="/reports">Relatórios</Link></li>
-                            )}
-                            {/* Notificações */}
+                            {isReferee && <li><Link to="/reports">Relatórios</Link></li>}
                             <li style={{ position: "relative" }}>
-                                <Notifications />
+                                <SuspenseWrapper>
+                                    <Notifications />
+                                </SuspenseWrapper>
                             </li>
-
                             <li><Logout /></li>
                         </>
                     ) : (
-                        <>
-                            <li><Link to="/login">Login</Link></li>
-                        </>
+                        <li><Link to="/login">Login</Link></li>
                     )}
                 </ul>
             </nav>
         </header>
-    )
+    );
 }
-
-
-
-
-
