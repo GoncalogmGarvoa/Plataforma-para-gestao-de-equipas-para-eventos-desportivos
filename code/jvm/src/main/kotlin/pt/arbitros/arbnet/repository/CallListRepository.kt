@@ -24,14 +24,14 @@ interface CallListRepository {
         competitionId: Int,
     ): Int
 
-    fun getCallListsByUserIdAndType(
-        userId: Int,
-        type: String
-    ): List<CallListWithUserAndCompetition>
+//    fun getCallListsByUserIdAndType(
+//        userId: Int,
+//        type: String
+//    ): List<CallListWithUserAndCompetition>
 
     fun updateCallListStatus(callListId: Int): Boolean
 
-    fun getCallListsWithReferee(userId: Int): List<RefereeCallLists>
+    fun getCallListsWithReferee(userId: Int ,limit: Int, offset: Int): List<RefereeCallLists>
 
     fun getCallListById(id: Int): CallList?
 
@@ -49,4 +49,11 @@ interface CallListRepository {
 //    fun deleteCallList(id: Int): Boolean
 
 
+    fun countCallListsWithReferee(userId: Int): Int
+    fun getCallListsByUserIdAndType(
+        userId: Int,
+        type: String,
+        limit: Int,
+        offset: Int
+    ): List<CallListWithUserAndCompetition>
 }

@@ -130,15 +130,38 @@ class CallListController(
             is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
         }
 
-    @GetMapping(Uris.CallListUris.GET_CALLLIST_DRAFT)
+//    @GetMapping(Uris.CallListUris.GET_CALLLIST_BY_TYPE)
+//    fun getCallListDraft(
+//        @RequestHeader("Authorization") authorizationHeader: String,
+//        @RequestParam callType: String,
+//    ): ResponseEntity<*> {
+//        val token = authorizationHeader.removePrefix("Bearer ").removePrefix("bearer ")
+//        val userResult = usersService.getUserByToken(token)
+//        return if (userResult is Success) {
+//            when (val result = callListService.getEventsDraft(userResult.value.id, callType)) {
+//                is Success -> ResponseEntity.ok(result.value)
+//                is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
+//            }
+//        } else {
+//            Problem.fromApiErrorToProblemResponse(
+//                ApiError.NotFound(
+//                    "User not found or not authorized to get call list draft",
+//                )
+//            )
+//        }
+//    }
+
+    @GetMapping(Uris.CallListUris.GET_CALLLIST_BY_TYPE)
     fun getCallListDraft(
         @RequestHeader("Authorization") authorizationHeader: String,
         @RequestParam callType: String,
+        @RequestParam(required = false, defaultValue = "0") offset: Int,
+        @RequestParam(required = false, defaultValue = "10") limit: Int,
     ): ResponseEntity<*> {
         val token = authorizationHeader.removePrefix("Bearer ").removePrefix("bearer ")
         val userResult = usersService.getUserByToken(token)
         return if (userResult is Success) {
-            when (val result = callListService.getEventsDraft(userResult.value.id, callType)) {
+            when (val result = callListService.getEventsDraft(userResult.value.id, callType, offset,limit)) {
                 is Success -> ResponseEntity.ok(result.value)
                 is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
             }
@@ -151,26 +174,27 @@ class CallListController(
         }
     }
 
+
+
     @GetMapping(Uris.CallListUris.GET_CALLLISTS_WITH_REFEREE)
     fun getAllCallListsWithReferee(
         @RequestHeader("Authorization") authorizationHeader: String,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "10") size: Int
     ): ResponseEntity<*> {
         val token = authorizationHeader.removePrefix("Bearer ").removePrefix("bearer ")
         val userResult = usersService.getUserByToken(token)
         return if (userResult is Success) {
             when (
-                val result = callListService.getCallListsWithReferee(userResult.value.id)
+                val result = callListService.getCallListsWithReferee(userResult.value.id, page, size)
             ) {
                 is Success -> ResponseEntity.ok(result.value)
                 is Failure -> Problem.fromApiErrorToProblemResponse(result.value)
             }
-
-        }
-        else {
+        } else {
             Problem.fromApiErrorToProblemResponse(
-                ApiError.NotFound(
-                    "User not found or not authorized to create a call list",
-                ))
+                ApiError.NotFound("User not found or not authorized to create a call list")
+            )
         }
     }
 

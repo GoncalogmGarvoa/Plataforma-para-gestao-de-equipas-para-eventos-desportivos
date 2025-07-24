@@ -4,11 +4,8 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import pt.arbitros.arbnet.domain.*
 import pt.arbitros.arbnet.http.ApiError
-import pt.arbitros.arbnet.http.model.ParticipantInfo
-import pt.arbitros.arbnet.http.model.RefereeCallLists
-import pt.arbitros.arbnet.http.model.RefereeCallListsOutputModel
+import pt.arbitros.arbnet.http.model.*
 import pt.arbitros.arbnet.http.model.calllist.*
-import pt.arbitros.arbnet.http.model.matchDayConfirmation
 import pt.arbitros.arbnet.repository.ReportRepository
 import pt.arbitros.arbnet.repository.TransactionManager
 import pt.arbitros.arbnet.repository.mongo.CallListMongoRepository
@@ -19,6 +16,7 @@ import pt.arbitros.arbnet.services.Success
 import pt.arbitros.arbnet.services.failure
 import pt.arbitros.arbnet.services.success
 import pt.arbitros.arbnet.transactionRepo
+import kotlin.math.ceil
 
 @Component
 class CallListService(
@@ -273,15 +271,26 @@ class CallListService(
 
 
 
-    fun getEventsDraft(userId: Int,callListType: String): Either<ApiError, List<CallListWithUserAndCompetition>> =
+//    fun getEventsDraft(userId: Int,callListType: String): Either<ApiError, List<CallListWithUserAndCompetition>> =
+//        transactionManager.run { tx ->
+//            val callLists = tx.callListRepository.getCallListsByUserIdAndType(userId, callListType)
+//            success(callLists)
+//        }
+    fun getEventsDraft(
+        userId: Int,
+        callListType: String,
+        offset: Int,
+        limit: Int
+    ): Either<ApiError, List<CallListWithUserAndCompetition>> =
         transactionManager.run { tx ->
-            val callLists = tx.callListRepository.getCallListsByUserIdAndType(userId, callListType)
+            val callLists = tx.callListRepository.getCallListsByUserIdAndType(userId, callListType,offset,limit)
             success(callLists)
         }
 
-    fun getCallListsWithReferee(refereeId: Int): Either<ApiError, List<RefereeCallListsOutputModel>> {
+    fun getCallListsWithReferee(refereeId: Int,page: Int, size: Int): Either<ApiError, PaginatedResponse<RefereeCallListsOutputModel>> {
         return transactionManager.run { tx ->
-            val callLists: List<RefereeCallLists> = tx.callListRepository.getCallListsWithReferee(refereeId)
+            val offset = page * size
+            val callLists: List<RefereeCallLists> = tx.callListRepository.getCallListsWithReferee(refereeId, offset, size)
             if (callLists.isEmpty()) {
                 return@run failure(
                     ApiError.NotFound(
@@ -357,7 +366,19 @@ class CallListService(
                     equipments
                 )
             }
-            return@run success(final)
+            //return@run success(final)
+            val total = tx.callListRepository.countCallListsWithReferee(refereeId)
+            val totalPages = ceil(total / size.toDouble()).toInt()
+
+            return@run success(
+                PaginatedResponse(
+                    content = final,
+                    page = page,
+                    size = size,
+                    totalElements = total,
+                    totalPages = totalPages
+                )
+            )
         }
     }
 

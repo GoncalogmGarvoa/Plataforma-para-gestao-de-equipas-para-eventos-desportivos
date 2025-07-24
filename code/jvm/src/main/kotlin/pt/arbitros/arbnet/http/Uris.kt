@@ -44,7 +44,7 @@ object Uris {
         const val GET_CALLLIST = "$PREFIX/callList/get/{id}"
         const val UPDATE_CALLLIST = "$PREFIX/callList/update"
         const val GET_SEALED_CALLLIST = "$PREFIX/callList/sealed/{id}"
-        const val GET_CALLLIST_DRAFT = "$PREFIX/callListDraft/get"
+        const val GET_CALLLIST_BY_TYPE = "$PREFIX/callListDraft/get"
         const val GET_CALLLISTS_WITH_REFEREE = "$PREFIX/callList/referee"
         const val GET_CALLLISTS_FINAL_JURY_FUNCTION = "$PREFIX/callList/finalJuryFunction/{function}"
         const val CANCEL_CALLLIST = "$PREFIX/callList/cancel"
