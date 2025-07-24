@@ -163,112 +163,209 @@ export function Reports() {
             </ul>
           )}
           {selectedReport && (
-            <div style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              background: 'rgba(0,0,0,0.25)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 1000
-            }}
-              onClick={() => setSelectedReport(null)}
-            >
               <div style={{
-                background: '#f9f9ff',
-                border: '1px solid #1976d2',
-                borderRadius: 8,
-                padding: 24,
-                minWidth: 340,
-                maxWidth: 600,
-                boxShadow: '0 2px 16px rgba(0,0,0,0.15)',
-                position: 'relative'
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                background: 'rgba(0,0,0,0.25)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000
               }}
-                onClick={e => e.stopPropagation()}
+                   onClick={() => setSelectedReport(null)}
               >
-                <button
-                  style={{ position: 'absolute', top: 10, right: 10, background: '#1976d2', color: 'white', border: 'none', borderRadius: 4, padding: '2px 12px', fontWeight: 600, cursor: 'pointer' }}
-                  onClick={() => setSelectedReport(null)}
-                >Fechar</button>
-                <h4 style={{ marginTop: 0 }}>Detalhes do Relatório</h4>
-                <div style={{ marginBottom: 12 }}>
-                  <b>Tipo:</b> {selectedReport.reportType} &nbsp; <b>Autor:</b> {selectedReport.coverSheet?.authorName || '-'} &nbsp; <b>Ano:</b> {selectedReport.coverSheet?.year || '-'}
-                </div>
-                <div style={{ marginBottom: 12 }}>
-                  <b>Competição:</b> {selectedReport.coverSheet?.councilName || '-'}<br/>
-                  <b>Localização:</b> {selectedReport.coverSheet?.location || '-'}<br/>
-                  <b>Época:</b> {selectedReport.coverSheet?.sportsSeason || '-'}
-                </div>
-                <div style={{ marginBottom: 12 }}>
-                  <b>Sessões:</b>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 4, marginBottom: 8 }}>
-                    <thead>
-                      <tr style={{ background: '#f5f5f5' }}>
-                        <th style={{ border: '1px solid #ccc', padding: 4 }}>Sessão</th>
-                        <th style={{ border: '1px solid #ccc', padding: 4 }}>Data</th>
-                        <th style={{ border: '1px solid #ccc', padding: 4 }}>Início</th>
-                        <th style={{ border: '1px solid #ccc', padding: 4 }}>Fim</th>
-                        <th style={{ border: '1px solid #ccc', padding: 4 }}>Duração (min)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(selectedReport.coverSheet?.sessions || []).map((s: any, i: number) => (
-                        <tr key={i}>
-                          <td style={{ border: '1px solid #ccc', padding: 4 }}>Sessão {i + 1}</td>
-                          <td style={{ border: '1px solid #ccc', padding: 4 }}>{s.date}</td>
-                          <td style={{ border: '1px solid #ccc', padding: 4 }}>{s.startTime}</td>
-                          <td style={{ border: '1px solid #ccc', padding: 4 }}>{s.endTime}</td>
-                          <td style={{ border: '1px solid #ccc', padding: 4 }}>{s.durationMinutes}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div style={{ marginBottom: 12 }}>
-                  <b>Avaliações dos Árbitros:</b>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 4, marginBottom: 8 }}>
-                    <thead>
-                      <tr style={{ background: '#f5f5f5' }}>
-                        <th style={{ border: '1px solid #ccc', padding: 4 }}>Nome</th>
-                        <th style={{ border: '1px solid #ccc', padding: 4 }}>Categoria</th>
-                        <th style={{ border: '1px solid #ccc', padding: 4 }}>Nota</th>
-                        <th style={{ border: '1px solid #ccc', padding: 4 }}>Função por Sessão</th>
-                        <th style={{ border: '1px solid #ccc', padding: 4 }}>Notas</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(selectedReport.refereeEvaluations || []).map((a: any, i: number) => (
-                        <tr key={i}>
-                          <td style={{ border: '1px solid #ccc', padding: 4 }}>{a.name}</td>
-                          <td style={{ border: '1px solid #ccc', padding: 4 }}>{a.category}</td>
-                          <td style={{ border: '1px solid #ccc', padding: 4 }}>{a.grade}</td>
-                          <td style={{ border: '1px solid #ccc', padding: 4 }}>
-                            {a.functionBySession ? Object.entries(a.functionBySession).map(([sessId, func]: any, idx: number) => (
-                              <div key={idx}>Sessão {Number(idx) + 1}: {func}</div>
-                            )) : '-'}
-                          </td>
-                          <td style={{ border: '1px solid #ccc', padding: 4 }}>{a.notes}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div style={{ marginBottom: 12 }}>
-                  <b>Registos:</b>
-                  <ul style={{ margin: 0, paddingLeft: 16 }}>
-                    {selectedReport.registers ? Object.entries(selectedReport.registers).map(([key, value]: any, idx: number) => (
-                      <li key={idx}><b>{key}:</b> {value}</li>
-                    )) : <li>-</li>}
-                  </ul>
+                <div style={{
+                  background: '#f9f9ff',
+                  border: '1px solid #1976d2',
+                  borderRadius: 8,
+                  padding: 24,
+                  minWidth: 340,
+                  maxWidth: 600,
+                  boxShadow: '0 2px 16px rgba(0,0,0,0.15)',
+                  position: 'relative'
+                }}
+                     onClick={e => e.stopPropagation()}
+                >
+                  <button
+                      style={{ position: 'absolute', top: 10, right: 10, background: '#1976d2', color: 'white', border: 'none', borderRadius: 4, padding: '2px 12px', fontWeight: 600, cursor: 'pointer' }}
+                      onClick={() => setSelectedReport(null)}
+                  >Fechar</button>
+
+                  <h4 style={{ marginTop: 0 }}>Detalhes do Relatório</h4>
+
+                  {/* Secção para relatórios de pagamento */}
+                  {selectedReport.reportType === 'PAY_REPORT' && (
+                      <>
+                        <div style={{ marginBottom: 12 }}>
+                          <b>Informações da Capa:</b><br />
+                          <b>Conselho:</b> {selectedReport.paymentCoverSheet?.councilName || '-'}<br />
+                          <b>Evento:</b> {selectedReport.paymentCoverSheet?.eventName || '-'}<br />
+                          <b>Estabelecimento:</b> {selectedReport.paymentCoverSheet?.venue || '-'}<br />
+                          <b>Data:</b> {selectedReport.paymentCoverSheet?.eventDate || '-'}<br />
+                          <b>Hora:</b> {selectedReport.paymentCoverSheet?.eventTime || '-'}<br />
+                          <b>Organização:</b> {selectedReport.paymentCoverSheet?.organization || '-'}<br />
+                          <b>Morada:</b> {selectedReport.paymentCoverSheet?.location || '-'}<br />
+                        </div>
+
+                        <div style={{ marginBottom: 12 }}>
+                          <b>Júri Árbitro:</b> {selectedReport.juryRefere || '-'}
+                        </div>
+
+                        <div style={{ marginBottom: 24 }}>
+                          <b>Informações de Pagamento por Árbitro:</b>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 4 }}>
+                            <thead>
+                            <tr style={{ background: '#f5f5f5' }}>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Nome</th>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>NIB</th>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Refeições</th>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Valor Pago</th>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Presença</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {(selectedReport.paymentInfoPerReferee || []).map((ref: any, i: number) => (
+                                <tr key={i}>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>{ref.paymentRefInfo.name}</td>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>{ref.paymentRefInfo.nib}</td>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>{ref.paymentRefInfo.numberOfMeals}</td>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>
+                                    {ref.paymentRefInfo.payedAmount?.toFixed(2)}€
+                                  </td>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>
+                                    {(ref.paymentRefInfo.sessionsPresence || []).map((s: any, j: number) => (
+                                        <div key={j}>
+                                          Dia {j + 1}:
+                                          {s.morning && ` manhã às ${s.morningTime}`}
+                                          {s.afternoon && ` / tarde às ${s.afternoonTime}`}
+                                        </div>
+                                    ))}
+                                  </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* Nova tabela: Detalhes de Pagamento */}
+                        <div style={{ marginBottom: 24 }}>
+                          <b>Detalhes de Pagamento:</b>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 4 }}>
+                            <thead>
+                            <tr style={{ background: '#f5f5f5' }}>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Nome</th>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Refeições</th>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Transporte</th>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Dias Úteis</th>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Presença</th>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Total</th>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Em Falta</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {(selectedReport.paymentInfoPerReferee || []).map((ref: any, i: number) => (
+                                <tr key={i}>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>{ref.paymentRefInfo.name}</td>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>{ref.paymentValues?.meals?.toFixed(2)}€</td>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>{ref.paymentValues?.transportation?.toFixed(2)} €</td>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>{ref.paymentValues?.weekDay?.toFixed(2)}€</td>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>{ref.paymentValues?.presence?.toFixed(2)}€</td>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}><b>{ref.paymentValues?.totalOwed?.toFixed(2)}€</b></td>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}><b>{ref.paymentValues?.owedLeft?.toFixed(2)}€</b></td>
+                                </tr>
+                            ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </>
+                  )}
+
+                  {/* Secção para relatórios JA / DEL */}
+                  {selectedReport.reportType !== 'PAY_REPORT' && (
+                      <>
+                        <div style={{ marginBottom: 12 }}>
+                          <b>Tipo:</b> {selectedReport.reportType} &nbsp;
+                          <b>Autor:</b> {selectedReport.coverSheet?.authorName || '-'} &nbsp;
+                          <b>Ano:</b> {selectedReport.coverSheet?.year || '-'}
+                        </div>
+                        <div style={{ marginBottom: 12 }}>
+                          <b>Competição:</b> {selectedReport.coverSheet?.councilName || '-'}<br />
+                          <b>Localização:</b> {selectedReport.coverSheet?.location || '-'}<br />
+                          <b>Época:</b> {selectedReport.coverSheet?.sportsSeason || '-'}
+                        </div>
+                        <div style={{ marginBottom: 12 }}>
+                          <b>Sessões:</b>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 4, marginBottom: 8 }}>
+                            <thead>
+                            <tr style={{ background: '#f5f5f5' }}>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Sessão</th>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Data</th>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Início</th>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Fim</th>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Duração (min)</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {(selectedReport.coverSheet?.sessions || []).map((s: any, i: number) => (
+                                <tr key={i}>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>Sessão {i + 1}</td>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>{s.date}</td>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>{s.startTime}</td>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>{s.endTime}</td>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>{s.durationMinutes}</td>
+                                </tr>
+                            ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        <div style={{ marginBottom: 12 }}>
+                          <b>Avaliações dos Árbitros:</b>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 4, marginBottom: 8 }}>
+                            <thead>
+                            <tr style={{ background: '#f5f5f5' }}>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Nome</th>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Categoria</th>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Nota</th>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Função por Sessão</th>
+                              <th style={{ border: '1px solid #ccc', padding: 4 }}>Notas</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {(selectedReport.refereeEvaluations || []).map((a: any, i: number) => (
+                                <tr key={i}>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>{a.name}</td>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>{a.category}</td>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>{a.grade}</td>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>
+                                    {a.functionBySession ? Object.entries(a.functionBySession).map(([sessId, func]: any, idx: number) => (
+                                        <div key={idx}>Sessão {Number(idx) + 1}: {func}</div>
+                                    )) : '-'}
+                                  </td>
+                                  <td style={{ border: '1px solid #ccc', padding: 4 }}>{a.notes}</td>
+                                </tr>
+                            ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        <div style={{ marginBottom: 12 }}>
+                          <b>Registos:</b>
+                          <ul style={{ margin: 0, paddingLeft: 16 }}>
+                            {selectedReport.registers ? Object.entries(selectedReport.registers).map(([key, value]: any, idx: number) => (
+                                <li key={idx}><b>{key}:</b> {value}</li>
+                            )) : <li>-</li>}
+                          </ul>
+                        </div>
+                      </>
+                  )}
                 </div>
               </div>
-            </div>
           )}
         </div>
       )}
+
       {activeTab !== 'Search' && (
         <div className="reports-list">
           {loading && <div>Carregando...</div>}
