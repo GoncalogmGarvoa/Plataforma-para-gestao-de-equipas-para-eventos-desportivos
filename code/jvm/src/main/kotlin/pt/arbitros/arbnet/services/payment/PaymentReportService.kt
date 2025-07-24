@@ -26,10 +26,10 @@ class PaymentReportService(
     private val utilsDomain: UtilsDomain,
 ) {
 
-    fun getCallListsForPaymentByUserId(userId: Int) : Either<ApiError, List<CallListReportOutputModel>> =
+    fun getCallListsForPaymentByUserId(userId: Int,offset: Int, limit: Int) : Either<ApiError, List<CallListReportOutputModel>> =
 
         transactionManager.run { tx ->
-            val callLists = tx.callListRepository.getCallListsByUserIdAndType(userId, CallListType.FINAL_JURY.callType)
+            val callLists = tx.callListRepository.getCallListsByUserIdAndType(userId, CallListType.FINAL_JURY.callType,offset,limit)
 
             if (callLists.isEmpty()) {
                 return@run failure(

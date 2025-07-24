@@ -1,4 +1,3 @@
-//const ESLintPlugin = require('eslint-webpack-plugin');
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
@@ -41,7 +40,7 @@ module.exports = {
     },
     plugins: [
         new HtmlWebpackPlugin({
-          template: './public/index.html', // your HTML template
+            template: './public/index.html', // your HTML template
         }),
     ],
     module: {

@@ -71,54 +71,111 @@ class CallListRepositoryJdbi(
             .mapTo<CallList>()
             .singleOrNull()
 
-    override fun getCallListsByUserIdAndType(userId: Int, type: String): List<CallListWithUserAndCompetition> =
+    override fun getCallListsByUserIdAndType(
+        userId: Int,
+        type: String,
+        offset: Int,
+        limit: Int
+    ): List<CallListWithUserAndCompetition> =
         handle.createQuery(
             """
-        SELECT 
-            cl.id as call_list_id,
+        SELECT
+            cl.id AS call_list_id,
             cl.deadline,
             cl.call_type,
-            u.id as user_id,
-            u.name as user_name,
-            u.email as user_email,
-            c.competition_number as competition_id,
-            c.name as competition_name
+            u.id AS user_id,
+            u.name AS user_name,
+            u.email AS user_email,
+            c.competition_number AS competition_id,
+            c.name AS competition_name
         FROM dbp.call_list cl
         JOIN dbp.users u ON cl.user_id = u.id
         JOIN dbp.competition c ON cl.competition_id = c.competition_number
         WHERE cl.user_id = :userId AND cl.call_type = :callType
+        ORDER BY cl.deadline ASC
+        LIMIT :limit OFFSET :offset
         """
         )
             .bind("userId", userId)
             .bind("callType", type)
+            .bind("limit", limit)
+            .bind("offset", offset)
             .mapTo<CallListWithUserAndCompetition>()
             .list()
 
-    override fun getCallListsWithReferee(userId: Int): List<RefereeCallLists> =
+
+
+
+//    override fun getCallListsByUserIdAndType(userId: Int, type: String): List<CallListWithUserAndCompetition> =
+//        handle.createQuery(
+//            """
+//        SELECT
+//            cl.id as call_list_id,
+//            cl.deadline,
+//            cl.call_type,
+//            u.id as user_id,
+//            u.name as user_name,
+//            u.email as user_email,
+//            c.competition_number as competition_id,
+//            c.name as competition_name
+//        FROM dbp.call_list cl
+//        JOIN dbp.users u ON cl.user_id = u.id
+//        JOIN dbp.competition c ON cl.competition_id = c.competition_number
+//        WHERE cl.user_id = :userId AND cl.call_type = :callType
+//        """
+//        )
+//            .bind("userId", userId)
+//            .bind("callType", type)
+//            .mapTo<CallListWithUserAndCompetition>()
+//            .list()
+
+
+override fun getCallListsWithReferee(userId: Int, offset: Int, limit: Int): List<RefereeCallLists> =
+    handle.createQuery(
+        """
+        SELECT * FROM (
+            SELECT 
+                cl.id AS call_list_id,
+                c.competition_number AS competition_id,
+                c.name AS competition_name,
+                c.address,
+                c.phone_number, 
+                c.email, 
+                c.association,
+                c.location,
+                cl.deadline AS deadline,
+                cl.call_type AS call_list_type,
+                ROW_NUMBER() OVER (PARTITION BY cl.id ORDER BY cl.deadline ASC) as rn
+            FROM dbp.call_list cl
+            JOIN dbp.competition c ON cl.competition_id = c.competition_number
+            JOIN dbp.participant p ON cl.id = p.call_list_id
+            WHERE p.user_id = :userId AND cl.call_type != 'callList'
+        ) AS ranked
+        WHERE rn = 1
+        ORDER BY ranked.deadline ASC
+        LIMIT :limit OFFSET :offset
+        """
+    )
+        .bind("userId", userId)
+        .bind("limit", limit)
+        .bind("offset", offset)
+        .mapTo<RefereeCallLists>()
+        .list()
+
+
+
+    override fun countCallListsWithReferee(userId: Int): Int =
         handle.createQuery(
             """
-        SELECT DISTINCT
-            cl.id AS call_list_id,
-            c.competition_number AS competition_id,
-            c.name AS competition_name,
-            c.address,
-            c.phone_number, 
-            c.email, 
-            c.association,
-            c.location,
-            cl.deadline,
-            cl.call_type AS call_list_type
+        SELECT COUNT(DISTINCT cl.id)
         FROM dbp.call_list cl
-        JOIN dbp.competition c ON cl.competition_id = c.competition_number
         JOIN dbp.participant p ON cl.id = p.call_list_id
         WHERE p.user_id = :userId AND cl.call_type != 'callList'
         """
         )
             .bind("userId", userId)
-            .mapTo<RefereeCallLists>()
-            .list()
-
-
+            .mapTo(Int::class.java)
+            .one()
 
     override fun updateCallListStage(
         callListId: Int,
