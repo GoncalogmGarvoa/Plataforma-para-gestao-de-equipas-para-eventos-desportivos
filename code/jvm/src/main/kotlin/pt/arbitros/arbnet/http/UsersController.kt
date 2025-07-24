@@ -241,7 +241,7 @@ class UsersController(
                         user.address,
                         user.email,
                         user.password,
-                        user.birthDate,
+                        user.birthDate.split("T")[0],
                         user.iban,
                     ),
                 )

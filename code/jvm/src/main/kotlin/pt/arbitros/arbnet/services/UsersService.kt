@@ -360,7 +360,7 @@ class UsersService(
                     user.address,
                     user.email,
                     passwordValidationInfo,
-                    OffsetDateTime.parse(user.birthDate).toLocalDate(),
+                    LocalDate.parse(user.birthDate),
                     //LocalDate.parse(user.birthDate),
                     user.iban,
                 )

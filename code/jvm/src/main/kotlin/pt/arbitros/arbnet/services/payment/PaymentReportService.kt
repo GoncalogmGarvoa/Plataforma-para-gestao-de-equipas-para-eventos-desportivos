@@ -73,11 +73,6 @@ class PaymentReportService(
 
             val result: PaymentReportMongo = paymentMongoRepository.save(reportMongo)
 
-            it.reportRepository.createReport(
-                result.id!!,
-                result.reportType,
-                result.competitionId
-            )
 
             it.reportRepository.createReport(
                 result.id!!,
