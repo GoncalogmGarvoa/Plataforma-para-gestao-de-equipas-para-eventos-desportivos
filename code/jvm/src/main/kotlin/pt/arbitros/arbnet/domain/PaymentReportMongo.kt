@@ -7,7 +7,6 @@ import pt.arbitros.arbnet.http.model.payment_report.PaymentReportInputModel
 @Document(collection = "payment_reports")
 data class PaymentReportMongo(
     @Id val id : String? = null,
-    val authorName : String,
     val reportType : String = "PAY_REPORT",
     val competitionId : Int,
     val sealed: Boolean = false,
@@ -19,7 +18,6 @@ data class PaymentReportMongo(
         fun fromInputModel(input: PaymentReportInputModel, list : List <PaymentDetails>  ): PaymentReportMongo {
             return PaymentReportMongo(
                 id = input.id, // pode ser null (criação) ou presente (‘update’)
-                authorName = input.authorName,
                 competitionId = input.competitionId,
                 sealed = input.sealed,
                 juryRefere = input.juryRefere,
