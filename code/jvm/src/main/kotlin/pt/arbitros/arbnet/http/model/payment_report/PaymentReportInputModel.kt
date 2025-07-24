@@ -5,7 +5,6 @@ import pt.arbitros.arbnet.domain.PaymentInfoPerReferee
 
 data class PaymentReportInputModel (
     val id : String? = null,
-    val authorName : String,
     val competitionId : Int,
     val sealed: Boolean = false,
     val juryRefere: String,
