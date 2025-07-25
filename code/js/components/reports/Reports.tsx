@@ -153,7 +153,7 @@ export function Reports() {
             <ul style={{ listStyle: 'none', padding: 0, maxWidth: 500 }}>
               {searchResults.map((result, idx) => (
                 <li key={result.id || idx} style={{ marginBottom: 8, border: '1px solid #eee', borderRadius: 4, padding: '6px 12px', display: 'flex', alignItems: 'center', width: 'fit-content', background: selectedReport && selectedReport.id === result.id ? '#f0f8ff' : '#fff' }}>
-                  <span style={{ fontWeight: 600 }}>{(result.coverSheet?.councilName || result.paymentCoverSheet.competitionName)|| 'Competição sem nome'}</span>
+                  <span style={{ fontWeight: 600 }}>{(result.coverSheet?.councilName || result.paymentCoverSheet.eventName)|| 'Competição sem nome'}</span>
                   <button
                     style={{ marginLeft: 8, padding: '2px 10px', borderRadius: 4, background: '#1976d2', color: 'white', border: 'none', cursor: 'pointer', fontSize: 14 }}
                     onClick={() => setSelectedReport(result)}
