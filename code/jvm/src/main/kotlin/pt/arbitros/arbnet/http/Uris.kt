@@ -13,7 +13,6 @@ object Uris {
         const val CREATE_USER = "$PREFIX/users/signup"
         const val UPDATE_USER = "$PREFIX/users/update"
         const val USER_ROLES = "$PREFIX/users/roles"
-        const val USER_ROLES_DELETE = "$PREFIX/users/roles/delete"
         const val CATEGORIES = "$PREFIX/users/categories"
         const val USER_CATEGORY = "$PREFIX/users/category"
         const val USERS_BY_PARAMETERS = "$PREFIX/users/parameters"
@@ -21,14 +20,12 @@ object Uris {
         const val GET_ALL_FUNCTIONS = "$PREFIX/users/functions"
         const val GET_ALL_POSITIONS = "$PREFIX/users/positions"
         const val INACTIVE_USERS = "$PREFIX/users/inactive"
-        const val USERS = "$PREFIX/users" // TODO
         const val USER_ROLES_FROM_USER = "$PREFIX/users/roles/fromUser"
         const val SET_ROLE = "$PREFIX/users/role/set"
         const val LOGIN = "$PREFIX/users/token"
         const val GET_BY_TOKEN = "$PREFIX/users/me"
         const val LOGOUT = "$PREFIX/users/logout"
-        const val HOME = "$PREFIX/me"
-        const val GET_COOKIES = "$PREFIX/cookies" // TODO
+
         const val NOTIFICATIONS = "$PREFIX/users/notifications"
         const val NOTIFICATIONS_READ = "$PREFIX/users/notifications/read/{notificationId}"
         const val USER_STATUS = "$PREFIX/users/status"
@@ -39,7 +36,6 @@ object Uris {
         const val CREATE_CALLLIST = "$PREFIX/callList/creation"
         const val UPDATE_PARTICIPANT_CONFIRMATION_STATUS = "$PREFIX/callList/updateParticipant"
         const val UPDATE_PARTICIPANT_CONFIRMATION_STATUS_ARBITRATION_COUNCIL = "$PREFIX/callList/updateParticipant/ArbitrationCouncil"
-
         const val UPDATE_CALLLISTSTAGE = "$PREFIX/callList/updateCallListStage"
         const val GET_CALLLIST = "$PREFIX/callList/get/{id}"
         const val UPDATE_CALLLIST = "$PREFIX/callList/update"
